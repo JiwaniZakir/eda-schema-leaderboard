@@ -24,6 +24,13 @@ dev = [
     "types-pyyaml>=6.0.12",
 ]
 
+[project.scripts]
+# A real entry point, not `python -m tools.validate`. Running the module as
+# __main__ creates a second copy of it, so checks registering into
+# tools.validate.CHECKS land in a different dict than the one main() reads, and
+# validation silently passes having done nothing.
+eda-validate = "tools.validate:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

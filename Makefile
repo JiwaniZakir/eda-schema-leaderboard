@@ -14,7 +14,7 @@ synth:
 	uv run python -m tools.synth
 
 validate:
-	uv run python -m tools.validate
+	uv run eda-validate
 
 build:
 	uv run python build.py

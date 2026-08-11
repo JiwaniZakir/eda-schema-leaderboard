@@ -46,9 +46,15 @@ def validate() -> list[Failure]:
 
 
 def main() -> int:
+    # Import for the registration side effect. Deferred to avoid a cycle: checks
+    # import Failure from this module.
+    import tools.checks  # noqa: F401
+
     if not CHECKS:
-        print("validate: no checks registered yet (scaffold)")
-        return 0
+        # Never silently succeed. An empty registry means registration broke, and
+        # a validator that passes without running anything is worse than none.
+        print("validate: no checks registered", file=sys.stderr)
+        return 1
 
     failures = validate()
     for failure in failures:
@@ -56,7 +62,3 @@ def main() -> int:
 
     print(f"validate: {len(CHECKS)} checks, {len(failures)} failures")
     return 1 if failures else 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
