@@ -35,9 +35,11 @@ jobs:
 
       - uses: lycheeverse/lychee-action@v2
         with:
+          # Note: --exclude-mail was removed from lychee; mailto links are now
+          # skipped by default and the opt-in is --include-mail. PLAN.md's Phase 7
+          # gate still quotes the old flag.
           args: >-
             --no-progress
-            --exclude-mail
             --accept 200,206,429
             dist/ docs/ ./*.md
           fail: true

@@ -498,7 +498,7 @@ pytest tests/test_cells.py
 # - baseline row present and visually distinct on every page
 # - saturated pages render the saturated notice and no ranking
 # - no page exceeds 500 KB
-lychee dist/ --exclude-mail
+lychee dist/   # --exclude-mail was removed from lychee; mail is skipped by default
 ```
 
 ---
