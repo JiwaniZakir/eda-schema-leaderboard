@@ -25,19 +25,20 @@ dev = [
     "types-pyyaml>=6.0.12",
 ]
 
-[project.scripts]
-# A real entry point, not `python -m tools.validate`. Running the module as
-# __main__ creates a second copy of it, so checks registering into
+# Post-reset there is no Python in the repo, so there is nothing to build into a
+# wheel. Phase 1 restores `tools/` and this flips back to a packaged project.
+[tool.uv]
+package = false
+
+# RESTORE IN PHASE 1, together with the [build-system] and hatch wheel config:
+#
+#   [project.scripts]
+#   eda-validate = "tools.validate:main"
+#
+# It must be a real entry point, not `python -m tools.validate`. Running the
+# module as __main__ creates a second copy of it, so checks registering into
 # tools.validate.CHECKS land in a different dict than the one main() reads, and
-# validation silently passes having done nothing.
-eda-validate = "tools.validate:main"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["tools"]
+# validation silently passes having done nothing. That bug shipped once already.
 
 [tool.ruff]
 target-version = "py311"
@@ -50,7 +51,8 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 python_version = "3.11"
 strict = true
 warn_unreachable = true
-files = ["tools", "tests", "build.py"]
+# Grows as the phases land: tools/ and tests/ in Phase 1, build.py in Phase 3.
+files = []
 
 [[tool.mypy.overrides]]
 module = ["torch.*"]
