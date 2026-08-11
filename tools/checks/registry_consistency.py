@@ -149,6 +149,13 @@ def check_registry_consistency() -> list[Failure]:
         )
 
     # -- saturation must select only global-route, non-wirelength cells ---
+    #
+    # Saturation has no `kind` marker in the CSV to diff against, so the
+    # wirelength half is derived independently: the two tasks void at floorplan
+    # are exactly the two that do not saturate at global route, because both are
+    # HPWL-estimated. The registry states saturation positively; this restates it
+    # negatively from the CSV. Two encodings that must agree is the point.
+    wirelength = {k[0] for k in published["VOID"]}
     derived_sat = {
         k for k in (key(r) for r in rows) if reg.is_saturated(k[0], k[1], k[3])
     }
@@ -159,6 +166,21 @@ def check_registry_consistency() -> list[Failure]:
                     NAME, f"({t}, {m}, {p}, {s}) marked saturated outside global_route"
                 )
             )
+        if t in wirelength:
+            failures.append(
+                Failure(
+                    NAME,
+                    f"({t}, {m}, {p}, {s}) marked saturated, but {t} still has live "
+                    f"baseline error at global route",
+                )
+            )
+
+    saturated_tasks = {k[0] for k in derived_sat}
+    expected_saturated = {t.id for t in reg.tasks()} - wirelength
+    for absent in sorted(expected_saturated - saturated_tasks):
+        failures.append(
+            Failure(NAME, f"{absent} saturates at global route but is not declared")
+        )
 
     # -- display precision against what was actually published ------------
     for r in rows:

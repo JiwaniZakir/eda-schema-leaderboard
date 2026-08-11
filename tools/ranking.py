@@ -148,14 +148,27 @@ def compare(
     # Incumbent is one-sided: beatable only from the defined side of the
     # threshold. `x == t` counts as BETTER, because the incumbent is strictly
     # beyond t.
+    #
+    # Direction is read from the registry rather than inferred from the bound
+    # kind. Today the two always agree - Table 8 produces `> 10000 %` only on
+    # MAPE (lower-better) and `< -1` only on R² (higher-better) - so inferring
+    # would work and would silently invert the day a sentinel appeared on the
+    # other polarity. A one-sided bound on the wrong side of its own metric
+    # constrains nothing, so it decides nothing.
     threshold = incumbent.value
+    lower_is_better = reg.metric(metric_id).direction == "lower"
+
     if incumbent.kind is BoundKind.GREATER_THAN:
-        # Only meaningful for a lower-is-better metric, e.g. MAPE > 10000 %.
+        if not lower_is_better:
+            return Comparison.UNDECIDABLE
         return (
             Comparison.BETTER
             if challenger.value <= threshold
             else Comparison.UNDECIDABLE
         )
+
+    if lower_is_better:
+        return Comparison.UNDECIDABLE
     return (
         Comparison.BETTER if challenger.value >= threshold else Comparison.UNDECIDABLE
     )
