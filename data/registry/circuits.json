@@ -1,0 +1,110 @@
+[
+  {
+    "id": "ac97_ctrl",
+    "inputs": 84,
+    "outputs": 48,
+    "registers": 2211
+  },
+  {
+    "id": "aes_core",
+    "inputs": 259,
+    "outputs": 129,
+    "registers": 562
+  },
+  {
+    "id": "des3_area",
+    "inputs": 240,
+    "outputs": 64,
+    "registers": 64
+  },
+  {
+    "id": "ethernet",
+    "inputs": 96,
+    "outputs": 115,
+    "registers": 10544
+  },
+  {
+    "id": "i2c",
+    "inputs": 19,
+    "outputs": 14,
+    "registers": 129
+  },
+  {
+    "id": "jpeg",
+    "inputs": 20,
+    "outputs": 27,
+    "registers": 4383
+  },
+  {
+    "id": "mem_ctrl",
+    "inputs": 115,
+    "outputs": 152,
+    "registers": 1083
+  },
+  {
+    "id": "pci",
+    "inputs": 162,
+    "outputs": 207,
+    "registers": 3220
+  },
+  {
+    "id": "sasc",
+    "inputs": 16,
+    "outputs": 12,
+    "registers": 118
+  },
+  {
+    "id": "simple_spi",
+    "inputs": 16,
+    "outputs": 12,
+    "registers": 131
+  },
+  {
+    "id": "spi",
+    "inputs": 47,
+    "outputs": 45,
+    "registers": 229
+  },
+  {
+    "id": "ss_pcm",
+    "inputs": 19,
+    "outputs": 9,
+    "registers": 87
+  },
+  {
+    "id": "systemcaes",
+    "inputs": 260,
+    "outputs": 129,
+    "registers": 670
+  },
+  {
+    "id": "systemcdes",
+    "inputs": 132,
+    "outputs": 65,
+    "registers": 190
+  },
+  {
+    "id": "tv80",
+    "inputs": 14,
+    "outputs": 32,
+    "registers": 361
+  },
+  {
+    "id": "usb_funct",
+    "inputs": 128,
+    "outputs": 121,
+    "registers": 1740
+  },
+  {
+    "id": "usb_phy",
+    "inputs": 15,
+    "outputs": 18,
+    "registers": 108
+  },
+  {
+    "id": "wb_dma",
+    "inputs": 217,
+    "outputs": 215,
+    "registers": 521
+  }
+]
