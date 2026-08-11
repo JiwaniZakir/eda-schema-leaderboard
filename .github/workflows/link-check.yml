@@ -1,0 +1,43 @@
+name: link-check
+
+on:
+  pull_request:
+    paths:
+      - "templates/**"
+      - "docs/**"
+      - "*.md"
+      - "build.py"
+  schedule:
+    # Weekly. External links rot without anyone touching this repo.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --all-extras
+
+      - name: Build
+        run: uv run python build.py
+
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --exclude-mail
+            --accept 200,206,429
+            dist/ docs/ ./*.md
+          fail: true

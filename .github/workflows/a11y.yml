@@ -1,0 +1,52 @@
+name: a11y
+
+on:
+  pull_request:
+    paths:
+      - "templates/**"
+      - "static/css/**"
+      - "static/js/**"
+      - "build.py"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  pa11y:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        theme: [drexel, neutral]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: uv sync --all-extras
+
+      - name: Build ${{ matrix.theme }}
+        env:
+          THEME: ${{ matrix.theme }}
+        run: uv run python build.py
+
+      - name: Serve
+        run: |
+          uv run python -m http.server -d dist 8080 &
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:8080/ >/dev/null && break
+            sleep 1
+          done
+
+      - name: pa11y-ci
+        run: npx --yes pa11y-ci --config .pa11yci.json
