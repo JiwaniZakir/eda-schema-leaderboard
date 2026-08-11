@@ -12,8 +12,17 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# One job per guard, deliberately.
+#
+# These were originally sequential steps in a single job, which meant a lint error
+# short-circuited everything after it: you fixed the lint, pushed, and only then
+# discovered the test failure. It also made the Phase 0 negative test unprovable,
+# since two guards can't be shown to fail independently when the first one exits
+# before the second runs.
+#
+# Split, they run in parallel and a PR reports every problem at once.
 jobs:
-  check:
+  lint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,32 +30,68 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - run: uv sync --all-extras
+      - run: uv run ruff check --output-format=github .
+      - run: uv run ruff format --check .
 
-      - name: Install
-        run: uv sync --all-extras
+  typecheck:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - run: uv run mypy
 
-      - name: Lint
-        run: uv run ruff check --output-format=github .
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - run: uv run eda-validate
 
-      - name: Format
-        run: uv run ruff format --check .
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - run: uv run pytest
 
-      - name: Typecheck
-        run: uv run mypy
-
-      - name: Validate
-        run: uv run python -m tools.validate
-
-      - name: Test
-        run: uv run pytest
-
-      - name: Build
-        run: uv run python build.py
-
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - run: uv run python build.py
       - uses: actions/upload-artifact@v4
         with:
           name: dist
