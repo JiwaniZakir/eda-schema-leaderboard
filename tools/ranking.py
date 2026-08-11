@@ -95,6 +95,19 @@ class Bound:
         return cls(kind, number)
 
 
+def _at_display_precision(task_id: str, metric_id: str, value: float) -> float:
+    """Round a stored value the way it will actually be displayed.
+
+    `precision` counts digits in DISPLAY units, but percent metrics are stored as
+    fractions, so rounding the fraction directly is wrong by two orders of
+    magnitude. MAPE at 2dp means `12.43 %`; rounding the stored 0.1243 to 2dp
+    gives 0.12, which makes every pair of MAPEs within roughly one percentage
+    point compare as EQUAL. Verified: 12.43 % and 12.49 % tied before this.
+    """
+    scale = 100.0 if reg.metric(metric_id).percent else 1.0
+    return round(value * scale, reg.precision(task_id, metric_id))
+
+
 def rank_key(metric_id: str, value: float) -> float:
     """Sort key that is always ascending, best first.
 
@@ -134,8 +147,9 @@ def compare(
     assert challenger.value is not None and incumbent.value is not None
 
     if challenger.kind is BoundKind.EXACT and incumbent.kind is BoundKind.EXACT:
-        dp = reg.precision(task_id, metric_id)
-        if round(challenger.value, dp) == round(incumbent.value, dp):
+        if _at_display_precision(task_id, metric_id, challenger.value) == (
+            _at_display_precision(task_id, metric_id, incumbent.value)
+        ):
             return Comparison.EQUAL
         a = rank_key(metric_id, challenger.value)
         b = rank_key(metric_id, incumbent.value)

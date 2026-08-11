@@ -144,6 +144,27 @@ def test_equality_is_decided_at_display_precision() -> None:
     assert got is Comparison.BETTER
 
 
+def test_percent_equality_uses_display_units_not_stored_units() -> None:
+    """Percent metrics are stored as fractions but their precision is in display digits.
+
+    Rounding the stored fraction to 2dp collapses everything within about one
+    percentage point into a tie: 12.43 % and 12.49 % both became 0.12 and
+    compared EQUAL, which would paint `matches_baseline` across cells that are
+    plainly different in the rendered table.
+    """
+    assert reg.precision("total_area_prediction", "mape") == 2
+    got = compare(
+        "total_area_prediction", "mape", Bound.exact(0.1243), Bound.exact(0.1249)
+    )
+    assert got is Comparison.BETTER, "12.43 % and 12.49 % are not the same number"
+
+    # A difference below the displayed precision is still a genuine tie.
+    got = compare(
+        "total_area_prediction", "mape", Bound.exact(0.124300), Bound.exact(0.124301)
+    )
+    assert got is Comparison.EQUAL
+
+
 def test_direction_is_honoured_in_comparison() -> None:
     higher = compare(
         "total_area_prediction", "r2", Bound.exact(0.99), Bound.exact(0.95)

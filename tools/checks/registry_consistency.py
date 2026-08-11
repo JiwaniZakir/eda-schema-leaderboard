@@ -35,23 +35,48 @@ def _rows() -> list[dict[str, str]]:
 
 
 def _decimals(value: str) -> int | None:
-    """Decimal places actually published, or None if not a plain number."""
-    if "%" in value or value.startswith(("<", ">")) or not value.strip():
+    """Decimal places actually published, or None if there is no number to read.
+
+    Percent values are included: `12.43 %` publishes 2 decimals just as `1,781.97`
+    does, and `precision` is declared in display digits, so they are directly
+    comparable. Only sentinels and empties have no number at all.
+    """
+    text = value.strip()
+    if not text or text.startswith(("<", ">")):
         return None
-    match = re.search(r"\.(\d+)$", value.replace(",", ""))
+    text = text.replace("%", "").replace(",", "").strip()
+    match = re.search(r"\.(\d+)$", text)
     return len(match.group(1)) if match else 0
 
 
 def _vocab_failures(rows: list[dict[str, str]]) -> list[Failure]:
     """Every table8_label must resolve, in both directions, with no orphans."""
     out: list[Failure] = []
-    pairs = [
-        ("task", {t.table8_label for t in reg.tasks()}),
-        ("metric", {m.table8_label for m in reg.metrics()}),
-        ("pdk", {p.table8_label for p in reg.pdks()}),
-        ("stage_transition", {s.table8_label for s in reg.stages()}),
+    declared_lists = [
+        ("task", [t.table8_label for t in reg.tasks()]),
+        ("metric", [m.table8_label for m in reg.metrics()]),
+        ("pdk", [p.table8_label for p in reg.pdks()]),
+        ("stage_transition", [s.table8_label for s in reg.stages()]),
     ]
-    for column, declared in pairs:
+
+    # Duplicates must be caught before the sets are compared, because comparing
+    # sets hides them: two entries claiming the same Table 8 label would silently
+    # collapse, and the label-to-id maps built later would drop one of them.
+    for column, labels in declared_lists:
+        seen: set[str] = set()
+        for label in labels:
+            if label in seen:
+                out.append(
+                    Failure(
+                        NAME,
+                        f"two {column} entries both declare table8_label {label!r}; "
+                        f"the label-to-id mapping would silently drop one",
+                    )
+                )
+            seen.add(label)
+
+    for column, labels in declared_lists:
+        declared = set(labels)
         published = {r[column] for r in rows}
         for missing in sorted(published - declared):
             out.append(
@@ -183,6 +208,7 @@ def check_registry_consistency() -> list[Failure]:
         )
 
     # -- display precision against what was actually published ------------
+    max_published: dict[tuple[str, str], int] = {}
     for r in rows:
         if r["kind"] != "VAL":
             continue
@@ -190,13 +216,24 @@ def check_registry_consistency() -> list[Failure]:
         if seen is None:
             continue
         t, m, _, _ = key(r)
+        max_published[(t, m)] = max(max_published.get((t, m), 0), seen)
+
+    # Compared per (task, metric) at the MAXIMUM published width, not per cell.
+    # Table 8 strips trailing zeros, so `11.8` and `12.01` sit in the same row;
+    # a per-cell equality check would flag the first as under-precise. The
+    # maximum is the row's real width, and it must equal what we declare:
+    # declaring fewer digits drops one at render, declaring more invents
+    # precision the dataset does not have, which is exactly what Phase 5's
+    # plausibility layer exists to catch in submissions.
+    for (t, m), seen_max in sorted(max_published.items()):
         want = reg.precision(t, m)
-        if seen > want:
+        if seen_max != want:
+            direction = "drop a digit" if seen_max > want else "invent precision"
             failures.append(
                 Failure(
                     NAME,
-                    f"({t}, {m}) is published to {seen}dp but the registry declares "
-                    f"{want}dp, so rendering would silently drop a digit",
+                    f"({t}, {m}) is published to {seen_max}dp but the registry "
+                    f"declares {want}dp, so rendering would {direction}",
                 )
             )
 

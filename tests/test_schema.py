@@ -84,6 +84,13 @@ def test_good_fixture_validates() -> None:
             "an unknown key is a typo or a smuggling attempt",
             id="extra-key",
         ),
+        pytest.param(
+            "bad_ranked_on_without_value",
+            "type",
+            "a cell declaring it ranks on the macro aggregate, with that "
+            "aggregate null, cannot produce a ranking at all",
+            id="ranked-on-without-value",
+        ),
     ],
 )
 def test_bad_fixtures_are_rejected(fixture: str, keyword: str, why: str) -> None:
@@ -117,7 +124,7 @@ def test_every_task_has_a_metric_membership_rule() -> None:
     constrained = {
         rule["if"]["properties"]["task"]["const"]
         for rule in schema["allOf"]
-        if "if" in rule
+        if "task" in rule.get("if", {}).get("properties", {})
     }
     assert constrained == {t.id for t in reg.tasks()}
 

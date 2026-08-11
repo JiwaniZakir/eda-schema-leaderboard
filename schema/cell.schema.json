@@ -416,6 +416,50 @@
           "stage"
         ]
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "ranked_on": {
+            "const": "macro"
+          }
+        },
+        "required": [
+          "ranked_on"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value_macro": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "value_macro"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ranked_on": {
+            "const": "pooled"
+          }
+        },
+        "required": [
+          "ranked_on"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value_pooled": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "value_pooled"
+        ]
+      }
     }
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "task": "total_area_prediction",
+  "metric": "mae",
+  "pdk": "ng45",
+  "stage": "floorplan",
+  "value_macro": null,
+  "value_pooled": 1781.97,
+  "ranked_on": "macro",
+  "sentinel": null,
+  "source": "paper"
+}

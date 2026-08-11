@@ -139,7 +139,7 @@
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "cell.schema.json"
+        "$ref": "https://jiwanizakir.github.io/eda-schema-leaderboard/schema/cell.schema.json"
       }
     },
     "source": {
