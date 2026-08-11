@@ -1,0 +1,14 @@
+# Every path needs an owner that GitHub can actually resolve.
+#
+# A handle that does not resolve makes the whole rule silently inert: GitHub does
+# not warn, it just never requests the review. PLAN.md lists @pratik and @savidis
+# for submissions/** and the docs, but those are placeholders, not real handles.
+# They are deliberately omitted until confirmed, and added at Phase 12 transfer
+# alongside the required-review rule.
+
+* @JiwaniZakir
+
+# TODO(phase-12): once real handles are confirmed, restore:
+#   /submissions/       @pratik-handle
+#   /docs/CARD.md       @savidis-handle
+#   /docs/SUBMISSION.md @savidis-handle

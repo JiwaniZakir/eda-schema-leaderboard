@@ -1,0 +1,79 @@
+name: claude-review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions: {}
+
+# SECURITY NOTES
+#
+# This is the untrusted-input surface: once submissions open, most PRs arrive
+# from forks carrying code we did not write.
+#
+# 1. The trigger is `pull_request`, NOT `pull_request_target`. On a fork PR that
+#    means GITHUB_TOKEN is read-only and repository secrets are withheld. Switching
+#    to pull_request_target would hand a fork's checkout write access and secrets,
+#    which is the classic pwn-request. Do not change this trigger.
+# 2. Permissions are per-job and minimal. Nothing here gets `contents: write`.
+# 3. The full anthropics/claude-code-action@v1 is used rather than the base action
+#    because it performs actor permission checks and handles fork contexts.
+# 4. No PR-controlled text is interpolated into any run: step.
+#
+# The API key is intentionally not required for fork PRs; the job simply skips,
+# rather than the workflow being written so a fork could reach a secret.
+
+jobs:
+  # The `secrets` context is not available in a job-level `if`, so whether the key
+  # exists has to be resolved in a step and passed on as an output. Without this
+  # the review job runs with an empty key and fails, which under branch protection
+  # would block every merge on a missing secret.
+  preflight:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      configured: ${{ steps.key.outputs.configured }}
+    steps:
+      - id: key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::ANTHROPIC_API_KEY is not set; skipping automated review."
+          fi
+
+  review:
+    # Skip forks entirely: they cannot access the key, and a job that appears to
+    # run but silently does nothing is worse than one that plainly did not.
+    needs: preflight
+    if: needs.preflight.outputs.configured == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this pull request against PLAN.md and docs/DATA_CONTRACT.md.
+
+            Report only:
+            - requirements in the plan that are not implemented
+            - implemented behaviour that contradicts the plan or the data contract
+            - correctness bugs: wrong logic, unhandled cases the plan names,
+              silent failures
+            - any new path that unpickles data or loads YAML with a tag-executing
+              loader
+
+            Do not report style preferences or speculative refactors.
+            If the work is sound, say so plainly.

@@ -1,0 +1,58 @@
+name: size-guard
+
+on:
+  pull_request:
+
+permissions: {}
+
+# GitHub Pages publishes at most 1 GB and we intend to stay near 20 MB.
+# Large binaries belong in Releases or Hugging Face, referenced by URL.
+env:
+  MAX_DIST_MB: 200
+  MAX_FILE_MB: 1
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --all-extras
+
+      - name: Build
+        run: uv run python build.py
+
+      - name: Check committed file sizes
+        run: |
+          # Checks what the PR actually adds to git, not what the build emits.
+          fail=0
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            bytes=$(wc -c < "$f")
+            limit=$((MAX_FILE_MB * 1024 * 1024))
+            if [ "$bytes" -gt "$limit" ]; then
+              echo "::error file=$f::$f is $((bytes / 1024 / 1024)) MB, over the ${MAX_FILE_MB} MB cap"
+              fail=1
+            fi
+          done < <(git ls-files)
+          exit $fail
+
+      - name: Check dist size
+        run: |
+          mb=$(du -sm dist | cut -f1)
+          echo "dist/ is ${mb} MB (cap ${MAX_DIST_MB} MB)"
+          if [ "$mb" -gt "$MAX_DIST_MB" ]; then
+            echo "::error::dist/ is ${mb} MB, over the ${MAX_DIST_MB} MB cap"
+            exit 1
+          fi
+          largest=$(find dist -type f -printf '%s\t%p\n' 2>/dev/null | sort -rn | head -5)
+          echo "largest files in dist/:"
+          echo "$largest"
