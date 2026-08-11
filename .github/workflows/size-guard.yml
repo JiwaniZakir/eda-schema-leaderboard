@@ -33,16 +33,25 @@ jobs:
       - name: Check committed file sizes
         run: |
           # Checks what the PR actually adds to git, not what the build emits.
+          #
+          # -z is load-bearing. Plain `git ls-files` quotes any path containing
+          # non-ASCII, newlines, quotes or backslashes (core.quotePath is on by
+          # default), and the quoted string then fails `[ -f ]` and gets skipped
+          # silently. An over-cap file named `café.ckpt` sailed past this guard.
+          # With -z git emits raw paths, NUL-separated.
           fail=0
-          while IFS= read -r f; do
+          limit=$((MAX_FILE_MB * 1024 * 1024))
+          seen=0
+          while IFS= read -r -d '' f; do
+            seen=$((seen + 1))
             [ -f "$f" ] || continue
             bytes=$(wc -c < "$f")
-            limit=$((MAX_FILE_MB * 1024 * 1024))
             if [ "$bytes" -gt "$limit" ]; then
-              echo "::error file=$f::$f is $((bytes / 1024 / 1024)) MB, over the ${MAX_FILE_MB} MB cap"
+              echo "::error file=$f::$f is $((bytes / 1048576)) MB, over the ${MAX_FILE_MB} MB cap"
               fail=1
             fi
-          done < <(git ls-files)
+          done < <(git ls-files -z)
+          echo "checked $seen tracked files against the ${MAX_FILE_MB} MB cap"
           exit $fail
 
       - name: Check dist size

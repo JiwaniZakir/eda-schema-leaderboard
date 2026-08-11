@@ -1,105 +1,168 @@
-"""Standing guard against every path that executes untrusted code.
+"""Anchors for the unpickling guard.
 
-Written in Phase 0, before the code it guards exists, so it can never regress.
-Community submissions run on our runner: checkpoints are pickles and the lab's own
-`hparams.yaml` carries `!!python/object:` tags. Both are arbitrary-code-execution
-vectors if loaded naively, and both have an inviting "just disable the check"
-escape hatch that this test exists to keep shut.
+The guard itself lives in `tools/checks/no_unpickling.py` and runs as part of
+`make validate`, so it is enforced by the `validate` CI job as well as by these
+tests. That redundancy is deliberate: an audit pointed out that when the guard
+lived only in a test file, deleting that file was a fully green, self-mergeable
+pull request. Removing a test cannot fail a test run.
 
-See the data gotchas in CLAUDE.md.
+Now the check must be removed from two places, one of which is a required CI job,
+and this file asserts the registration still exists.
 """
 
 from __future__ import annotations
 
-import re
+import ast
+import textwrap
 from pathlib import Path
 
+import pytest
+
+from tools import validate as validate_mod
+from tools.checks import no_unpickling
+
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE_DIRS = ("tools", "tests")
-SOURCE_FILES = ("build.py",)
 
-# NOTE: the pickle and yaml names below appear only as regex *patterns* to search
-# for. This module imports none of them and deserializes nothing. It is the guard
-# against those calls, not an instance of them.
-#
-# Each pattern maps to why it is banned and what to use instead.
-FORBIDDEN: dict[str, tuple[str, str]] = {
-    r"\byaml\.load\s*\((?![^)]*SafeLoader)": (
-        "yaml.load without SafeLoader constructs arbitrary Python objects",
-        "use the tag-stripping loader in tools/yamlsafe.py",
+
+def test_guard_is_registered() -> None:
+    """The guard must run as part of validate, not only as a test."""
+    import tools.checks  # noqa: F401
+
+    assert "no-unpickling" in validate_mod.CHECKS
+
+
+def test_first_party_code_is_clean() -> None:
+    failures = no_unpickling.check_no_unpickling()
+    assert failures == [], "\n".join(str(f) for f in failures)
+
+
+def _scan_source(source: str, tmp_path: Path) -> list[tuple[int, str, str]]:
+    path = tmp_path / "sample.py"
+    path.write_text(textwrap.dedent(source), encoding="utf-8")
+    return no_unpickling.scan(path)
+
+
+# Every one of these defeated the previous regex implementation.
+BYPASSES = [
+    pytest.param("import yaml\nyaml.unsafe_load(f)", id="yaml-unsafe_load"),
+    pytest.param("import yaml\nyaml.load_all(f)", id="yaml-load_all"),
+    pytest.param("import yaml\nyaml.full_load_all(f)", id="yaml-full_load_all"),
+    pytest.param("import yaml\nyaml.unsafe_load_all(f)", id="yaml-unsafe_load_all"),
+    pytest.param("import pickle as p\np.loads(b)", id="pickle-aliased-module"),
+    pytest.param("from pickle import loads\nloads(b)", id="pickle-from-import"),
+    pytest.param("import pickle\npickle.Unpickler(f).load()", id="pickle-Unpickler"),
+    pytest.param("import joblib\njoblib.load(f)", id="joblib"),
+    pytest.param("import dill\ndill.loads(b)", id="dill"),
+    pytest.param("import marshal\nmarshal.loads(b)", id="marshal"),
+    pytest.param("import shelve\nshelve.open('db')", id="shelve"),
+    pytest.param("import pandas\npandas.read_pickle(f)", id="pandas-read_pickle"),
+    pytest.param("import numpy\nnumpy.load(f, allow_pickle=True)", id="numpy-pickle"),
+    pytest.param("import torch\ntorch.jit.load(f)", id="torch-jit"),
+    pytest.param("import torch\ntorch.hub.load('r', 'm')", id="torch-hub"),
+    pytest.param("import torch\ntorch.serialization.load(f)", id="torch-serialization"),
+    pytest.param("import importlib\nimportlib.import_module('pickle')", id="importlib"),
+    pytest.param("import torch\ngetattr(torch, 'load')(f)", id="getattr-indirection"),
+    pytest.param(
+        "import torch\ntorch.serialization.add_safe_globals([X])", id="safe-globals"
     ),
-    r"\byaml\.full_load\b": (
-        "full_load constructs arbitrary Python objects",
-        "use the tag-stripping loader in tools/yamlsafe.py",
+    # Found by review after the AST rewrite: binding a banned callable to a local
+    # name walked straight past import-only alias resolution.
+    pytest.param("import pickle\nread = pickle.loads\nread(blob)", id="assign-alias"),
+    pytest.param(
+        "import pickle as p\nfn = p.load\nfn(f)", id="assign-alias-through-module-alias"
     ),
-    r"\bUnsafeLoader\b": (
-        "UnsafeLoader is unpickling by another name",
-        "use the tag-stripping loader in tools/yamlsafe.py",
+    # The old substring test for "Safe" allowed any name containing it.
+    pytest.param(
+        "import yaml\nyaml.load(f, Loader=NotReallySafeLoader)", id="fake-safe-loader"
     ),
-    r"weights_only\s*=\s*False": (
-        "weights_only=False executes whatever the checkpoint author pickled",
-        "use the restricted reader in tools/ckpt.py",
+    pytest.param(
+        "import yaml\nyaml.load(f, Loader=yaml.UnsafeLoader)", id="yaml-Unsafe"
     ),
-    r"\badd_safe_globals\b|\bsafe_globals\b": (
-        "allowlisting globals is a treadmill: every new submitter class needs a "
-        "security judgement call",
-        "use the restricted reader in tools/ckpt.py, which never executes foreign code",
+    pytest.param(
+        "import yaml\nyaml.load(f, Loader=yaml.Loader)", id="yaml-plain-Loader"
     ),
-    r"\bpickle\.loads?\b": (
-        "pickle.load executes arbitrary code by design",
-        "use the restricted reader in tools/ckpt.py",
-    ),
-}
+    pytest.param("import yaml\nyaml.load(f)", id="yaml-no-loader"),
+]
 
 
-def _python_files() -> list[Path]:
-    found = [p for d in SOURCE_DIRS for p in (ROOT / d).rglob("*.py")]
-    found += [ROOT / f for f in SOURCE_FILES if (ROOT / f).exists()]
-    return found
+@pytest.mark.parametrize("source", BYPASSES)
+def test_known_bypasses_are_caught(source: str, tmp_path: Path) -> None:
+    assert _scan_source(source, tmp_path), f"bypass not caught:\n{source}"
 
 
-def test_no_unpickling_paths() -> None:
-    """No code path may execute data supplied by a submitter."""
-    this_file = Path(__file__).resolve()
-    violations: list[str] = []
+def test_adjacent_safe_call_cannot_launder_an_unsafe_one(tmp_path: Path) -> None:
+    """The regex scanned a 400-char window, so a nearby safe call rescued a bad one.
 
-    for path in _python_files():
-        if path.resolve() == this_file:
-            continue  # the patterns themselves live here
-        text = path.read_text(encoding="utf-8")
-        for pattern, (why, instead) in FORBIDDEN.items():
-            for match in re.finditer(pattern, text):
-                line = text.count("\n", 0, match.start()) + 1
-                violations.append(
-                    f"{path.relative_to(ROOT)}:{line}: {match.group()!r}\n"
-                    f"    {why}\n"
-                    f"    instead: {instead}"
-                )
-
-    assert not violations, "forbidden unpickling path:\n" + "\n".join(violations)
-
-
-def test_torch_load_always_pins_weights_only() -> None:
-    """If torch.load is ever called, it must pin weights_only=True.
-
-    Necessary but not sufficient on its own, which is why tools/ckpt.py exists.
-    Verified against the lab's data: weights_only=True refuses all 360 of their
-    checkpoints, so any code reaching for torch.load directly is on the wrong path.
+    Checking keywords on the specific call node makes that impossible.
     """
-    this_file = Path(__file__).resolve()
-    violations: list[str] = []
+    findings = _scan_source(
+        """
+        import torch
+        bad = torch.load(untrusted)
+        good = torch.load(trusted, weights_only=True)
+        """,
+        tmp_path,
+    )
+    assert len(findings) == 1
+    assert findings[0][0] == 3, "must flag the unpinned call on its own line"
 
-    for path in _python_files():
-        if path.resolve() == this_file:
-            continue
-        text = path.read_text(encoding="utf-8")
-        for match in re.finditer(r"torch\.load\s*\(", text):
-            tail = text[match.start() : match.start() + 400]
-            if "weights_only=True" not in tail.replace(" ", ""):
-                line = text.count("\n", 0, match.start()) + 1
-                violations.append(
-                    f"{path.relative_to(ROOT)}:{line}: torch.load without "
-                    "weights_only=True"
-                )
 
-    assert not violations, "unpinned torch.load:\n" + "\n".join(violations)
+def test_trailing_comment_cannot_launder_a_call(tmp_path: Path) -> None:
+    findings = _scan_source(
+        "import torch\ntorch.load(f)  # weights_only=True once ckpts are fixed\n",
+        tmp_path,
+    )
+    assert findings
+
+
+def test_non_literal_weights_only_is_rejected(tmp_path: Path) -> None:
+    """`weights_only=flag` is not a guarantee; only the literal True is."""
+    assert _scan_source("import torch\ntorch.load(f, weights_only=flag)", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param("import yaml\nyaml.safe_load(f)", id="yaml-safe_load"),
+        pytest.param(
+            "import yaml\nyaml.load(f, Loader=yaml.SafeLoader)", id="yaml-SafeLoader"
+        ),
+        pytest.param(
+            "import torch\ntorch.load(f, weights_only=True)", id="torch-pinned"
+        ),
+        pytest.param("import numpy\nnumpy.load(f)", id="numpy-default"),
+        pytest.param("import json\njson.loads(s)", id="json"),
+        # Loader may legitimately be positional; flagging it was a false positive.
+        pytest.param(
+            "import yaml\nyaml.load(f, yaml.SafeLoader)", id="positional-safe"
+        ),
+        pytest.param("import yaml\nyaml.load(f, Loader=yaml.CSafeLoader)", id="csafe"),
+        # Rebinding must drop a tracked alias rather than poison the name forever.
+        pytest.param(
+            "import pickle, json\nread = pickle.loads\nread = json.loads\nread(s)",
+            id="alias-rebound-to-safe",
+        ),
+    ],
+)
+def test_safe_forms_are_allowed(source: str, tmp_path: Path) -> None:
+    assert _scan_source(source, tmp_path) == [], f"false positive:\n{source}"
+
+
+def test_scope_is_documented_as_first_party_only() -> None:
+    """Submitted code cannot be covered by static analysis, and must not appear to be.
+
+    Phase 5 layer 4 executes a submitter's predict.py on our runner deliberately.
+    The control there is process isolation. If this docstring stops saying so,
+    a later phase will inherit a false sense of coverage.
+    """
+    doc = no_unpickling.__doc__ or ""
+    assert "submissions/**" in doc
+    assert "isolation" in doc.lower()
+
+
+def test_guard_module_exists() -> None:
+    """Deleting the guard must break something loudly."""
+    assert (ROOT / "tools" / "checks" / "no_unpickling.py").exists()
+    assert ast.parse(
+        (ROOT / "tools" / "checks" / "no_unpickling.py").read_text(encoding="utf-8")
+    )
