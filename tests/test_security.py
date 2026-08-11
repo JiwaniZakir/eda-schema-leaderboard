@@ -65,6 +65,23 @@ BYPASSES = [
     pytest.param(
         "import torch\ntorch.serialization.add_safe_globals([X])", id="safe-globals"
     ),
+    # Found by review after the AST rewrite: binding a banned callable to a local
+    # name walked straight past import-only alias resolution.
+    pytest.param("import pickle\nread = pickle.loads\nread(blob)", id="assign-alias"),
+    pytest.param(
+        "import pickle as p\nfn = p.load\nfn(f)", id="assign-alias-through-module-alias"
+    ),
+    # The old substring test for "Safe" allowed any name containing it.
+    pytest.param(
+        "import yaml\nyaml.load(f, Loader=NotReallySafeLoader)", id="fake-safe-loader"
+    ),
+    pytest.param(
+        "import yaml\nyaml.load(f, Loader=yaml.UnsafeLoader)", id="yaml-Unsafe"
+    ),
+    pytest.param(
+        "import yaml\nyaml.load(f, Loader=yaml.Loader)", id="yaml-plain-Loader"
+    ),
+    pytest.param("import yaml\nyaml.load(f)", id="yaml-no-loader"),
 ]
 
 
@@ -115,6 +132,16 @@ def test_non_literal_weights_only_is_rejected(tmp_path: Path) -> None:
         ),
         pytest.param("import numpy\nnumpy.load(f)", id="numpy-default"),
         pytest.param("import json\njson.loads(s)", id="json"),
+        # Loader may legitimately be positional; flagging it was a false positive.
+        pytest.param(
+            "import yaml\nyaml.load(f, yaml.SafeLoader)", id="positional-safe"
+        ),
+        pytest.param("import yaml\nyaml.load(f, Loader=yaml.CSafeLoader)", id="csafe"),
+        # Rebinding must drop a tracked alias rather than poison the name forever.
+        pytest.param(
+            "import pickle, json\nread = pickle.loads\nread = json.loads\nread(s)",
+            id="alias-rebound-to-safe",
+        ),
     ],
 )
 def test_safe_forms_are_allowed(source: str, tmp_path: Path) -> None:

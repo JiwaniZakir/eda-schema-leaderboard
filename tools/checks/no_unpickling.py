@@ -58,6 +58,17 @@ BANNED: dict[str, str] = {
     "torch.serialization.safe_globals": "allowlisting globals is a treadmill",
 }
 
+# Exact loaders that do not construct arbitrary objects. An allowlist, because a
+# denylist of unsafe spellings is exactly the design that failed before.
+SAFE_YAML_LOADERS = frozenset(
+    {
+        "yaml.SafeLoader",
+        "yaml.CSafeLoader",
+        "yaml.loader.SafeLoader",
+        "yaml.cyaml.CSafeLoader",
+    }
+)
+
 REMEDY = {
     "yaml": "use the tag-stripping loader in tools/yamlsafe.py",
     "pickle": "use the restricted reader in tools/ckpt.py",
@@ -89,6 +100,29 @@ class _Scanner(ast.NodeVisitor):
             for alias in node.names:
                 local = alias.asname or alias.name
                 self.aliases[local] = f"{node.module}.{alias.name}"
+        self.generic_visit(node)
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        """Follow `read = pickle.loads`, so calling `read` is calling pickle.loads.
+
+        Without this, binding a banned callable to a local name walks straight
+        past the guard. Rebinding a tracked name to anything else drops the alias,
+        so a later `read = json.loads` is not still treated as pickle.
+        """
+        resolved = (
+            self._dotted(node.value)
+            if isinstance(node.value, ast.Name | ast.Attribute)
+            else None
+        )
+
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if resolved is not None:
+                self.aliases[target.id] = resolved
+            else:
+                self.aliases.pop(target.id, None)
+
         self.generic_visit(node)
 
     def _dotted(self, node: ast.expr) -> str | None:
@@ -146,13 +180,32 @@ class _Scanner(ast.NodeVisitor):
                 self.findings.append((line, dotted, "allow_pickle=True unpickles"))
             return
 
-        # yaml.load is safe only with an explicit safe loader.
+        # yaml.load is safe only with a loader on the allowlist.
+        #
+        # This was a substring test for "Safe", which allowed any name containing
+        # it - `NotReallySafeLoader` passed. (It did correctly reject
+        # `yaml.UnsafeLoader`, since Python spells that with a lowercase 's', but
+        # relying on that is luck rather than design.) An exact allowlist, resolved
+        # through import aliases, does not depend on how a class happens to be
+        # spelled. Loader may be passed positionally, which is legitimate.
         if dotted == "yaml.load":
             loader = self._kwarg(call, "Loader")
-            name = ast.unparse(loader) if loader is not None else ""
-            if "Safe" not in name:
+            if loader is None and len(call.args) >= 2:
+                loader = call.args[1]
+
+            if loader is None:
+                self.findings.append((line, dotted, "no Loader given"))
+                return
+
+            resolved = (
+                self._dotted(loader)
+                if isinstance(loader, ast.Name | ast.Attribute)
+                else None
+            )
+            if resolved not in SAFE_YAML_LOADERS:
+                shown = resolved or ast.unparse(loader)
                 self.findings.append(
-                    (line, dotted, f"Loader={name or 'unset'} constructs objects")
+                    (line, dotted, f"Loader={shown} is not an approved safe loader")
                 )
             return
 

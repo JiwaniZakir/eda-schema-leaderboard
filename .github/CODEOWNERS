@@ -16,7 +16,7 @@
 #   /docs/CARD.md                   @savidis-handle
 #   /docs/SUBMISSION.md             @savidis-handle
 #
-# These two need a human on every change, because they are what stops arbitrary
+# These three need a human on every change, because they are what stops arbitrary
 # code execution reaching the runner:
 #   /.github/                       @JiwaniZakir @second-reviewer
 #   /tools/checks/no_unpickling.py  @JiwaniZakir @second-reviewer
