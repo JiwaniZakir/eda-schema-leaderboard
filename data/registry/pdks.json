@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ng45",
+    "label": "NG45",
+    "long_label": "Nangate 45 nm",
+    "table8_label": "NG45",
+    "metal_layers": 10,
+    "utilization": 0.4,
+    "utilization_sweep": [0.3, 0.4, 0.5]
+  },
+  {
+    "id": "sky130",
+    "label": "SKY130",
+    "long_label": "SkyWater 130 nm",
+    "table8_label": "SKY130",
+    "metal_layers": 5,
+    "utilization": 0.3,
+    "utilization_sweep": [0.2, 0.3, 0.4]
+  },
+  {
+    "id": "ihp130",
+    "label": "IHP130",
+    "long_label": "IHP SG13G2 130 nm",
+    "table8_label": "IHP130",
+    "metal_layers": 7,
+    "utilization": 0.3,
+    "utilization_sweep": [0.2, 0.3, 0.4]
+  },
+  {
+    "id": "asap7",
+    "label": "ASAP7",
+    "long_label": "ASAP 7 nm",
+    "table8_label": "ASAP7",
+    "metal_layers": 9,
+    "utilization": 0.4,
+    "utilization_sweep": [0.3, 0.4, 0.5]
+  }
+]

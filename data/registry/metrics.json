@@ -1,0 +1,112 @@
+[
+  {
+    "id": "mae",
+    "label": "MAE",
+    "long_label": "Mean Absolute Error",
+    "table8_label": "MAE",
+    "direction": "lower",
+    "bias": null,
+    "percent": false,
+    "precision": 2
+  },
+  {
+    "id": "mape",
+    "label": "MAPE",
+    "long_label": "Mean Absolute Percentage Error",
+    "table8_label": "MAPE",
+    "direction": "lower",
+    "bias": null,
+    "percent": true,
+    "precision": 2
+  },
+  {
+    "id": "r2",
+    "label": "R²",
+    "long_label": "Coefficient of determination",
+    "table8_label": "R^2",
+    "direction": "higher",
+    "bias": null,
+    "percent": false,
+    "precision": 3
+  },
+  {
+    "id": "mpe",
+    "label": "MPE",
+    "long_label": "Mean Positive Error",
+    "table8_label": "MPE",
+    "direction": "lower",
+    "bias": "optimistic",
+    "percent": false,
+    "precision": 2
+  },
+  {
+    "id": "mne",
+    "label": "MNE",
+    "long_label": "Mean Negative Error",
+    "table8_label": "MNE",
+    "direction": "lower",
+    "bias": "conservative",
+    "percent": false,
+    "precision": 2
+  },
+  {
+    "id": "tpr",
+    "label": "TPR",
+    "long_label": "True Positive Rate",
+    "table8_label": "TPR",
+    "direction": "higher",
+    "bias": null,
+    "percent": true,
+    "precision": 2
+  },
+  {
+    "id": "tnr",
+    "label": "TNR",
+    "long_label": "True Negative Rate",
+    "table8_label": "TNR",
+    "direction": "higher",
+    "bias": null,
+    "percent": true,
+    "precision": 2
+  },
+  {
+    "id": "mae_p95",
+    "label": "MAE P95",
+    "long_label": "95th-percentile absolute error",
+    "table8_label": "MAE P95",
+    "direction": "lower",
+    "bias": null,
+    "percent": false,
+    "precision": 2
+  },
+  {
+    "id": "mape_p95",
+    "label": "MAPE P95",
+    "long_label": "95th-percentile absolute percentage error",
+    "table8_label": "MAPE P95",
+    "direction": "lower",
+    "bias": null,
+    "percent": true,
+    "precision": 2
+  },
+  {
+    "id": "mae_top5",
+    "label": "MAE TOP5",
+    "long_label": "MAE over the worst 5% by target magnitude",
+    "table8_label": "MAE TOP5",
+    "direction": "lower",
+    "bias": null,
+    "percent": false,
+    "precision": 2
+  },
+  {
+    "id": "mape_top5",
+    "label": "MAPE TOP5",
+    "long_label": "MAPE over the worst 5% by target magnitude",
+    "table8_label": "MAPE TOP5",
+    "direction": "lower",
+    "bias": null,
+    "percent": true,
+    "precision": 2
+  }
+]
