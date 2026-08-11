@@ -36,12 +36,31 @@ def test_build_is_idempotent(tmp_path: Path, monkeypatch) -> None:  # type: igno
     assert not (dist / "stale.html").exists()
 
 
-def test_validate_reports_empty_registry_honestly() -> None:
-    """With no checks registered, validate() must return no failures.
+def test_checks_actually_register() -> None:
+    """Registration must land in the dict main() reads.
 
-    It must not report success it has not earned, either; main() says so in words.
+    Regression test for a real bug: `python -m tools.validate` runs the module as
+    __main__, so tools.checks registered into a second, unrelated CHECKS dict and
+    validation reported success having run nothing. The Makefile now calls the
+    eda-validate entry point instead.
     """
-    assert validate_mod.validate() == []
+    import tools.checks  # noqa: F401
+
+    assert validate_mod.CHECKS, "no checks registered; validation would be a no-op"
+    assert "baseline-csv" in validate_mod.CHECKS
+
+
+def test_validate_passes_on_current_data() -> None:
+    import tools.checks  # noqa: F401
+
+    failures = validate_mod.validate()
+    assert failures == [], "\n".join(str(f) for f in failures)
+
+
+def test_validate_main_fails_loudly_on_empty_registry(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """An empty registry is a failure, not a pass."""
+    monkeypatch.setattr(validate_mod, "CHECKS", {})
+    assert validate_mod.main() == 1
 
 
 def test_docs_referenced_by_readme_exist() -> None:
