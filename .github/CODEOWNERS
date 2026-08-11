@@ -8,7 +8,16 @@
 
 * @JiwaniZakir
 
-# TODO(phase-12): once real handles are confirmed, restore:
-#   /submissions/       @pratik-handle
-#   /docs/CARD.md       @savidis-handle
-#   /docs/SUBMISSION.md @savidis-handle
+# TODO(phase-12): once real handles are confirmed, restore these AND enable
+# require_code_owner_reviews with required_approving_review_count: 1. Until both
+# are on, CODEOWNERS is advisory only.
+#
+#   /submissions/                   @pratik-handle
+#   /docs/CARD.md                   @savidis-handle
+#   /docs/SUBMISSION.md             @savidis-handle
+#
+# These two need a human on every change, because they are what stops arbitrary
+# code execution reaching the runner:
+#   /.github/                       @JiwaniZakir @second-reviewer
+#   /tools/checks/no_unpickling.py  @JiwaniZakir @second-reviewer
+#   /tests/test_security.py         @JiwaniZakir @second-reviewer
