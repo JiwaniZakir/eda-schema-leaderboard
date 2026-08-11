@@ -24,10 +24,33 @@ permissions: {}
 # rather than the workflow being written so a fork could reach a secret.
 
 jobs:
+  # The `secrets` context is not available in a job-level `if`, so whether the key
+  # exists has to be resolved in a step and passed on as an output. Without this
+  # the review job runs with an empty key and fails, which under branch protection
+  # would block every merge on a missing secret.
+  preflight:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      configured: ${{ steps.key.outputs.configured }}
+    steps:
+      - id: key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::ANTHROPIC_API_KEY is not set; skipping automated review."
+          fi
+
   review:
     # Skip forks entirely: they cannot access the key, and a job that appears to
     # run but silently does nothing is worse than one that plainly did not.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    needs: preflight
+    if: needs.preflight.outputs.configured == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
