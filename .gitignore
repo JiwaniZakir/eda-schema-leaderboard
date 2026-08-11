@@ -1,0 +1,24 @@
+# Build output
+dist/
+dist-drexel/
+dist-neutral/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# The paper authors' verbatim text, kept locally for re-verification but not
+# ours to redistribute. See docs/sources/PROVENANCE.md.
+docs/sources/verbatim/
+
+# Never commit the lab's raw results tree; it is read from a sibling checkout.
+eda-schema-experiments/
+eda-ml-models/
+
+# OS
+.DS_Store

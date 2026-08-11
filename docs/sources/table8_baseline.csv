@@ -1,0 +1,921 @@
+task,metric,stage_transition,pdk,value,kind,src_line
+Total Area (u m^2),MAE,floorplan to detailed route,NG45,"1,781.97",VAL,14
+Total Area (u m^2),MAE,floorplan to detailed route,SKY130,"18,567.03",VAL,14
+Total Area (u m^2),MAE,floorplan to detailed route,IHP130,"48,738.62",VAL,14
+Total Area (u m^2),MAE,floorplan to detailed route,ASAP7,225.06,VAL,14
+Total Area (u m^2),MAE,global place to detailed route,NG45,871.07,VAL,14
+Total Area (u m^2),MAE,global place to detailed route,SKY130,"8,385.61",VAL,14
+Total Area (u m^2),MAE,global place to detailed route,IHP130,"35,724.45",VAL,14
+Total Area (u m^2),MAE,global place to detailed route,ASAP7,73.79,VAL,14
+Total Area (u m^2),MAE,detailed place to detailed route,NG45,571.13,VAL,14
+Total Area (u m^2),MAE,detailed place to detailed route,SKY130,"7,505.03",VAL,14
+Total Area (u m^2),MAE,detailed place to detailed route,IHP130,"19,487.21",VAL,14
+Total Area (u m^2),MAE,detailed place to detailed route,ASAP7,47.23,VAL,14
+Total Area (u m^2),MAE,CTS to detailed route,NG45,49.02,VAL,14
+Total Area (u m^2),MAE,CTS to detailed route,SKY130,854.81,VAL,14
+Total Area (u m^2),MAE,CTS to detailed route,IHP130,"2,339.67",VAL,14
+Total Area (u m^2),MAE,CTS to detailed route,ASAP7,1.98,VAL,14
+Total Area (u m^2),MAE,global route to detailed route,NG45,0.00,VAL,14
+Total Area (u m^2),MAE,global route to detailed route,SKY130,0.00,VAL,14
+Total Area (u m^2),MAE,global route to detailed route,IHP130,0.00,VAL,14
+Total Area (u m^2),MAE,global route to detailed route,ASAP7,0.00,VAL,14
+Total Area (u m^2),MAPE,floorplan to detailed route,NG45,12.43 %,VAL,15
+Total Area (u m^2),MAPE,floorplan to detailed route,SKY130,22.51 %,VAL,15
+Total Area (u m^2),MAPE,floorplan to detailed route,IHP130,20.74 %,VAL,15
+Total Area (u m^2),MAPE,floorplan to detailed route,ASAP7,15.35 %,VAL,15
+Total Area (u m^2),MAPE,global place to detailed route,NG45,7.07 %,VAL,15
+Total Area (u m^2),MAPE,global place to detailed route,SKY130,11.71 %,VAL,15
+Total Area (u m^2),MAPE,global place to detailed route,IHP130,13.60 %,VAL,15
+Total Area (u m^2),MAPE,global place to detailed route,ASAP7,7.50 %,VAL,15
+Total Area (u m^2),MAPE,detailed place to detailed route,NG45,4.14 %,VAL,15
+Total Area (u m^2),MAPE,detailed place to detailed route,SKY130,9.27 %,VAL,15
+Total Area (u m^2),MAPE,detailed place to detailed route,IHP130,5.56 %,VAL,15
+Total Area (u m^2),MAPE,detailed place to detailed route,ASAP7,3.79 %,VAL,15
+Total Area (u m^2),MAPE,CTS to detailed route,NG45,0.49 %,VAL,15
+Total Area (u m^2),MAPE,CTS to detailed route,SKY130,1.22 %,VAL,15
+Total Area (u m^2),MAPE,CTS to detailed route,IHP130,0.72 %,VAL,15
+Total Area (u m^2),MAPE,CTS to detailed route,ASAP7,0.24 %,VAL,15
+Total Area (u m^2),MAPE,global route to detailed route,NG45,0.00 %,VAL,15
+Total Area (u m^2),MAPE,global route to detailed route,SKY130,0.00 %,VAL,15
+Total Area (u m^2),MAPE,global route to detailed route,IHP130,0.00 %,VAL,15
+Total Area (u m^2),MAPE,global route to detailed route,ASAP7,0.00 %,VAL,15
+Total Area (u m^2),R^2,floorplan to detailed route,NG45,0.989,VAL,16
+Total Area (u m^2),R^2,floorplan to detailed route,SKY130,0.957,VAL,16
+Total Area (u m^2),R^2,floorplan to detailed route,IHP130,0.912,VAL,16
+Total Area (u m^2),R^2,floorplan to detailed route,ASAP7,0.969,VAL,16
+Total Area (u m^2),R^2,global place to detailed route,NG45,0.997,VAL,16
+Total Area (u m^2),R^2,global place to detailed route,SKY130,0.991,VAL,16
+Total Area (u m^2),R^2,global place to detailed route,IHP130,0.945,VAL,16
+Total Area (u m^2),R^2,global place to detailed route,ASAP7,0.997,VAL,16
+Total Area (u m^2),R^2,detailed place to detailed route,NG45,0.998,VAL,16
+Total Area (u m^2),R^2,detailed place to detailed route,SKY130,0.991,VAL,16
+Total Area (u m^2),R^2,detailed place to detailed route,IHP130,0.979,VAL,16
+Total Area (u m^2),R^2,detailed place to detailed route,ASAP7,0.998,VAL,16
+Total Area (u m^2),R^2,CTS to detailed route,NG45,1.000,VAL,16
+Total Area (u m^2),R^2,CTS to detailed route,SKY130,1.000,VAL,16
+Total Area (u m^2),R^2,CTS to detailed route,IHP130,1.000,VAL,16
+Total Area (u m^2),R^2,CTS to detailed route,ASAP7,1.000,VAL,16
+Total Area (u m^2),R^2,global route to detailed route,NG45,1.000,VAL,16
+Total Area (u m^2),R^2,global route to detailed route,SKY130,1.000,VAL,16
+Total Area (u m^2),R^2,global route to detailed route,IHP130,1.000,VAL,16
+Total Area (u m^2),R^2,global route to detailed route,ASAP7,1.000,VAL,16
+Total Power (u W),MAE,floorplan to detailed route,NG45,"11,875.86",VAL,17
+Total Power (u W),MAE,floorplan to detailed route,SKY130,"46,947.57",VAL,17
+Total Power (u W),MAE,floorplan to detailed route,IHP130,"17,699.64",VAL,17
+Total Power (u W),MAE,floorplan to detailed route,ASAP7,"6,071.61",VAL,17
+Total Power (u W),MAE,global place to detailed route,NG45,"5,670.15",VAL,17
+Total Power (u W),MAE,global place to detailed route,SKY130,"19,274.83",VAL,17
+Total Power (u W),MAE,global place to detailed route,IHP130,"16,651.34",VAL,17
+Total Power (u W),MAE,global place to detailed route,ASAP7,"2,266.72",VAL,17
+Total Power (u W),MAE,detailed place to detailed route,NG45,"5,043.04",VAL,17
+Total Power (u W),MAE,detailed place to detailed route,SKY130,"19,382.95",VAL,17
+Total Power (u W),MAE,detailed place to detailed route,IHP130,"15,644.47",VAL,17
+Total Power (u W),MAE,detailed place to detailed route,ASAP7,"2,177.82",VAL,17
+Total Power (u W),MAE,CTS to detailed route,NG45,280.22,VAL,17
+Total Power (u W),MAE,CTS to detailed route,SKY130,"2,270.66",VAL,17
+Total Power (u W),MAE,CTS to detailed route,IHP130,123.65,VAL,17
+Total Power (u W),MAE,CTS to detailed route,ASAP7,55.15,VAL,17
+Total Power (u W),MAE,global route to detailed route,NG45,0.00,VAL,17
+Total Power (u W),MAE,global route to detailed route,SKY130,0.00,VAL,17
+Total Power (u W),MAE,global route to detailed route,IHP130,0.00,VAL,17
+Total Power (u W),MAE,global route to detailed route,ASAP7,0.00,VAL,17
+Total Power (u W),MAPE,floorplan to detailed route,NG45,27.89 %,VAL,18
+Total Power (u W),MAPE,floorplan to detailed route,SKY130,50.85 %,VAL,18
+Total Power (u W),MAPE,floorplan to detailed route,IHP130,23.71 %,VAL,18
+Total Power (u W),MAPE,floorplan to detailed route,ASAP7,33.47 %,VAL,18
+Total Power (u W),MAPE,global place to detailed route,NG45,16.70 %,VAL,18
+Total Power (u W),MAPE,global place to detailed route,SKY130,31.36 %,VAL,18
+Total Power (u W),MAPE,global place to detailed route,IHP130,18.87 %,VAL,18
+Total Power (u W),MAPE,global place to detailed route,ASAP7,19.23 %,VAL,18
+Total Power (u W),MAPE,detailed place to detailed route,NG45,15.37 %,VAL,18
+Total Power (u W),MAPE,detailed place to detailed route,SKY130,30.00 %,VAL,18
+Total Power (u W),MAPE,detailed place to detailed route,IHP130,16.83 %,VAL,18
+Total Power (u W),MAPE,detailed place to detailed route,ASAP7,17.57 %,VAL,18
+Total Power (u W),MAPE,CTS to detailed route,NG45,0.57 %,VAL,18
+Total Power (u W),MAPE,CTS to detailed route,SKY130,1.67 %,VAL,18
+Total Power (u W),MAPE,CTS to detailed route,IHP130,0.24 %,VAL,18
+Total Power (u W),MAPE,CTS to detailed route,ASAP7,0.29 %,VAL,18
+Total Power (u W),MAPE,global route to detailed route,NG45,0.00 %,VAL,18
+Total Power (u W),MAPE,global route to detailed route,SKY130,0.00 %,VAL,18
+Total Power (u W),MAPE,global route to detailed route,IHP130,0.00 %,VAL,18
+Total Power (u W),MAPE,global route to detailed route,ASAP7,0.00 %,VAL,18
+Total Power (u W),R^2,floorplan to detailed route,NG45,0.948,VAL,19
+Total Power (u W),R^2,floorplan to detailed route,SKY130,0.648,VAL,19
+Total Power (u W),R^2,floorplan to detailed route,IHP130,0.807,VAL,19
+Total Power (u W),R^2,floorplan to detailed route,ASAP7,0.823,VAL,19
+Total Power (u W),R^2,global place to detailed route,NG45,0.987,VAL,19
+Total Power (u W),R^2,global place to detailed route,SKY130,0.946,VAL,19
+Total Power (u W),R^2,global place to detailed route,IHP130,0.781,VAL,19
+Total Power (u W),R^2,global place to detailed route,ASAP7,0.976,VAL,19
+Total Power (u W),R^2,detailed place to detailed route,NG45,0.989,VAL,19
+Total Power (u W),R^2,detailed place to detailed route,SKY130,0.944,VAL,19
+Total Power (u W),R^2,detailed place to detailed route,IHP130,0.798,VAL,19
+Total Power (u W),R^2,detailed place to detailed route,ASAP7,0.977,VAL,19
+Total Power (u W),R^2,CTS to detailed route,NG45,1.000,VAL,19
+Total Power (u W),R^2,CTS to detailed route,SKY130,0.997,VAL,19
+Total Power (u W),R^2,CTS to detailed route,IHP130,1.000,VAL,19
+Total Power (u W),R^2,CTS to detailed route,ASAP7,1.000,VAL,19
+Total Power (u W),R^2,global route to detailed route,NG45,1.000,VAL,19
+Total Power (u W),R^2,global route to detailed route,SKY130,1.000,VAL,19
+Total Power (u W),R^2,global route to detailed route,IHP130,1.000,VAL,19
+Total Power (u W),R^2,global route to detailed route,ASAP7,1.000,VAL,19
+Total wirelength (u m),MAE,floorplan to detailed route,NG45,,VOID,20
+Total wirelength (u m),MAE,floorplan to detailed route,SKY130,,VOID,20
+Total wirelength (u m),MAE,floorplan to detailed route,IHP130,,VOID,20
+Total wirelength (u m),MAE,floorplan to detailed route,ASAP7,,VOID,20
+Total wirelength (u m),MAE,global place to detailed route,NG45,"30,529.92",VAL,20
+Total wirelength (u m),MAE,global place to detailed route,SKY130,"83,777.43",VAL,20
+Total wirelength (u m),MAE,global place to detailed route,IHP130,"117,233.52",VAL,20
+Total wirelength (u m),MAE,global place to detailed route,ASAP7,"6,460.04",VAL,20
+Total wirelength (u m),MAE,detailed place to detailed route,NG45,"20,115.77",VAL,20
+Total wirelength (u m),MAE,detailed place to detailed route,SKY130,"61,602.30",VAL,20
+Total wirelength (u m),MAE,detailed place to detailed route,IHP130,"57,977.64",VAL,20
+Total wirelength (u m),MAE,detailed place to detailed route,ASAP7,"3,479.88",VAL,20
+Total wirelength (u m),MAE,CTS to detailed route,NG45,"13,920.52",VAL,20
+Total wirelength (u m),MAE,CTS to detailed route,SKY130,"40,751.29",VAL,20
+Total wirelength (u m),MAE,CTS to detailed route,IHP130,"26,046.32",VAL,20
+Total wirelength (u m),MAE,CTS to detailed route,ASAP7,"2,562.35",VAL,20
+Total wirelength (u m),MAE,global route to detailed route,NG45,"13,698.67",VAL,20
+Total wirelength (u m),MAE,global route to detailed route,SKY130,"38,941.02",VAL,20
+Total wirelength (u m),MAE,global route to detailed route,IHP130,"25,473.38",VAL,20
+Total wirelength (u m),MAE,global route to detailed route,ASAP7,"2,491.87",VAL,20
+Total wirelength (u m),MAPE,floorplan to detailed route,NG45,,VOID,21
+Total wirelength (u m),MAPE,floorplan to detailed route,SKY130,,VOID,21
+Total wirelength (u m),MAPE,floorplan to detailed route,IHP130,,VOID,21
+Total wirelength (u m),MAPE,floorplan to detailed route,ASAP7,,VOID,21
+Total wirelength (u m),MAPE,global place to detailed route,NG45,29.21 %,VAL,21
+Total wirelength (u m),MAPE,global place to detailed route,SKY130,34.24 %,VAL,21
+Total wirelength (u m),MAPE,global place to detailed route,IHP130,24.43 %,VAL,21
+Total wirelength (u m),MAPE,global place to detailed route,ASAP7,17.17 %,VAL,21
+Total wirelength (u m),MAPE,detailed place to detailed route,NG45,19.61 %,VAL,21
+Total wirelength (u m),MAPE,detailed place to detailed route,SKY130,24.30 %,VAL,21
+Total wirelength (u m),MAPE,detailed place to detailed route,IHP130,11.49 %,VAL,21
+Total wirelength (u m),MAPE,detailed place to detailed route,ASAP7,7.05 %,VAL,21
+Total wirelength (u m),MAPE,CTS to detailed route,NG45,13.16 %,VAL,21
+Total wirelength (u m),MAPE,CTS to detailed route,SKY130,16.18 %,VAL,21
+Total wirelength (u m),MAPE,CTS to detailed route,IHP130,5.51 %,VAL,21
+Total wirelength (u m),MAPE,CTS to detailed route,ASAP7,3.40 %,VAL,21
+Total wirelength (u m),MAPE,global route to detailed route,NG45,12.53 %,VAL,21
+Total wirelength (u m),MAPE,global route to detailed route,SKY130,14.86 %,VAL,21
+Total wirelength (u m),MAPE,global route to detailed route,IHP130,5.33 %,VAL,21
+Total wirelength (u m),MAPE,global route to detailed route,ASAP7,3.28 %,VAL,21
+Total wirelength (u m),R^2,floorplan to detailed route,NG45,,VOID,22
+Total wirelength (u m),R^2,floorplan to detailed route,SKY130,,VOID,22
+Total wirelength (u m),R^2,floorplan to detailed route,IHP130,,VOID,22
+Total wirelength (u m),R^2,floorplan to detailed route,ASAP7,,VOID,22
+Total wirelength (u m),R^2,global place to detailed route,NG45,0.916,VAL,22
+Total wirelength (u m),R^2,global place to detailed route,SKY130,0.902,VAL,22
+Total wirelength (u m),R^2,global place to detailed route,IHP130,0.928,VAL,22
+Total wirelength (u m),R^2,global place to detailed route,ASAP7,0.987,VAL,22
+Total wirelength (u m),R^2,detailed place to detailed route,NG45,0.959,VAL,22
+Total wirelength (u m),R^2,detailed place to detailed route,SKY130,0.939,VAL,22
+Total wirelength (u m),R^2,detailed place to detailed route,IHP130,0.977,VAL,22
+Total wirelength (u m),R^2,detailed place to detailed route,ASAP7,0.995,VAL,22
+Total wirelength (u m),R^2,CTS to detailed route,NG45,0.980,VAL,22
+Total wirelength (u m),R^2,CTS to detailed route,SKY130,0.975,VAL,22
+Total wirelength (u m),R^2,CTS to detailed route,IHP130,0.996,VAL,22
+Total wirelength (u m),R^2,CTS to detailed route,ASAP7,0.997,VAL,22
+Total wirelength (u m),R^2,global route to detailed route,NG45,0.981,VAL,22
+Total wirelength (u m),R^2,global route to detailed route,SKY130,0.977,VAL,22
+Total wirelength (u m),R^2,global route to detailed route,IHP130,0.996,VAL,22
+Total wirelength (u m),R^2,global route to detailed route,ASAP7,0.997,VAL,22
+Interconnect length (u m),MAE,floorplan to detailed route,NG45,,VOID,23
+Interconnect length (u m),MAE,floorplan to detailed route,SKY130,,VOID,23
+Interconnect length (u m),MAE,floorplan to detailed route,IHP130,,VOID,23
+Interconnect length (u m),MAE,floorplan to detailed route,ASAP7,,VOID,23
+Interconnect length (u m),MAE,global place to detailed route,NG45,4.83,VAL,23
+Interconnect length (u m),MAE,global place to detailed route,SKY130,12.41,VAL,23
+Interconnect length (u m),MAE,global place to detailed route,IHP130,13.19,VAL,23
+Interconnect length (u m),MAE,global place to detailed route,ASAP7,1.45,VAL,23
+Interconnect length (u m),MAE,detailed place to detailed route,NG45,4.13,VAL,23
+Interconnect length (u m),MAE,detailed place to detailed route,SKY130,11.8,VAL,23
+Interconnect length (u m),MAE,detailed place to detailed route,IHP130,11.09,VAL,23
+Interconnect length (u m),MAE,detailed place to detailed route,ASAP7,1.41,VAL,23
+Interconnect length (u m),MAE,CTS to detailed route,NG45,4.19,VAL,23
+Interconnect length (u m),MAE,CTS to detailed route,SKY130,12.01,VAL,23
+Interconnect length (u m),MAE,CTS to detailed route,IHP130,11.25,VAL,23
+Interconnect length (u m),MAE,CTS to detailed route,ASAP7,1.44,VAL,23
+Interconnect length (u m),MAE,global route to detailed route,NG45,4.19,VAL,23
+Interconnect length (u m),MAE,global route to detailed route,SKY130,11.84,VAL,23
+Interconnect length (u m),MAE,global route to detailed route,IHP130,11.17,VAL,23
+Interconnect length (u m),MAE,global route to detailed route,ASAP7,1.43,VAL,23
+Interconnect length (u m),MAPE,floorplan to detailed route,NG45,,VOID,24
+Interconnect length (u m),MAPE,floorplan to detailed route,SKY130,,VOID,24
+Interconnect length (u m),MAPE,floorplan to detailed route,IHP130,,VOID,24
+Interconnect length (u m),MAPE,floorplan to detailed route,ASAP7,,VOID,24
+Interconnect length (u m),MAPE,global place to detailed route,NG45,87.59 %,VAL,24
+Interconnect length (u m),MAPE,global place to detailed route,SKY130,94.04 %,VAL,24
+Interconnect length (u m),MAPE,global place to detailed route,IHP130,72.60 %,VAL,24
+Interconnect length (u m),MAPE,global place to detailed route,ASAP7,113.14 %,VAL,24
+Interconnect length (u m),MAPE,detailed place to detailed route,NG45,81.33 %,VAL,24
+Interconnect length (u m),MAPE,detailed place to detailed route,SKY130,86.04 %,VAL,24
+Interconnect length (u m),MAPE,detailed place to detailed route,IHP130,73.29 %,VAL,24
+Interconnect length (u m),MAPE,detailed place to detailed route,ASAP7,125.55 %,VAL,24
+Interconnect length (u m),MAPE,CTS to detailed route,NG45,78.68 %,VAL,24
+Interconnect length (u m),MAPE,CTS to detailed route,SKY130,72.85 %,VAL,24
+Interconnect length (u m),MAPE,CTS to detailed route,IHP130,71.34 %,VAL,24
+Interconnect length (u m),MAPE,CTS to detailed route,ASAP7,123.19 %,VAL,24
+Interconnect length (u m),MAPE,global route to detailed route,NG45,78.20 %,VAL,24
+Interconnect length (u m),MAPE,global route to detailed route,SKY130,69.82 %,VAL,24
+Interconnect length (u m),MAPE,global route to detailed route,IHP130,70.16 %,VAL,24
+Interconnect length (u m),MAPE,global route to detailed route,ASAP7,122.69 %,VAL,24
+Interconnect length (u m),R^2,floorplan to detailed route,NG45,,VOID,25
+Interconnect length (u m),R^2,floorplan to detailed route,SKY130,,VOID,25
+Interconnect length (u m),R^2,floorplan to detailed route,IHP130,,VOID,25
+Interconnect length (u m),R^2,floorplan to detailed route,ASAP7,,VOID,25
+Interconnect length (u m),R^2,global place to detailed route,NG45,0.735,VAL,25
+Interconnect length (u m),R^2,global place to detailed route,SKY130,0.751,VAL,25
+Interconnect length (u m),R^2,global place to detailed route,IHP130,0.89,VAL,25
+Interconnect length (u m),R^2,global place to detailed route,ASAP7,0.886,VAL,25
+Interconnect length (u m),R^2,detailed place to detailed route,NG45,0.77,VAL,25
+Interconnect length (u m),R^2,detailed place to detailed route,SKY130,0.773,VAL,25
+Interconnect length (u m),R^2,detailed place to detailed route,IHP130,0.916,VAL,25
+Interconnect length (u m),R^2,detailed place to detailed route,ASAP7,0.892,VAL,25
+Interconnect length (u m),R^2,CTS to detailed route,NG45,0.777,VAL,25
+Interconnect length (u m),R^2,CTS to detailed route,SKY130,0.791,VAL,25
+Interconnect length (u m),R^2,CTS to detailed route,IHP130,0.915,VAL,25
+Interconnect length (u m),R^2,CTS to detailed route,ASAP7,0.893,VAL,25
+Interconnect length (u m),R^2,global route to detailed route,NG45,0.779,VAL,25
+Interconnect length (u m),R^2,global route to detailed route,SKY130,0.798,VAL,25
+Interconnect length (u m),R^2,global route to detailed route,IHP130,0.918,VAL,25
+Interconnect length (u m),R^2,global route to detailed route,ASAP7,0.895,VAL,25
+Interconnect length (u m),MAE P95,floorplan to detailed route,NG45,,VOID,26
+Interconnect length (u m),MAE P95,floorplan to detailed route,SKY130,,VOID,26
+Interconnect length (u m),MAE P95,floorplan to detailed route,IHP130,,VOID,26
+Interconnect length (u m),MAE P95,floorplan to detailed route,ASAP7,,VOID,26
+Interconnect length (u m),MAE P95,global place to detailed route,NG45,12.72,VAL,26
+Interconnect length (u m),MAE P95,global place to detailed route,SKY130,38.53,VAL,26
+Interconnect length (u m),MAE P95,global place to detailed route,IHP130,53.88,VAL,26
+Interconnect length (u m),MAE P95,global place to detailed route,ASAP7,5.57,VAL,26
+Interconnect length (u m),MAE P95,detailed place to detailed route,NG45,10.32,VAL,26
+Interconnect length (u m),MAE P95,detailed place to detailed route,SKY130,39.23,VAL,26
+Interconnect length (u m),MAE P95,detailed place to detailed route,IHP130,46.46,VAL,26
+Interconnect length (u m),MAE P95,detailed place to detailed route,ASAP7,5.44,VAL,26
+Interconnect length (u m),MAE P95,CTS to detailed route,NG45,10.82,VAL,26
+Interconnect length (u m),MAE P95,CTS to detailed route,SKY130,41.92,VAL,26
+Interconnect length (u m),MAE P95,CTS to detailed route,IHP130,46.28,VAL,26
+Interconnect length (u m),MAE P95,CTS to detailed route,ASAP7,5.85,VAL,26
+Interconnect length (u m),MAE P95,global route to detailed route,NG45,10.79,VAL,26
+Interconnect length (u m),MAE P95,global route to detailed route,SKY130,41.09,VAL,26
+Interconnect length (u m),MAE P95,global route to detailed route,IHP130,46.08,VAL,26
+Interconnect length (u m),MAE P95,global route to detailed route,ASAP7,5.83,VAL,26
+Interconnect length (u m),MAPE P95,floorplan to detailed route,NG45,,VOID,27
+Interconnect length (u m),MAPE P95,floorplan to detailed route,SKY130,,VOID,27
+Interconnect length (u m),MAPE P95,floorplan to detailed route,IHP130,,VOID,27
+Interconnect length (u m),MAPE P95,floorplan to detailed route,ASAP7,,VOID,27
+Interconnect length (u m),MAPE P95,global place to detailed route,NG45,230.82 %,VAL,27
+Interconnect length (u m),MAPE P95,global place to detailed route,SKY130,293.66 %,VAL,27
+Interconnect length (u m),MAPE P95,global place to detailed route,IHP130,339.20 %,VAL,27
+Interconnect length (u m),MAPE P95,global place to detailed route,ASAP7,410.10 %,VAL,27
+Interconnect length (u m),MAPE P95,detailed place to detailed route,NG45,186.85 %,VAL,27
+Interconnect length (u m),MAPE P95,detailed place to detailed route,SKY130,247.83 %,VAL,27
+Interconnect length (u m),MAPE P95,detailed place to detailed route,IHP130,326.04 %,VAL,27
+Interconnect length (u m),MAPE P95,detailed place to detailed route,ASAP7,403.03 %,VAL,27
+Interconnect length (u m),MAPE P95,CTS to detailed route,NG45,181.48 %,VAL,27
+Interconnect length (u m),MAPE P95,CTS to detailed route,SKY130,238.43 %,VAL,27
+Interconnect length (u m),MAPE P95,CTS to detailed route,IHP130,291.33 %,VAL,27
+Interconnect length (u m),MAPE P95,CTS to detailed route,ASAP7,402.78 %,VAL,27
+Interconnect length (u m),MAPE P95,global route to detailed route,NG45,180.77 %,VAL,27
+Interconnect length (u m),MAPE P95,global route to detailed route,SKY130,234.56 %,VAL,27
+Interconnect length (u m),MAPE P95,global route to detailed route,IHP130,291.33 %,VAL,27
+Interconnect length (u m),MAPE P95,global route to detailed route,ASAP7,402.78 %,VAL,27
+Interconnect length (u m),MAE TOP5,floorplan to detailed route,NG45,,VOID,28
+Interconnect length (u m),MAE TOP5,floorplan to detailed route,SKY130,,VOID,28
+Interconnect length (u m),MAE TOP5,floorplan to detailed route,IHP130,,VOID,28
+Interconnect length (u m),MAE TOP5,floorplan to detailed route,ASAP7,,VOID,28
+Interconnect length (u m),MAE TOP5,global place to detailed route,NG45,44.73,VAL,28
+Interconnect length (u m),MAE TOP5,global place to detailed route,SKY130,116.02,VAL,28
+Interconnect length (u m),MAE TOP5,global place to detailed route,IHP130,86.57,VAL,28
+Interconnect length (u m),MAE TOP5,global place to detailed route,ASAP7,11.67,VAL,28
+Interconnect length (u m),MAE TOP5,detailed place to detailed route,NG45,46.91,VAL,28
+Interconnect length (u m),MAE TOP5,detailed place to detailed route,SKY130,117.87,VAL,28
+Interconnect length (u m),MAE TOP5,detailed place to detailed route,IHP130,79.59,VAL,28
+Interconnect length (u m),MAE TOP5,detailed place to detailed route,ASAP7,11.37,VAL,28
+Interconnect length (u m),MAE TOP5,CTS to detailed route,NG45,47.4,VAL,28
+Interconnect length (u m),MAE TOP5,CTS to detailed route,SKY130,121.41,VAL,28
+Interconnect length (u m),MAE TOP5,CTS to detailed route,IHP130,80.45,VAL,28
+Interconnect length (u m),MAE TOP5,CTS to detailed route,ASAP7,11.65,VAL,28
+Interconnect length (u m),MAE TOP5,global route to detailed route,NG45,47.61,VAL,28
+Interconnect length (u m),MAE TOP5,global route to detailed route,SKY130,121.04,VAL,28
+Interconnect length (u m),MAE TOP5,global route to detailed route,IHP130,80.05,VAL,28
+Interconnect length (u m),MAE TOP5,global route to detailed route,ASAP7,11.61,VAL,28
+Interconnect length (u m),MAPE TOP5,floorplan to detailed route,NG45,Estimated wirelength is not available\\ as cells have not been placed yet,VOID,29
+Interconnect length (u m),MAPE TOP5,floorplan to detailed route,SKY130,Estimated wirelength is not available\\ as cells have not been placed yet,VOID,29
+Interconnect length (u m),MAPE TOP5,floorplan to detailed route,IHP130,Estimated wirelength is not available\\ as cells have not been placed yet,VOID,29
+Interconnect length (u m),MAPE TOP5,floorplan to detailed route,ASAP7,Estimated wirelength is not available\\ as cells have not been placed yet,VOID,29
+Interconnect length (u m),MAPE TOP5,global place to detailed route,NG45,24.45 %,VAL,29
+Interconnect length (u m),MAPE TOP5,global place to detailed route,SKY130,25.39 %,VAL,29
+Interconnect length (u m),MAPE TOP5,global place to detailed route,IHP130,19.20 %,VAL,29
+Interconnect length (u m),MAPE TOP5,global place to detailed route,ASAP7,18.59 %,VAL,29
+Interconnect length (u m),MAPE TOP5,detailed place to detailed route,NG45,23.99 %,VAL,29
+Interconnect length (u m),MAPE TOP5,detailed place to detailed route,SKY130,24.99 %,VAL,29
+Interconnect length (u m),MAPE TOP5,detailed place to detailed route,IHP130,18.51 %,VAL,29
+Interconnect length (u m),MAPE TOP5,detailed place to detailed route,ASAP7,18.19 %,VAL,29
+Interconnect length (u m),MAPE TOP5,CTS to detailed route,NG45,24.18 %,VAL,29
+Interconnect length (u m),MAPE TOP5,CTS to detailed route,SKY130,25.04 %,VAL,29
+Interconnect length (u m),MAPE TOP5,CTS to detailed route,IHP130,18.56 %,VAL,29
+Interconnect length (u m),MAPE TOP5,CTS to detailed route,ASAP7,19.03 %,VAL,29
+Interconnect length (u m),MAPE TOP5,global route to detailed route,NG45,24.12 %,VAL,29
+Interconnect length (u m),MAPE TOP5,global route to detailed route,SKY130,24.74 %,VAL,29
+Interconnect length (u m),MAPE TOP5,global route to detailed route,IHP130,18.49 %,VAL,29
+Interconnect length (u m),MAPE TOP5,global route to detailed route,ASAP7,18.90 %,VAL,29
+Worst Arrival Time (ns),MAE,floorplan to detailed route,NG45,3.10,VAL,30
+Worst Arrival Time (ns),MAE,floorplan to detailed route,SKY130,10.84,VAL,30
+Worst Arrival Time (ns),MAE,floorplan to detailed route,IHP130,8.55,VAL,30
+Worst Arrival Time (ns),MAE,floorplan to detailed route,ASAP7,0.09,VAL,30
+Worst Arrival Time (ns),MAE,global place to detailed route,NG45,0.16,VAL,30
+Worst Arrival Time (ns),MAE,global place to detailed route,SKY130,0.77,VAL,30
+Worst Arrival Time (ns),MAE,global place to detailed route,IHP130,0.41,VAL,30
+Worst Arrival Time (ns),MAE,global place to detailed route,ASAP7,0.06,VAL,30
+Worst Arrival Time (ns),MAE,detailed place to detailed route,NG45,0.13,VAL,30
+Worst Arrival Time (ns),MAE,detailed place to detailed route,SKY130,1.21,VAL,30
+Worst Arrival Time (ns),MAE,detailed place to detailed route,IHP130,0.34,VAL,30
+Worst Arrival Time (ns),MAE,detailed place to detailed route,ASAP7,0.06,VAL,30
+Worst Arrival Time (ns),MAE,CTS to detailed route,NG45,0.01,VAL,30
+Worst Arrival Time (ns),MAE,CTS to detailed route,SKY130,0.14,VAL,30
+Worst Arrival Time (ns),MAE,CTS to detailed route,IHP130,0.06,VAL,30
+Worst Arrival Time (ns),MAE,CTS to detailed route,ASAP7,0.01,VAL,30
+Worst Arrival Time (ns),MAE,global route to detailed route,NG45,0.00,VAL,30
+Worst Arrival Time (ns),MAE,global route to detailed route,SKY130,0.00,VAL,30
+Worst Arrival Time (ns),MAE,global route to detailed route,IHP130,0.00,VAL,30
+Worst Arrival Time (ns),MAE,global route to detailed route,ASAP7,0.00,VAL,30
+Worst Arrival Time (ns),MAPE,floorplan to detailed route,NG45,192.92 %,VAL,31
+Worst Arrival Time (ns),MAPE,floorplan to detailed route,SKY130,183.71 %,VAL,31
+Worst Arrival Time (ns),MAPE,floorplan to detailed route,IHP130,331.31 %,VAL,31
+Worst Arrival Time (ns),MAPE,floorplan to detailed route,ASAP7,15.78 %,VAL,31
+Worst Arrival Time (ns),MAPE,global place to detailed route,NG45,16.19 %,VAL,31
+Worst Arrival Time (ns),MAPE,global place to detailed route,SKY130,21.48 %,VAL,31
+Worst Arrival Time (ns),MAPE,global place to detailed route,IHP130,16.98 %,VAL,31
+Worst Arrival Time (ns),MAPE,global place to detailed route,ASAP7,11.17 %,VAL,31
+Worst Arrival Time (ns),MAPE,detailed place to detailed route,NG45,13.81 %,VAL,31
+Worst Arrival Time (ns),MAPE,detailed place to detailed route,SKY130,33.30 %,VAL,31
+Worst Arrival Time (ns),MAPE,detailed place to detailed route,IHP130,15.82 %,VAL,31
+Worst Arrival Time (ns),MAPE,detailed place to detailed route,ASAP7,10.44 %,VAL,31
+Worst Arrival Time (ns),MAPE,CTS to detailed route,NG45,1.60 %,VAL,31
+Worst Arrival Time (ns),MAPE,CTS to detailed route,SKY130,4.69 %,VAL,31
+Worst Arrival Time (ns),MAPE,CTS to detailed route,IHP130,2.32 %,VAL,31
+Worst Arrival Time (ns),MAPE,CTS to detailed route,ASAP7,2.14 %,VAL,31
+Worst Arrival Time (ns),MAPE,global route to detailed route,NG45,0.00 %,VAL,31
+Worst Arrival Time (ns),MAPE,global route to detailed route,SKY130,0.00 %,VAL,31
+Worst Arrival Time (ns),MAPE,global route to detailed route,IHP130,0.00 %,VAL,31
+Worst Arrival Time (ns),MAPE,global route to detailed route,ASAP7,0.00 %,VAL,31
+Worst Slack (ns),MAE,floorplan to detailed route,NG45,3.18,VAL,32
+Worst Slack (ns),MAE,floorplan to detailed route,SKY130,11.28,VAL,32
+Worst Slack (ns),MAE,floorplan to detailed route,IHP130,8.83,VAL,32
+Worst Slack (ns),MAE,floorplan to detailed route,ASAP7,0.03,VAL,32
+Worst Slack (ns),MAE,global place to detailed route,NG45,0.21,VAL,32
+Worst Slack (ns),MAE,global place to detailed route,SKY130,1.15,VAL,32
+Worst Slack (ns),MAE,global place to detailed route,IHP130,0.27,VAL,32
+Worst Slack (ns),MAE,global place to detailed route,ASAP7,0.05,VAL,32
+Worst Slack (ns),MAE,detailed place to detailed route,NG45,0.15,VAL,32
+Worst Slack (ns),MAE,detailed place to detailed route,SKY130,1.62,VAL,32
+Worst Slack (ns),MAE,detailed place to detailed route,IHP130,0.31,VAL,32
+Worst Slack (ns),MAE,detailed place to detailed route,ASAP7,0.05,VAL,32
+Worst Slack (ns),MAE,CTS to detailed route,NG45,0.01,VAL,32
+Worst Slack (ns),MAE,CTS to detailed route,SKY130,0.09,VAL,32
+Worst Slack (ns),MAE,CTS to detailed route,IHP130,0.04,VAL,32
+Worst Slack (ns),MAE,CTS to detailed route,ASAP7,0.01,VAL,32
+Worst Slack (ns),MAE,global route to detailed route,NG45,0.00,VAL,32
+Worst Slack (ns),MAE,global route to detailed route,SKY130,0.00,VAL,32
+Worst Slack (ns),MAE,global route to detailed route,IHP130,0.00,VAL,32
+Worst Slack (ns),MAE,global route to detailed route,ASAP7,0.00,VAL,32
+Worst Slack (ns),MPE,floorplan to detailed route,NG45,0.06,VAL,33
+Worst Slack (ns),MPE,floorplan to detailed route,SKY130,0.30,VAL,33
+Worst Slack (ns),MPE,floorplan to detailed route,IHP130,0.30,VAL,33
+Worst Slack (ns),MPE,floorplan to detailed route,ASAP7,0.04,VAL,33
+Worst Slack (ns),MPE,global place to detailed route,NG45,0.09,VAL,33
+Worst Slack (ns),MPE,global place to detailed route,SKY130,0.27,VAL,33
+Worst Slack (ns),MPE,global place to detailed route,IHP130,0.27,VAL,33
+Worst Slack (ns),MPE,global place to detailed route,ASAP7,0.04,VAL,33
+Worst Slack (ns),MPE,detailed place to detailed route,NG45,0.04,VAL,33
+Worst Slack (ns),MPE,detailed place to detailed route,SKY130,0.17,VAL,33
+Worst Slack (ns),MPE,detailed place to detailed route,IHP130,0.20,VAL,33
+Worst Slack (ns),MPE,detailed place to detailed route,ASAP7,0.03,VAL,33
+Worst Slack (ns),MPE,CTS to detailed route,NG45,0.01,VAL,33
+Worst Slack (ns),MPE,CTS to detailed route,SKY130,0.03,VAL,33
+Worst Slack (ns),MPE,CTS to detailed route,IHP130,0.04,VAL,33
+Worst Slack (ns),MPE,CTS to detailed route,ASAP7,0.00,VAL,33
+Worst Slack (ns),MPE,global route to detailed route,NG45,,DEGENERATE,33
+Worst Slack (ns),MPE,global route to detailed route,SKY130,,DEGENERATE,33
+Worst Slack (ns),MPE,global route to detailed route,IHP130,,DEGENERATE,33
+Worst Slack (ns),MPE,global route to detailed route,ASAP7,,DEGENERATE,33
+Worst Slack (ns),MNE,floorplan to detailed route,NG45,3.68,VAL,34
+Worst Slack (ns),MNE,floorplan to detailed route,SKY130,12.15,VAL,34
+Worst Slack (ns),MNE,floorplan to detailed route,IHP130,9.35,VAL,34
+Worst Slack (ns),MNE,floorplan to detailed route,ASAP7,0.02,VAL,34
+Worst Slack (ns),MNE,global place to detailed route,NG45,0.24,VAL,34
+Worst Slack (ns),MNE,global place to detailed route,SKY130,1.26,VAL,34
+Worst Slack (ns),MNE,global place to detailed route,IHP130,0.26,VAL,34
+Worst Slack (ns),MNE,global place to detailed route,ASAP7,0.05,VAL,34
+Worst Slack (ns),MNE,detailed place to detailed route,NG45,0.17,VAL,34
+Worst Slack (ns),MNE,detailed place to detailed route,SKY130,1.68,VAL,34
+Worst Slack (ns),MNE,detailed place to detailed route,IHP130,0.36,VAL,34
+Worst Slack (ns),MNE,detailed place to detailed route,ASAP7,0.06,VAL,34
+Worst Slack (ns),MNE,CTS to detailed route,NG45,0.02,VAL,34
+Worst Slack (ns),MNE,CTS to detailed route,SKY130,0.12,VAL,34
+Worst Slack (ns),MNE,CTS to detailed route,IHP130,0.13,VAL,34
+Worst Slack (ns),MNE,CTS to detailed route,ASAP7,0.01,VAL,34
+Worst Slack (ns),MNE,global route to detailed route,NG45,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,34
+Worst Slack (ns),MNE,global route to detailed route,SKY130,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,34
+Worst Slack (ns),MNE,global route to detailed route,IHP130,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,34
+Worst Slack (ns),MNE,global route to detailed route,ASAP7,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,34
+Worst Slack (ns),TPR,floorplan to detailed route,NG45,95.67 %,VAL,35
+Worst Slack (ns),TPR,floorplan to detailed route,SKY130,96.32 %,VAL,35
+Worst Slack (ns),TPR,floorplan to detailed route,IHP130,94.52 %,VAL,35
+Worst Slack (ns),TPR,floorplan to detailed route,ASAP7,67.94 %,VAL,35
+Worst Slack (ns),TPR,global place to detailed route,NG45,95.67 %,VAL,35
+Worst Slack (ns),TPR,global place to detailed route,SKY130,96.21 %,VAL,35
+Worst Slack (ns),TPR,global place to detailed route,IHP130,64.38 %,VAL,35
+Worst Slack (ns),TPR,global place to detailed route,ASAP7,93.08 %,VAL,35
+Worst Slack (ns),TPR,detailed place to detailed route,NG45,95.67 %,VAL,35
+Worst Slack (ns),TPR,detailed place to detailed route,SKY130,98.53 %,VAL,35
+Worst Slack (ns),TPR,detailed place to detailed route,IHP130,58.90 %,VAL,35
+Worst Slack (ns),TPR,detailed place to detailed route,ASAP7,99.45 %,VAL,35
+Worst Slack (ns),TPR,CTS to detailed route,NG45,100.00 %,VAL,35
+Worst Slack (ns),TPR,CTS to detailed route,SKY130,99.47 %,VAL,35
+Worst Slack (ns),TPR,CTS to detailed route,IHP130,96.58 %,VAL,35
+Worst Slack (ns),TPR,CTS to detailed route,ASAP7,100.00 %,VAL,35
+Worst Slack (ns),TPR,global route to detailed route,NG45,100.00 %,VAL,35
+Worst Slack (ns),TPR,global route to detailed route,SKY130,100.00 %,VAL,35
+Worst Slack (ns),TPR,global route to detailed route,IHP130,100.00 %,VAL,35
+Worst Slack (ns),TPR,global route to detailed route,ASAP7,100.00 %,VAL,35
+Worst Slack (ns),TNR,floorplan to detailed route,NG45,28.70 %,VAL,36
+Worst Slack (ns),TNR,floorplan to detailed route,SKY130,15.76 %,VAL,36
+Worst Slack (ns),TNR,floorplan to detailed route,IHP130,28.11 %,VAL,36
+Worst Slack (ns),TNR,floorplan to detailed route,ASAP7,97.70 %,VAL,36
+Worst Slack (ns),TNR,global place to detailed route,NG45,57.56 %,VAL,36
+Worst Slack (ns),TNR,global place to detailed route,SKY130,21.39 %,VAL,36
+Worst Slack (ns),TNR,global place to detailed route,IHP130,95.54 %,VAL,36
+Worst Slack (ns),TNR,global place to detailed route,ASAP7,63.75 %,VAL,36
+Worst Slack (ns),TNR,detailed place to detailed route,NG45,56.26 %,VAL,36
+Worst Slack (ns),TNR,detailed place to detailed route,SKY130,8.39 %,VAL,36
+Worst Slack (ns),TNR,detailed place to detailed route,IHP130,91.58 %,VAL,36
+Worst Slack (ns),TNR,detailed place to detailed route,ASAP7,58.79 %,VAL,36
+Worst Slack (ns),TNR,CTS to detailed route,NG45,93.24 %,VAL,36
+Worst Slack (ns),TNR,CTS to detailed route,SKY130,60.59 %,VAL,36
+Worst Slack (ns),TNR,CTS to detailed route,IHP130,99.22 %,VAL,36
+Worst Slack (ns),TNR,CTS to detailed route,ASAP7,91.53 %,VAL,36
+Worst Slack (ns),TNR,global route to detailed route,NG45,100.00 %,VAL,36
+Worst Slack (ns),TNR,global route to detailed route,SKY130,100.00 %,VAL,36
+Worst Slack (ns),TNR,global route to detailed route,IHP130,100.00 %,VAL,36
+Worst Slack (ns),TNR,global route to detailed route,ASAP7,100.00 %,VAL,36
+Total Negative Slack (ns),MAE,floorplan to detailed route,NG45,"1,764.18",VAL,37
+Total Negative Slack (ns),MAE,floorplan to detailed route,SKY130,"17,768.52",VAL,37
+Total Negative Slack (ns),MAE,floorplan to detailed route,IHP130,"3,755.75",VAL,37
+Total Negative Slack (ns),MAE,floorplan to detailed route,ASAP7,1.09,VAL,37
+Total Negative Slack (ns),MAE,global place to detailed route,NG45,57.74,VAL,37
+Total Negative Slack (ns),MAE,global place to detailed route,SKY130,727.04,VAL,37
+Total Negative Slack (ns),MAE,global place to detailed route,IHP130,0.57,VAL,37
+Total Negative Slack (ns),MAE,global place to detailed route,ASAP7,5.65,VAL,37
+Total Negative Slack (ns),MAE,detailed place to detailed route,NG45,22.45,VAL,37
+Total Negative Slack (ns),MAE,detailed place to detailed route,SKY130,959.12,VAL,37
+Total Negative Slack (ns),MAE,detailed place to detailed route,IHP130,1.05,VAL,37
+Total Negative Slack (ns),MAE,detailed place to detailed route,ASAP7,5.75,VAL,37
+Total Negative Slack (ns),MAE,CTS to detailed route,NG45,2.11,VAL,37
+Total Negative Slack (ns),MAE,CTS to detailed route,SKY130,70.22,VAL,37
+Total Negative Slack (ns),MAE,CTS to detailed route,IHP130,0.04,VAL,37
+Total Negative Slack (ns),MAE,CTS to detailed route,ASAP7,1.01,VAL,37
+Total Negative Slack (ns),MAE,global route to detailed route,NG45,0.00,VAL,37
+Total Negative Slack (ns),MAE,global route to detailed route,SKY130,0.00,VAL,37
+Total Negative Slack (ns),MAE,global route to detailed route,IHP130,0.00,VAL,37
+Total Negative Slack (ns),MAE,global route to detailed route,ASAP7,0.00,VAL,37
+Total Negative Slack (ns),MPE,floorplan to detailed route,NG45,1.26,VAL,38
+Total Negative Slack (ns),MPE,floorplan to detailed route,SKY130,4.74,VAL,38
+Total Negative Slack (ns),MPE,floorplan to detailed route,IHP130,2.50,VAL,38
+Total Negative Slack (ns),MPE,floorplan to detailed route,ASAP7,3.92,VAL,38
+Total Negative Slack (ns),MPE,global place to detailed route,NG45,24.60,VAL,38
+Total Negative Slack (ns),MPE,global place to detailed route,SKY130,5.30,VAL,38
+Total Negative Slack (ns),MPE,global place to detailed route,IHP130,1.82,VAL,38
+Total Negative Slack (ns),MPE,global place to detailed route,ASAP7,3.76,VAL,38
+Total Negative Slack (ns),MPE,detailed place to detailed route,NG45,23.22,VAL,38
+Total Negative Slack (ns),MPE,detailed place to detailed route,SKY130,2.74,VAL,38
+Total Negative Slack (ns),MPE,detailed place to detailed route,IHP130,1.88,VAL,38
+Total Negative Slack (ns),MPE,detailed place to detailed route,ASAP7,4.68,VAL,38
+Total Negative Slack (ns),MPE,CTS to detailed route,NG45,4.81,VAL,38
+Total Negative Slack (ns),MPE,CTS to detailed route,SKY130,22.51,VAL,38
+Total Negative Slack (ns),MPE,CTS to detailed route,IHP130,0.17,VAL,38
+Total Negative Slack (ns),MPE,CTS to detailed route,ASAP7,1.56,VAL,38
+Total Negative Slack (ns),MPE,global route to detailed route,NG45,,DEGENERATE,38
+Total Negative Slack (ns),MPE,global route to detailed route,SKY130,,DEGENERATE,38
+Total Negative Slack (ns),MPE,global route to detailed route,IHP130,,DEGENERATE,38
+Total Negative Slack (ns),MPE,global route to detailed route,ASAP7,,DEGENERATE,38
+Total Negative Slack (ns),MNE,floorplan to detailed route,NG45,"2,296.57",VAL,39
+Total Negative Slack (ns),MNE,floorplan to detailed route,SKY130,"20,176.54",VAL,39
+Total Negative Slack (ns),MNE,floorplan to detailed route,IHP130,"5,201.66",VAL,39
+Total Negative Slack (ns),MNE,floorplan to detailed route,ASAP7,2.10,VAL,39
+Total Negative Slack (ns),MNE,global place to detailed route,NG45,101.63,VAL,39
+Total Negative Slack (ns),MNE,global place to detailed route,SKY130,849.90,VAL,39
+Total Negative Slack (ns),MNE,global place to detailed route,IHP130,7.15,VAL,39
+Total Negative Slack (ns),MNE,global place to detailed route,ASAP7,11.49,VAL,39
+Total Negative Slack (ns),MNE,detailed place to detailed route,NG45,37.22,VAL,39
+Total Negative Slack (ns),MNE,detailed place to detailed route,SKY130,"1,031.87",VAL,39
+Total Negative Slack (ns),MNE,detailed place to detailed route,IHP130,9.00,VAL,39
+Total Negative Slack (ns),MNE,detailed place to detailed route,ASAP7,10.54,VAL,39
+Total Negative Slack (ns),MNE,CTS to detailed route,NG45,6.34,VAL,39
+Total Negative Slack (ns),MNE,CTS to detailed route,SKY130,123.39,VAL,39
+Total Negative Slack (ns),MNE,CTS to detailed route,IHP130,0.76,VAL,39
+Total Negative Slack (ns),MNE,CTS to detailed route,ASAP7,3.78,VAL,39
+Total Negative Slack (ns),MNE,global route to detailed route,NG45,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,39
+Total Negative Slack (ns),MNE,global route to detailed route,SKY130,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,39
+Total Negative Slack (ns),MNE,global route to detailed route,IHP130,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,39
+Total Negative Slack (ns),MNE,global route to detailed route,ASAP7,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,39
+Timing Path Arrival Time (ns),MAE,floorplan to detailed route,NG45,0.4756,VAL,40
+Timing Path Arrival Time (ns),MAE,floorplan to detailed route,SKY130,2.9814,VAL,40
+Timing Path Arrival Time (ns),MAE,floorplan to detailed route,IHP130,1.7195,VAL,40
+Timing Path Arrival Time (ns),MAE,floorplan to detailed route,ASAP7,0.1836,VAL,40
+Timing Path Arrival Time (ns),MAE,global place to detailed route,NG45,0.2313,VAL,40
+Timing Path Arrival Time (ns),MAE,global place to detailed route,SKY130,0.9552,VAL,40
+Timing Path Arrival Time (ns),MAE,global place to detailed route,IHP130,0.6682,VAL,40
+Timing Path Arrival Time (ns),MAE,global place to detailed route,ASAP7,0.1509,VAL,40
+Timing Path Arrival Time (ns),MAE,detailed place to detailed route,NG45,0.2398,VAL,40
+Timing Path Arrival Time (ns),MAE,detailed place to detailed route,SKY130,0.9151,VAL,40
+Timing Path Arrival Time (ns),MAE,detailed place to detailed route,IHP130,0.6392,VAL,40
+Timing Path Arrival Time (ns),MAE,detailed place to detailed route,ASAP7,0.1462,VAL,40
+Timing Path Arrival Time (ns),MAE,CTS to detailed route,NG45,0.0022,VAL,40
+Timing Path Arrival Time (ns),MAE,CTS to detailed route,SKY130,0.0319,VAL,40
+Timing Path Arrival Time (ns),MAE,CTS to detailed route,IHP130,0.0041,VAL,40
+Timing Path Arrival Time (ns),MAE,CTS to detailed route,ASAP7,0.0012,VAL,40
+Timing Path Arrival Time (ns),MAE,global route to detailed route,NG45,0.0000,VAL,40
+Timing Path Arrival Time (ns),MAE,global route to detailed route,SKY130,0.0000,VAL,40
+Timing Path Arrival Time (ns),MAE,global route to detailed route,IHP130,0.0000,VAL,40
+Timing Path Arrival Time (ns),MAE,global route to detailed route,ASAP7,0.0000,VAL,40
+Timing Path Arrival Time (ns),MAPE,floorplan to detailed route,NG45,75.89 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,floorplan to detailed route,SKY130,92.31 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,floorplan to detailed route,IHP130,95.11 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,floorplan to detailed route,ASAP7,51.92 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global place to detailed route,NG45,46.25 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global place to detailed route,SKY130,39.61 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global place to detailed route,IHP130,43.00 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global place to detailed route,ASAP7,42.55 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,detailed place to detailed route,NG45,45.63 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,detailed place to detailed route,SKY130,37.87 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,detailed place to detailed route,IHP130,41.34 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,detailed place to detailed route,ASAP7,41.05 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,CTS to detailed route,NG45,0.27 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,CTS to detailed route,SKY130,0.80 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,CTS to detailed route,IHP130,0.18 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,CTS to detailed route,ASAP7,0.22 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global route to detailed route,NG45,0.00 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global route to detailed route,SKY130,0.00 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global route to detailed route,IHP130,0.00 %,VAL,41
+Timing Path Arrival Time (ns),MAPE,global route to detailed route,ASAP7,0.00 %,VAL,41
+Timing Path Arrival Time (ns),MAE P95,floorplan to detailed route,NG45,1.0541,VAL,42
+Timing Path Arrival Time (ns),MAE P95,floorplan to detailed route,SKY130,7.1590,VAL,42
+Timing Path Arrival Time (ns),MAE P95,floorplan to detailed route,IHP130,4.6540,VAL,42
+Timing Path Arrival Time (ns),MAE P95,floorplan to detailed route,ASAP7,0.3296,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global place to detailed route,NG45,0.3600,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global place to detailed route,SKY130,1.5150,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global place to detailed route,IHP130,0.8949,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global place to detailed route,ASAP7,0.2385,VAL,42
+Timing Path Arrival Time (ns),MAE P95,detailed place to detailed route,NG45,0.3570,VAL,42
+Timing Path Arrival Time (ns),MAE P95,detailed place to detailed route,SKY130,1.5320,VAL,42
+Timing Path Arrival Time (ns),MAE P95,detailed place to detailed route,IHP130,0.8899,VAL,42
+Timing Path Arrival Time (ns),MAE P95,detailed place to detailed route,ASAP7,0.2387,VAL,42
+Timing Path Arrival Time (ns),MAE P95,CTS to detailed route,NG45,0.0107,VAL,42
+Timing Path Arrival Time (ns),MAE P95,CTS to detailed route,SKY130,0.1980,VAL,42
+Timing Path Arrival Time (ns),MAE P95,CTS to detailed route,IHP130,0.0220,VAL,42
+Timing Path Arrival Time (ns),MAE P95,CTS to detailed route,ASAP7,0.0036,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global route to detailed route,NG45,0.0000,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global route to detailed route,SKY130,0.0000,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global route to detailed route,IHP130,0.0000,VAL,42
+Timing Path Arrival Time (ns),MAE P95,global route to detailed route,ASAP7,0.0000,VAL,42
+Timing Path Arrival Time (ns),MAPE P95,floorplan to detailed route,NG45,133.31 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,floorplan to detailed route,SKY130,169.45 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,floorplan to detailed route,IHP130,241.72 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,floorplan to detailed route,ASAP7,74.00 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global place to detailed route,NG45,69.54 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global place to detailed route,SKY130,64.36 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global place to detailed route,IHP130,65.89 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global place to detailed route,ASAP7,70.09 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,detailed place to detailed route,NG45,69.32 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,detailed place to detailed route,SKY130,64.39 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,detailed place to detailed route,IHP130,65.77 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,detailed place to detailed route,ASAP7,70.06 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,CTS to detailed route,NG45,1.27 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,CTS to detailed route,SKY130,4.81 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,CTS to detailed route,IHP130,0.98 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,CTS to detailed route,ASAP7,0.68 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global route to detailed route,NG45,0.00 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global route to detailed route,SKY130,0.00 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global route to detailed route,IHP130,0.00 %,VAL,43
+Timing Path Arrival Time (ns),MAPE P95,global route to detailed route,ASAP7,0.00 %,VAL,43
+Timing Path Arrival Time (ns),MAE TOP5,floorplan to detailed route,NG45,2.6279,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,floorplan to detailed route,SKY130,10.1956,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,floorplan to detailed route,IHP130,1.8427,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,floorplan to detailed route,ASAP7,0.3048,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global place to detailed route,NG45,0.2398,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global place to detailed route,SKY130,0.9467,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global place to detailed route,IHP130,0.7733,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global place to detailed route,ASAP7,0.1986,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,detailed place to detailed route,NG45,0.1971,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,detailed place to detailed route,SKY130,1.0037,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,detailed place to detailed route,IHP130,0.7550,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,detailed place to detailed route,ASAP7,0.1975,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,CTS to detailed route,NG45,0.0107,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,CTS to detailed route,SKY130,0.1110,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,CTS to detailed route,IHP130,0.0246,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,CTS to detailed route,ASAP7,0.0037,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global route to detailed route,NG45,0.0000,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global route to detailed route,SKY130,0.0000,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global route to detailed route,IHP130,0.0000,VAL,44
+Timing Path Arrival Time (ns),MAE TOP5,global route to detailed route,ASAP7,0.0000,VAL,44
+Timing Path Arrival Time (ns),MAPE TOP5,floorplan to detailed route,NG45,208.58 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,floorplan to detailed route,SKY130,164.89 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,floorplan to detailed route,IHP130,58.23 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,floorplan to detailed route,ASAP7,36.41 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global place to detailed route,NG45,15.32 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global place to detailed route,SKY130,14.73 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global place to detailed route,IHP130,24.60 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global place to detailed route,ASAP7,23.24 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,detailed place to detailed route,NG45,12.57 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,detailed place to detailed route,SKY130,15.69 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,detailed place to detailed route,IHP130,23.97 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,detailed place to detailed route,ASAP7,23.01 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,CTS to detailed route,NG45,0.70 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,CTS to detailed route,SKY130,1.68 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,CTS to detailed route,IHP130,0.73 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,CTS to detailed route,ASAP7,0.42 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global route to detailed route,NG45,0.00 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global route to detailed route,SKY130,0.00 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global route to detailed route,IHP130,0.00 %,VAL,45
+Timing Path Arrival Time (ns),MAPE TOP5,global route to detailed route,ASAP7,0.00 %,VAL,45
+Timing Path Slack (ns),MAE,floorplan to detailed route,NG45,0.2450,VAL,46
+Timing Path Slack (ns),MAE,floorplan to detailed route,SKY130,2.6909,VAL,46
+Timing Path Slack (ns),MAE,floorplan to detailed route,IHP130,1.8879,VAL,46
+Timing Path Slack (ns),MAE,floorplan to detailed route,ASAP7,0.0400,VAL,46
+Timing Path Slack (ns),MAE,global place to detailed route,NG45,0.0532,VAL,46
+Timing Path Slack (ns),MAE,global place to detailed route,SKY130,0.2179,VAL,46
+Timing Path Slack (ns),MAE,global place to detailed route,IHP130,0.0736,VAL,46
+Timing Path Slack (ns),MAE,global place to detailed route,ASAP7,0.0166,VAL,46
+Timing Path Slack (ns),MAE,detailed place to detailed route,NG45,0.0280,VAL,46
+Timing Path Slack (ns),MAE,detailed place to detailed route,SKY130,0.2873,VAL,46
+Timing Path Slack (ns),MAE,detailed place to detailed route,IHP130,0.0975,VAL,46
+Timing Path Slack (ns),MAE,detailed place to detailed route,ASAP7,0.0203,VAL,46
+Timing Path Slack (ns),MAE,CTS to detailed route,NG45,0.0023,VAL,46
+Timing Path Slack (ns),MAE,CTS to detailed route,SKY130,0.0316,VAL,46
+Timing Path Slack (ns),MAE,CTS to detailed route,IHP130,0.0040,VAL,46
+Timing Path Slack (ns),MAE,CTS to detailed route,ASAP7,0.0012,VAL,46
+Timing Path Slack (ns),MAE,global route to detailed route,NG45,0.0000,VAL,46
+Timing Path Slack (ns),MAE,global route to detailed route,SKY130,0.0000,VAL,46
+Timing Path Slack (ns),MAE,global route to detailed route,IHP130,0.0000,VAL,46
+Timing Path Slack (ns),MAE,global route to detailed route,ASAP7,0.0000,VAL,46
+Timing Path Slack (ns),MPE,floorplan to detailed route,NG45,0.0361,VAL,47
+Timing Path Slack (ns),MPE,floorplan to detailed route,SKY130,1.7111,VAL,47
+Timing Path Slack (ns),MPE,floorplan to detailed route,IHP130,0.9992,VAL,47
+Timing Path Slack (ns),MPE,floorplan to detailed route,ASAP7,0.0788,VAL,47
+Timing Path Slack (ns),MPE,global place to detailed route,NG45,0.0282,VAL,47
+Timing Path Slack (ns),MPE,global place to detailed route,SKY130,0.0851,VAL,47
+Timing Path Slack (ns),MPE,global place to detailed route,IHP130,0.0556,VAL,47
+Timing Path Slack (ns),MPE,global place to detailed route,ASAP7,0.0150,VAL,47
+Timing Path Slack (ns),MPE,detailed place to detailed route,NG45,0.0299,VAL,47
+Timing Path Slack (ns),MPE,detailed place to detailed route,SKY130,0.1210,VAL,47
+Timing Path Slack (ns),MPE,detailed place to detailed route,IHP130,0.0741,VAL,47
+Timing Path Slack (ns),MPE,detailed place to detailed route,ASAP7,0.0167,VAL,47
+Timing Path Slack (ns),MPE,CTS to detailed route,NG45,0.0125,VAL,47
+Timing Path Slack (ns),MPE,CTS to detailed route,SKY130,0.0351,VAL,47
+Timing Path Slack (ns),MPE,CTS to detailed route,IHP130,0.0159,VAL,47
+Timing Path Slack (ns),MPE,CTS to detailed route,ASAP7,0.0080,VAL,47
+Timing Path Slack (ns),MPE,global route to detailed route,NG45,,DEGENERATE,47
+Timing Path Slack (ns),MPE,global route to detailed route,SKY130,,DEGENERATE,47
+Timing Path Slack (ns),MPE,global route to detailed route,IHP130,,DEGENERATE,47
+Timing Path Slack (ns),MPE,global route to detailed route,ASAP7,,DEGENERATE,47
+Timing Path Slack (ns),MNE,floorplan to detailed route,NG45,0.2749,VAL,48
+Timing Path Slack (ns),MNE,floorplan to detailed route,SKY130,2.8765,VAL,48
+Timing Path Slack (ns),MNE,floorplan to detailed route,IHP130,2.8290,VAL,48
+Timing Path Slack (ns),MNE,floorplan to detailed route,ASAP7,0.0222,VAL,48
+Timing Path Slack (ns),MNE,global place to detailed route,NG45,0.0641,VAL,48
+Timing Path Slack (ns),MNE,global place to detailed route,SKY130,0.4140,VAL,48
+Timing Path Slack (ns),MNE,global place to detailed route,IHP130,0.1082,VAL,48
+Timing Path Slack (ns),MNE,global place to detailed route,ASAP7,0.0203,VAL,48
+Timing Path Slack (ns),MNE,detailed place to detailed route,NG45,0.0273,VAL,48
+Timing Path Slack (ns),MNE,detailed place to detailed route,SKY130,0.5783,VAL,48
+Timing Path Slack (ns),MNE,detailed place to detailed route,IHP130,0.1349,VAL,48
+Timing Path Slack (ns),MNE,detailed place to detailed route,ASAP7,0.0296,VAL,48
+Timing Path Slack (ns),MNE,CTS to detailed route,NG45,0.0217,VAL,48
+Timing Path Slack (ns),MNE,CTS to detailed route,SKY130,0.1342,VAL,48
+Timing Path Slack (ns),MNE,CTS to detailed route,IHP130,0.0167,VAL,48
+Timing Path Slack (ns),MNE,CTS to detailed route,ASAP7,0.0149,VAL,48
+Timing Path Slack (ns),MNE,global route to detailed route,NG45,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,48
+Timing Path Slack (ns),MNE,global route to detailed route,SKY130,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,48
+Timing Path Slack (ns),MNE,global route to detailed route,IHP130,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,48
+Timing Path Slack (ns),MNE,global route to detailed route,ASAP7,No positive or negative error\\ n_p = n_n = 0,DEGENERATE,48
+Timing Path Slack (ns),TPR,floorplan to detailed route,NG45,98.01 %,VAL,49
+Timing Path Slack (ns),TPR,floorplan to detailed route,SKY130,96.65 %,VAL,49
+Timing Path Slack (ns),TPR,floorplan to detailed route,IHP130,74.89 %,VAL,49
+Timing Path Slack (ns),TPR,floorplan to detailed route,ASAP7,70.21 %,VAL,49
+Timing Path Slack (ns),TPR,global place to detailed route,NG45,96.50 %,VAL,49
+Timing Path Slack (ns),TPR,global place to detailed route,SKY130,98.01 %,VAL,49
+Timing Path Slack (ns),TPR,global place to detailed route,IHP130,74.19 %,VAL,49
+Timing Path Slack (ns),TPR,global place to detailed route,ASAP7,83.93 %,VAL,49
+Timing Path Slack (ns),TPR,detailed place to detailed route,NG45,94.90 %,VAL,49
+Timing Path Slack (ns),TPR,detailed place to detailed route,SKY130,97.61 %,VAL,49
+Timing Path Slack (ns),TPR,detailed place to detailed route,IHP130,73.80 %,VAL,49
+Timing Path Slack (ns),TPR,detailed place to detailed route,ASAP7,85.13 %,VAL,49
+Timing Path Slack (ns),TPR,CTS to detailed route,NG45,93.04 %,VAL,49
+Timing Path Slack (ns),TPR,CTS to detailed route,SKY130,95.99 %,VAL,49
+Timing Path Slack (ns),TPR,CTS to detailed route,IHP130,84.56 %,VAL,49
+Timing Path Slack (ns),TPR,CTS to detailed route,ASAP7,95.92 %,VAL,49
+Timing Path Slack (ns),TPR,global route to detailed route,NG45,100.00 %,VAL,49
+Timing Path Slack (ns),TPR,global route to detailed route,SKY130,100.00 %,VAL,49
+Timing Path Slack (ns),TPR,global route to detailed route,IHP130,100.00 %,VAL,49
+Timing Path Slack (ns),TPR,global route to detailed route,ASAP7,100.00 %,VAL,49
+Timing Path Slack (ns),TNR,floorplan to detailed route,NG45,88.69 %,VAL,50
+Timing Path Slack (ns),TNR,floorplan to detailed route,SKY130,77.61 %,VAL,50
+Timing Path Slack (ns),TNR,floorplan to detailed route,IHP130,93.99 %,VAL,50
+Timing Path Slack (ns),TNR,floorplan to detailed route,ASAP7,99.96 %,VAL,50
+Timing Path Slack (ns),TNR,global place to detailed route,NG45,96.00 %,VAL,50
+Timing Path Slack (ns),TNR,global place to detailed route,SKY130,90.69 %,VAL,50
+Timing Path Slack (ns),TNR,global place to detailed route,IHP130,99.93 %,VAL,50
+Timing Path Slack (ns),TNR,global place to detailed route,ASAP7,98.69 %,VAL,50
+Timing Path Slack (ns),TNR,detailed place to detailed route,NG45,97.65 %,VAL,50
+Timing Path Slack (ns),TNR,detailed place to detailed route,SKY130,89.43 %,VAL,50
+Timing Path Slack (ns),TNR,detailed place to detailed route,IHP130,99.92 %,VAL,50
+Timing Path Slack (ns),TNR,detailed place to detailed route,ASAP7,98.56 %,VAL,50
+Timing Path Slack (ns),TNR,CTS to detailed route,NG45,99.63 %,VAL,50
+Timing Path Slack (ns),TNR,CTS to detailed route,SKY130,98.34 %,VAL,50
+Timing Path Slack (ns),TNR,CTS to detailed route,IHP130,99.99 %,VAL,50
+Timing Path Slack (ns),TNR,CTS to detailed route,ASAP7,99.73 %,VAL,50
+Timing Path Slack (ns),TNR,global route to detailed route,NG45,100.00 %,VAL,50
+Timing Path Slack (ns),TNR,global route to detailed route,SKY130,100.00 %,VAL,50
+Timing Path Slack (ns),TNR,global route to detailed route,IHP130,100.00 %,VAL,50
+Timing Path Slack (ns),TNR,global route to detailed route,ASAP7,100.00 %,VAL,50
+Net Arc Delay (ns),MAE,floorplan to detailed route,NG45,0.1128,VAL,51
+Net Arc Delay (ns),MAE,floorplan to detailed route,SKY130,0.7713,VAL,51
+Net Arc Delay (ns),MAE,floorplan to detailed route,IHP130,0.4259,VAL,51
+Net Arc Delay (ns),MAE,floorplan to detailed route,ASAP7,0.0105,VAL,51
+Net Arc Delay (ns),MAE,global place to detailed route,NG45,0.0200,VAL,51
+Net Arc Delay (ns),MAE,global place to detailed route,SKY130,0.0631,VAL,51
+Net Arc Delay (ns),MAE,global place to detailed route,IHP130,0.0306,VAL,51
+Net Arc Delay (ns),MAE,global place to detailed route,ASAP7,0.0066,VAL,51
+Net Arc Delay (ns),MAE,detailed place to detailed route,NG45,0.0122,VAL,51
+Net Arc Delay (ns),MAE,detailed place to detailed route,SKY130,0.0466,VAL,51
+Net Arc Delay (ns),MAE,detailed place to detailed route,IHP130,0.0165,VAL,51
+Net Arc Delay (ns),MAE,detailed place to detailed route,ASAP7,0.0039,VAL,51
+Net Arc Delay (ns),MAE,CTS to detailed route,NG45,0.0005,VAL,51
+Net Arc Delay (ns),MAE,CTS to detailed route,SKY130,0.0046,VAL,51
+Net Arc Delay (ns),MAE,CTS to detailed route,IHP130,0.0004,VAL,51
+Net Arc Delay (ns),MAE,CTS to detailed route,ASAP7,0.0002,VAL,51
+Net Arc Delay (ns),MAE,global route to detailed route,NG45,0.0000,VAL,51
+Net Arc Delay (ns),MAE,global route to detailed route,SKY130,0.0000,VAL,51
+Net Arc Delay (ns),MAE,global route to detailed route,IHP130,0.0000,VAL,51
+Net Arc Delay (ns),MAE,global route to detailed route,ASAP7,0.0000,VAL,51
+Net Arc Delay (ns),MAPE,floorplan to detailed route,NG45,> 10000 %,VAL,52
+Net Arc Delay (ns),MAPE,floorplan to detailed route,SKY130,403.06 %,VAL,52
+Net Arc Delay (ns),MAPE,floorplan to detailed route,IHP130,547.23 %,VAL,52
+Net Arc Delay (ns),MAPE,floorplan to detailed route,ASAP7,39.38 %,VAL,52
+Net Arc Delay (ns),MAPE,global place to detailed route,NG45,> 10000 %,VAL,52
+Net Arc Delay (ns),MAPE,global place to detailed route,SKY130,28.21 %,VAL,52
+Net Arc Delay (ns),MAPE,global place to detailed route,IHP130,31.14 %,VAL,52
+Net Arc Delay (ns),MAPE,global place to detailed route,ASAP7,20.69 %,VAL,52
+Net Arc Delay (ns),MAPE,detailed place to detailed route,NG45,> 10000 %,VAL,52
+Net Arc Delay (ns),MAPE,detailed place to detailed route,SKY130,19.99 %,VAL,52
+Net Arc Delay (ns),MAPE,detailed place to detailed route,IHP130,8.91 %,VAL,52
+Net Arc Delay (ns),MAPE,detailed place to detailed route,ASAP7,11.16 %,VAL,52
+Net Arc Delay (ns),MAPE,CTS to detailed route,NG45,> 10000 %,VAL,52
+Net Arc Delay (ns),MAPE,CTS to detailed route,SKY130,2.36 %,VAL,52
+Net Arc Delay (ns),MAPE,CTS to detailed route,IHP130,0.32 %,VAL,52
+Net Arc Delay (ns),MAPE,CTS to detailed route,ASAP7,0.95 %,VAL,52
+Net Arc Delay (ns),MAPE,global route to detailed route,NG45,0.00 %,VAL,52
+Net Arc Delay (ns),MAPE,global route to detailed route,SKY130,0.00 %,VAL,52
+Net Arc Delay (ns),MAPE,global route to detailed route,IHP130,0.00 %,VAL,52
+Net Arc Delay (ns),MAPE,global route to detailed route,ASAP7,0.00 %,VAL,52
+Net Arc Delay (ns),R^2,floorplan to detailed route,NG45,< -1,VAL,53
+Net Arc Delay (ns),R^2,floorplan to detailed route,SKY130,< -1,VAL,53
+Net Arc Delay (ns),R^2,floorplan to detailed route,IHP130,< -1,VAL,53
+Net Arc Delay (ns),R^2,floorplan to detailed route,ASAP7,< -1,VAL,53
+Net Arc Delay (ns),R^2,global place to detailed route,NG45,< -1,VAL,53
+Net Arc Delay (ns),R^2,global place to detailed route,SKY130,-0.029,VAL,53
+Net Arc Delay (ns),R^2,global place to detailed route,IHP130,< -1,VAL,53
+Net Arc Delay (ns),R^2,global place to detailed route,ASAP7,-0.402,VAL,53
+Net Arc Delay (ns),R^2,detailed place to detailed route,NG45,-0.024,VAL,53
+Net Arc Delay (ns),R^2,detailed place to detailed route,SKY130,0.748,VAL,53
+Net Arc Delay (ns),R^2,detailed place to detailed route,IHP130,0.876,VAL,53
+Net Arc Delay (ns),R^2,detailed place to detailed route,ASAP7,0.777,VAL,53
+Net Arc Delay (ns),R^2,CTS to detailed route,NG45,0.976,VAL,53
+Net Arc Delay (ns),R^2,CTS to detailed route,SKY130,0.981,VAL,53
+Net Arc Delay (ns),R^2,CTS to detailed route,IHP130,0.999,VAL,53
+Net Arc Delay (ns),R^2,CTS to detailed route,ASAP7,0.979,VAL,53
+Net Arc Delay (ns),R^2,global route to detailed route,NG45,1.000,VAL,53
+Net Arc Delay (ns),R^2,global route to detailed route,SKY130,1.000,VAL,53
+Net Arc Delay (ns),R^2,global route to detailed route,IHP130,1.000,VAL,53
+Net Arc Delay (ns),R^2,global route to detailed route,ASAP7,1.000,VAL,53
+Cell Arc Delay (ns),MAE,floorplan to detailed route,NG45,0.0011,VAL,54
+Cell Arc Delay (ns),MAE,floorplan to detailed route,SKY130,0.0031,VAL,54
+Cell Arc Delay (ns),MAE,floorplan to detailed route,IHP130,0.0003,VAL,54
+Cell Arc Delay (ns),MAE,floorplan to detailed route,ASAP7,0.0018,VAL,54
+Cell Arc Delay (ns),MAE,global place to detailed route,NG45,0.0008,VAL,54
+Cell Arc Delay (ns),MAE,global place to detailed route,SKY130,0.0016,VAL,54
+Cell Arc Delay (ns),MAE,global place to detailed route,IHP130,0.0002,VAL,54
+Cell Arc Delay (ns),MAE,global place to detailed route,ASAP7,0.0003,VAL,54
+Cell Arc Delay (ns),MAE,detailed place to detailed route,NG45,0.0009,VAL,54
+Cell Arc Delay (ns),MAE,detailed place to detailed route,SKY130,0.0013,VAL,54
+Cell Arc Delay (ns),MAE,detailed place to detailed route,IHP130,0.0001,VAL,54
+Cell Arc Delay (ns),MAE,detailed place to detailed route,ASAP7,0.0002,VAL,54
+Cell Arc Delay (ns),MAE,CTS to detailed route,NG45,0.0001,VAL,54
+Cell Arc Delay (ns),MAE,CTS to detailed route,SKY130,0.0003,VAL,54
+Cell Arc Delay (ns),MAE,CTS to detailed route,IHP130,0.0000,VAL,54
+Cell Arc Delay (ns),MAE,CTS to detailed route,ASAP7,0.0000,VAL,54
+Cell Arc Delay (ns),MAE,global route to detailed route,NG45,0.0000,VAL,54
+Cell Arc Delay (ns),MAE,global route to detailed route,SKY130,0.0000,VAL,54
+Cell Arc Delay (ns),MAE,global route to detailed route,IHP130,0.0000,VAL,54
+Cell Arc Delay (ns),MAE,global route to detailed route,ASAP7,0.0000,VAL,54
+Cell Arc Delay (ns),MAPE,floorplan to detailed route,NG45,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,floorplan to detailed route,SKY130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,floorplan to detailed route,IHP130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,floorplan to detailed route,ASAP7,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,global place to detailed route,NG45,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,global place to detailed route,SKY130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,global place to detailed route,IHP130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,global place to detailed route,ASAP7,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,detailed place to detailed route,NG45,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,detailed place to detailed route,SKY130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,detailed place to detailed route,IHP130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,detailed place to detailed route,ASAP7,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,CTS to detailed route,NG45,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,CTS to detailed route,SKY130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,CTS to detailed route,IHP130,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,CTS to detailed route,ASAP7,> 10000 %,VAL,55
+Cell Arc Delay (ns),MAPE,global route to detailed route,NG45,0.00 %,VAL,55
+Cell Arc Delay (ns),MAPE,global route to detailed route,SKY130,0.00 %,VAL,55
+Cell Arc Delay (ns),MAPE,global route to detailed route,IHP130,0.00 %,VAL,55
+Cell Arc Delay (ns),MAPE,global route to detailed route,ASAP7,0.00 %,VAL,55
+Cell Arc Delay (ns),R^2,floorplan to detailed route,NG45,-0.308,VAL,56
+Cell Arc Delay (ns),R^2,floorplan to detailed route,SKY130,< -1,VAL,56
+Cell Arc Delay (ns),R^2,floorplan to detailed route,IHP130,< -1,VAL,56
+Cell Arc Delay (ns),R^2,floorplan to detailed route,ASAP7,-0.141,VAL,56
+Cell Arc Delay (ns),R^2,global place to detailed route,NG45,0.928,VAL,56
+Cell Arc Delay (ns),R^2,global place to detailed route,SKY130,0.873,VAL,56
+Cell Arc Delay (ns),R^2,global place to detailed route,IHP130,0.641,VAL,56
+Cell Arc Delay (ns),R^2,global place to detailed route,ASAP7,0.851,VAL,56
+Cell Arc Delay (ns),R^2,detailed place to detailed route,NG45,0.875,VAL,56
+Cell Arc Delay (ns),R^2,detailed place to detailed route,SKY130,0.894,VAL,56
+Cell Arc Delay (ns),R^2,detailed place to detailed route,IHP130,0.657,VAL,56
+Cell Arc Delay (ns),R^2,detailed place to detailed route,ASAP7,0.925,VAL,56
+Cell Arc Delay (ns),R^2,CTS to detailed route,NG45,0.987,VAL,56
+Cell Arc Delay (ns),R^2,CTS to detailed route,SKY130,0.974,VAL,56
+Cell Arc Delay (ns),R^2,CTS to detailed route,IHP130,0.975,VAL,56
+Cell Arc Delay (ns),R^2,CTS to detailed route,ASAP7,0.952,VAL,56
+Cell Arc Delay (ns),R^2,global route to detailed route,NG45,1.000,VAL,56
+Cell Arc Delay (ns),R^2,global route to detailed route,SKY130,1.000,VAL,56
+Cell Arc Delay (ns),R^2,global route to detailed route,IHP130,1.000,VAL,56
+Cell Arc Delay (ns),R^2,global route to detailed route,ASAP7,1.000,VAL,56
+Cell Arc Slew (ns),MAE,floorplan to detailed route,NG45,0.0761,VAL,57
+Cell Arc Slew (ns),MAE,floorplan to detailed route,SKY130,0.8919,VAL,57
+Cell Arc Slew (ns),MAE,floorplan to detailed route,IHP130,0.4735,VAL,57
+Cell Arc Slew (ns),MAE,floorplan to detailed route,ASAP7,0.0152,VAL,57
+Cell Arc Slew (ns),MAE,global place to detailed route,NG45,0.0082,VAL,57
+Cell Arc Slew (ns),MAE,global place to detailed route,SKY130,0.0415,VAL,57
+Cell Arc Slew (ns),MAE,global place to detailed route,IHP130,0.0059,VAL,57
+Cell Arc Slew (ns),MAE,global place to detailed route,ASAP7,0.0026,VAL,57
+Cell Arc Slew (ns),MAE,detailed place to detailed route,NG45,0.0028,VAL,57
+Cell Arc Slew (ns),MAE,detailed place to detailed route,SKY130,0.0392,VAL,57
+Cell Arc Slew (ns),MAE,detailed place to detailed route,IHP130,0.0011,VAL,57
+Cell Arc Slew (ns),MAE,detailed place to detailed route,ASAP7,0.0017,VAL,57
+Cell Arc Slew (ns),MAE,CTS to detailed route,NG45,0.0003,VAL,57
+Cell Arc Slew (ns),MAE,CTS to detailed route,SKY130,0.0054,VAL,57
+Cell Arc Slew (ns),MAE,CTS to detailed route,IHP130,0.0004,VAL,57
+Cell Arc Slew (ns),MAE,CTS to detailed route,ASAP7,0.0003,VAL,57
+Cell Arc Slew (ns),MAE,global route to detailed route,NG45,0.0000,VAL,57
+Cell Arc Slew (ns),MAE,global route to detailed route,SKY130,0.0000,VAL,57
+Cell Arc Slew (ns),MAE,global route to detailed route,IHP130,0.0000,VAL,57
+Cell Arc Slew (ns),MAE,global route to detailed route,ASAP7,0.0000,VAL,57
+Cell Arc Slew (ns),MAPE,floorplan to detailed route,NG45,183.03 %,VAL,58
+Cell Arc Slew (ns),MAPE,floorplan to detailed route,SKY130,462.31 %,VAL,58
+Cell Arc Slew (ns),MAPE,floorplan to detailed route,IHP130,1134.69 %,VAL,58
+Cell Arc Slew (ns),MAPE,floorplan to detailed route,ASAP7,34.33 %,VAL,58
+Cell Arc Slew (ns),MAPE,global place to detailed route,NG45,27.44 %,VAL,58
+Cell Arc Slew (ns),MAPE,global place to detailed route,SKY130,37.69 %,VAL,58
+Cell Arc Slew (ns),MAPE,global place to detailed route,IHP130,11.05 %,VAL,58
+Cell Arc Slew (ns),MAPE,global place to detailed route,ASAP7,7.44 %,VAL,58
+Cell Arc Slew (ns),MAPE,detailed place to detailed route,NG45,13.43 %,VAL,58
+Cell Arc Slew (ns),MAPE,detailed place to detailed route,SKY130,35.60 %,VAL,58
+Cell Arc Slew (ns),MAPE,detailed place to detailed route,IHP130,2.05 %,VAL,58
+Cell Arc Slew (ns),MAPE,detailed place to detailed route,ASAP7,5.89 %,VAL,58
+Cell Arc Slew (ns),MAPE,CTS to detailed route,NG45,1.27 %,VAL,58
+Cell Arc Slew (ns),MAPE,CTS to detailed route,SKY130,4.66 %,VAL,58
+Cell Arc Slew (ns),MAPE,CTS to detailed route,IHP130,0.53 %,VAL,58
+Cell Arc Slew (ns),MAPE,CTS to detailed route,ASAP7,1.01 %,VAL,58
+Cell Arc Slew (ns),MAPE,global route to detailed route,NG45,0.00 %,VAL,58
+Cell Arc Slew (ns),MAPE,global route to detailed route,SKY130,0.00 %,VAL,58
+Cell Arc Slew (ns),MAPE,global route to detailed route,IHP130,0.00 %,VAL,58
+Cell Arc Slew (ns),MAPE,global route to detailed route,ASAP7,0.00 %,VAL,58
+Cell Arc Slew (ns),R^2,floorplan to detailed route,NG45,< -1,VAL,59
+Cell Arc Slew (ns),R^2,floorplan to detailed route,SKY130,< -1,VAL,59
+Cell Arc Slew (ns),R^2,floorplan to detailed route,IHP130,< -1,VAL,59
+Cell Arc Slew (ns),R^2,floorplan to detailed route,ASAP7,< -1,VAL,59
+Cell Arc Slew (ns),R^2,global place to detailed route,NG45,0.332,VAL,59
+Cell Arc Slew (ns),R^2,global place to detailed route,SKY130,0.414,VAL,59
+Cell Arc Slew (ns),R^2,global place to detailed route,IHP130,0.965,VAL,59
+Cell Arc Slew (ns),R^2,global place to detailed route,ASAP7,0.878,VAL,59
+Cell Arc Slew (ns),R^2,detailed place to detailed route,NG45,0.786,VAL,59
+Cell Arc Slew (ns),R^2,detailed place to detailed route,SKY130,0.427,VAL,59
+Cell Arc Slew (ns),R^2,detailed place to detailed route,IHP130,0.987,VAL,59
+Cell Arc Slew (ns),R^2,detailed place to detailed route,ASAP7,0.911,VAL,59
+Cell Arc Slew (ns),R^2,CTS to detailed route,NG45,0.973,VAL,59
+Cell Arc Slew (ns),R^2,CTS to detailed route,SKY130,0.938,VAL,59
+Cell Arc Slew (ns),R^2,CTS to detailed route,IHP130,0.994,VAL,59
+Cell Arc Slew (ns),R^2,CTS to detailed route,ASAP7,0.964,VAL,59
+Cell Arc Slew (ns),R^2,global route to detailed route,NG45,1.000,VAL,59
+Cell Arc Slew (ns),R^2,global route to detailed route,SKY130,1.000,VAL,59
+Cell Arc Slew (ns),R^2,global route to detailed route,IHP130,1.000,VAL,59
+Cell Arc Slew (ns),R^2,global route to detailed route,ASAP7,1.000,VAL,59
