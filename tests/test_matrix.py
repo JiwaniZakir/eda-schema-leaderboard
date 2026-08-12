@@ -304,3 +304,52 @@ def test_the_legend_names_every_state_and_both_baseline_cases() -> None:
     assert matrix.SATURATED in ids
     assert matrix.DEGENERATE in ids
     assert matrix.SENTINEL in ids
+
+
+PILL_RE = re.compile(
+    r'<button class="stage-pill" type="button" data-stage="([a-z_]+)"'
+    r' aria-pressed="(true|false)"'
+)
+
+
+def test_the_stage_pills_are_real_buttons_in_registry_order(index_html: str) -> None:
+    """A div with a click handler is not a button: it is not focusable, it does
+    not fire on Enter or Space, and it announces as nothing."""
+    found = PILL_RE.findall(index_html)
+    assert [stage for stage, _ in found] == [s.id for s in reg.stages()]
+
+
+def test_exactly_one_pill_is_pressed(index_html: str) -> None:
+    pressed = [stage for stage, state in PILL_RE.findall(index_html) if state == "true"]
+    assert pressed == [reg.stages()[0].id]
+
+
+def test_every_pill_targets_a_panel_that_exists(index_html: str) -> None:
+    panels = set(re.findall(r'data-stage-panel="([a-z_]+)"', index_html))
+    assert panels == {stage for stage, _ in PILL_RE.findall(index_html)}
+    assert len(panels) == 5
+
+
+def test_no_panel_is_hidden_in_the_markup(index_html: str) -> None:
+    """Without JavaScript the page must be complete. Shipping four panels with a
+    hidden attribute and unhiding them in a script means a reader with a blocked
+    script sees one fifth of the grid and no way to reach the rest."""
+    assert "data-stage-panel" in index_html
+    assert not re.search(r"<section[^>]*data-stage-panel[^>]*\shidden", index_html)
+
+
+def test_the_strip_itself_is_hidden_until_the_script_runs(index_html: str) -> None:
+    """The inverse rule for a control: a button that does nothing without
+    JavaScript should not be offered."""
+    assert re.search(r"<div[^>]*data-stage-strip[^>]*\shidden", index_html)
+
+
+def test_the_script_names_no_registry_vocabulary() -> None:
+    """Stage ids reach JavaScript through data attributes only. A stage id
+    written into a script is a second copy of the registry that nothing checks."""
+    js = Path(__file__).resolve().parent.parent / "static" / "js" / "matrix.js"
+    text = js.read_text(encoding="utf-8")
+    for stage in reg.stages():
+        assert stage.id not in text
+    for pdk in reg.pdks():
+        assert pdk.id not in text

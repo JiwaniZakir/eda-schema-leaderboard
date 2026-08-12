@@ -98,6 +98,7 @@ def _render_matrix(env: Environment, out: Path) -> None:
         template.render(
             base_path=BASE_PATH,
             panels=matrix.panels(),
+            stages=reg.stages(),
             pdks=reg.pdks(),
             columns=matrix.column_count(),
             legend=matrix.legend(),

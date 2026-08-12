@@ -50,7 +50,13 @@ a:visited { color: var(--link-visited); }
 
 /* ---- the grid ---- */
 
-.panel { overflow-x: auto; padding: 0 1rem 1.5rem; }
+/* `position: relative` is load-bearing, not decorative. It makes the panel the
+   containing block for the absolutely positioned .vh spans, one per cell. Left
+   static, their containing block is the initial one, so they are NOT clipped by
+   this scroll container: measured in Chrome at a 500px viewport, their far edge
+   sat at 820px and dragged the whole document's horizontal scroll out with it,
+   so a reader could swipe the header and the stage strip off the screen. */
+.panel { position: relative; overflow-x: auto; padding: 0 1rem 1.5rem; }
 .panel table { border-collapse: collapse; width: 100%; }
 .panel caption { text-align: left; padding: 0.6rem 0; font-size: 1.1rem; }
 
@@ -152,3 +158,40 @@ a:visited { color: var(--link-visited); }
 .legend div { display: flex; gap: 0.4rem; align-items: baseline; }
 .legend dt { padding: 0.1rem 0.5rem; border: 1px solid var(--border); }
 .legend dd { margin: 0; color: var(--text-muted); }
+
+/* ---- the stage strip ---- */
+
+.stage-strip { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.75rem 1rem; }
+
+.stage-pill {
+  font: inherit;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--pill-bg);
+  color: var(--pill-ink);
+  cursor: pointer;
+  text-align: center;
+}
+
+/* Every pill reserves the width of its own label AT THE PRESSED WEIGHT.
+   Bold text is wider, so without this the strip reflows on every click and the
+   button moves out from under the cursor: measured in Chrome against the built
+   page, clicking the last pill slid it 6px left and the other four 5px. The
+   generated copy contributes width and nothing else, and visibility:hidden
+   keeps it out of the accessibility tree, so the button is still named once. */
+.stage-pill::before {
+  content: attr(data-label);
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 700;
+}
+
+.stage-pill[aria-pressed="true"] {
+  background: var(--pill-active-bg);
+  color: var(--pill-active-ink);
+  border-color: var(--pill-active-bg);
+  font-weight: 700;
+}

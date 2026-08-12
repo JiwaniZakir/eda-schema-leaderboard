@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 <p class="intro">No submissions yet. Every cell shows the value the paper published for that baseline.</p>
+<div class="stage-strip" data-stage-strip role="group" aria-label="Stage transition" hidden>
+{% for stage in stages %}
+<button class="stage-pill" type="button" data-stage="{{ stage.id }}" aria-pressed="{{ "true" if loop.first else "false" }}" data-label="{{ stage.label }}">{{ stage.label }}</button>
+{% endfor %}
+</div>
 <dl class="legend">
 {% for item in legend %}
 <div><dt class="state-{{ item.id }}">{{ item.label }}</dt><dd>{{ item.explanation }}</dd></div>
@@ -24,4 +29,7 @@
 </table>
 </section>
 {% endfor %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ base_path }}static/js/matrix.js" defer></script>
 {% endblock %}
