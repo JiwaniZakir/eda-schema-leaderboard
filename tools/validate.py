@@ -9,9 +9,11 @@ register real checks here.
 
 from __future__ import annotations
 
+import argparse
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,7 +47,36 @@ def validate() -> list[Failure]:
     return failures
 
 
-def main() -> int:
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="eda-validate",
+        description="JSON Schema plus guard layers 1 to 5. Exits non-zero on failure.",
+    )
+    parser.add_argument(
+        "--submissions",
+        type=Path,
+        metavar="DIR",
+        help=(
+            "Also validate community submission records under DIR against "
+            "schema/submission.schema.json. Used by the experiments repo, which "
+            "checks this repo out and points at its own tree."
+        ),
+    )
+    parser.add_argument(
+        "--require-nonempty",
+        action="store_true",
+        help=(
+            "Fail if --submissions finds no records. CI sets this when the pull "
+            "request actually changed submissions/, so that an empty scan is a "
+            "failure rather than a silent pass."
+        ),
+    )
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _parser().parse_args(argv)
+
     # Import for the registration side effect. Deferred to avoid a cycle: checks
     # import Failure from this module.
     import tools.checks  # noqa: F401
@@ -56,9 +87,35 @@ def main() -> int:
         print("validate: no checks registered", file=sys.stderr)
         return 1
 
+    if args.require_nonempty and args.submissions is None:
+        print(
+            "validate: --require-nonempty is meaningless without --submissions",
+            file=sys.stderr,
+        )
+        return 2
+
     failures = validate()
+
+    submission_count = 0
+    if args.submissions is not None:
+        # Imported here rather than at module scope: tools.submissions imports
+        # Failure from this module, same cycle as tools.checks above.
+        from tools.submissions import check_submissions, discover
+
+        submission_count = len(discover(args.submissions))
+        failures.extend(
+            check_submissions(args.submissions, require_nonempty=args.require_nonempty)
+        )
+
     for failure in failures:
         print(f"FAIL {failure}", file=sys.stderr)
 
-    print(f"validate: {len(CHECKS)} checks, {len(failures)} failures")
+    summary = f"validate: {len(CHECKS)} checks"
+    if args.submissions is not None:
+        # Always state the count. "Passed" without it cannot be told apart from
+        # "examined nothing", which is the failure this argument exists to fix.
+        summary += f", {submission_count} submissions from {args.submissions}"
+    summary += f", {len(failures)} failures"
+    print(summary)
+
     return 1 if failures else 0

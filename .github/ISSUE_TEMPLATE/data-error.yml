@@ -1,0 +1,63 @@
+name: Incorrect number on the leaderboard
+description: A baseline, a ranking, or a cell state that does not match the source
+title: "[data]: "
+labels: ["data-integrity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most important kind of report we receive. Other groups cite
+        these numbers, so a wrong one propagates.
+
+        If you can, cite the source you checked against: a table and page of
+        arXiv:2605.06952, or a line in an `eval.log`.
+
+  - type: input
+    id: cell
+    attributes:
+      label: Which cell
+      description: >-
+        Cell identity is (task, metric, pdk, stage). Copy it from the cell page
+        URL if that is easier.
+      placeholder: total_area_prediction / mape / NG45 / global_place
+    validations:
+      required: true
+
+  - type: input
+    id: shown
+    attributes:
+      label: Value shown
+      placeholder: "0.51"
+    validations:
+      required: true
+
+  - type: input
+    id: expected
+    attributes:
+      label: Value you expected
+      placeholder: "51.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: What you checked against
+      description: Table and page, a log line, or the computation you ran.
+      placeholder: |
+        Table 8, page 29 of arXiv:2605.06952 reads 51.0 for this cell.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What looks wrong
+      options:
+        - The number itself
+        - The cell state (win/loss/tie/saturated/no entry)
+        - A sentinel is displayed where a value should be, or vice versa
+        - The cell is marked void or degenerate and should not be
+        - Something else
+    validations:
+      required: true

@@ -1,0 +1,46 @@
+name: Site bug
+description: Something on the site is broken, unreadable, or unreachable
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: Page
+      placeholder: https://jiwanizakir.github.io/eda-schema-leaderboard/...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      description: Several issues appear in only one theme.
+      options:
+        - drexel
+        - neutral
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: Browser and OS
+      placeholder: Firefox 141 on macOS 15
+
+  - type: checkboxes
+    id: a11y
+    attributes:
+      label: Accessibility
+      options:
+        - label: This is an accessibility problem (contrast, keyboard, screen reader)

@@ -20,41 +20,60 @@ permissions: {}
 #    because it performs actor permission checks and handles fork contexts.
 # 4. No PR-controlled text is interpolated into any run: step.
 #
-# The API key is intentionally not required for fork PRs; the job simply skips,
-# rather than the workflow being written so a fork could reach a secret.
+# AUTHENTICATION - workload identity federation, per PLAN.md Phase 0.
+#
+# There is no Anthropic credential in this repository's secrets, and there should
+# never be one. The action exchanges the workflow's GitHub OIDC token for a
+# short-lived Anthropic token, which is what `id-token: write` below is for.
+# The three `vars.*` values are identifiers, not credentials - a rule ID, an org
+# UUID and a service account ID - so they live in repository variables and are
+# safe to read.
+#
+# This replaced an `anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}` setup
+# where the secret was never set. The workflow resolved that in a `preflight` job
+# that skipped the review when the key was absent, so `claude-review` reported
+# SUCCESS on every pull request while never once invoking Claude. A workflow that
+# is green because it did nothing is worse than one that is plainly red.
+#
+# The fix is structural, not a bigger warning. `secrets` is not available in a
+# job-level `if:`, which is why the preflight job existed. `vars` IS available
+# there, so the whole job now gates on configuration directly. When the
+# identifiers are unset, zero jobs run and the workflow reports SKIPPED - a grey
+# icon, not a green tick. When they are set and the federation exchange fails,
+# the action step fails and takes the job with it. Neither state can be mistaken
+# for a successful review.
+#
+# TO ENABLE: set these three repository variables (Settings > Secrets and
+# variables > Actions > Variables), obtained from the Claude Console:
+#   ANTHROPIC_FEDERATION_RULE_ID    fdrl_...
+#   ANTHROPIC_ORGANIZATION_ID       a UUID
+#   ANTHROPIC_SERVICE_ACCOUNT_ID    svac_...
+#
+# When creating the federation rule, constrain its subject. Anthropic's own
+# guidance warns that an under-constrained `subject_prefix` also matches
+# `pull_request` runs triggered from forks. For `pull_request` events the GitHub
+# OIDC subject is `repo:OWNER/REPO:pull_request` with no ref component, so a ref
+# constraint alone does not separate a fork PR from a same-repo one. Pin the
+# prefix to this repository and add a `repository_owner` claim constraint. The
+# same-repo `if:` gate below is defence in depth on top of that, not a substitute.
 
 jobs:
-  # The `secrets` context is not available in a job-level `if`, so whether the key
-  # exists has to be resolved in a step and passed on as an output. Without this
-  # the review job runs with an empty key and fails, which under branch protection
-  # would block every merge on a missing secret.
-  preflight:
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    permissions: {}
-    outputs:
-      configured: ${{ steps.key.outputs.configured }}
-    steps:
-      - id: key
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          if [ -n "$ANTHROPIC_API_KEY" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::ANTHROPIC_API_KEY is not set; skipping automated review."
-          fi
-
   review:
-    # Skip forks entirely: they cannot access the key, and a job that appears to
-    # run but silently does nothing is worse than one that plainly did not.
-    needs: preflight
-    if: needs.preflight.outputs.configured == 'true'
+    # Three independent conditions, all required:
+    #   - the PR is from a branch in this repo, never a fork
+    #   - federation is actually configured
+    # A fork PR additionally gets `id-token` downgraded to read by GitHub, so the
+    # OIDC fetch would fail even if this gate were removed. Three layers, because
+    # the cost of the outer two is one expression each.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && vars.ANTHROPIC_FEDERATION_RULE_ID != ''
+      && vars.ANTHROPIC_ORGANIZATION_ID != ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,7 +82,9 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          anthropic_federation_rule_id: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+          anthropic_organization_id: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+          anthropic_service_account_id: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
           prompt: |
             Review this pull request against PLAN.md and docs/DATA_CONTRACT.md.
 
@@ -77,3 +98,19 @@ jobs:
 
             Do not report style preferences or speculative refactors.
             If the work is sound, say so plainly.
+
+            Use `gh pr comment` for top-level feedback and
+            mcp__github_inline_comment__create_inline_comment for specific lines.
+            Post findings as GitHub comments; do not return them as chat text.
+
+          # The tool allowlist is what actually makes this review-only, and it is
+          # load-bearing for a reason that is easy to miss: the job's
+          # `permissions:` block scopes GITHUB_TOKEN, but by default the action
+          # does not use GITHUB_TOKEN. It mints a Claude GitHub App installation
+          # token whose scope is set server-side and includes contents:write.
+          # So `contents: read` above does NOT by itself stop Claude from
+          # committing. Restricting the tools does. No Edit, no Write, no
+          # Bash(git:*), no `gh pr create`.
+          claude_args: >-
+            --allowedTools
+            "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

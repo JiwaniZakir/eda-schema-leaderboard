@@ -14,11 +14,16 @@ on:
 permissions: {}
 
 # Actions here are pinned to commit SHAs, not floating major tags, because this
-# is the only workflow that holds `pages: write`. A retagged upstream would
-# publish arbitrary content to the public leaderboard, which is exactly what the
+# workflow holds `pages: write`. A retagged upstream would publish arbitrary
+# content to the public leaderboard, which is exactly what the
 # tj-actions/changed-files compromise did across thousands of repos in 2025.
 # Dependabot updates SHA pins, so this costs nothing to maintain.
-# Other workflows stay on tags: they are contents:read with no secrets.
+#
+# The rule is "any workflow holding a write scope is pinned", and it applies to
+# codeql.yml too, whose analyze job holds `security-events: write`. This comment
+# previously claimed deploy.yml was the only such workflow, which was untrue and
+# left codeql.yml floating. Workflows that are contents:read with no secrets
+# (ci, size-guard, link-check, a11y) stay on tags deliberately.
 
 # Never cancel a deploy midway; a half-published site is worse than a slow one.
 concurrency:

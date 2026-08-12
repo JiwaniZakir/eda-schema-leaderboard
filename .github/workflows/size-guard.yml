@@ -11,6 +11,22 @@ env:
   MAX_DIST_MB: 200
   MAX_FILE_MB: 1
 
+# Two jobs, because they answer different questions and must be able to fail
+# independently.
+#
+# `size` asks what the PR adds to git. `dist-size` asks what the build emits.
+# They were one job, in which the build ran first. That ordering meant a broken
+# build failed the job before the file-size check ever executed, while still
+# reporting exactly what a working guard reports: a red X on `size`. It happened
+# on phase-1/registries and phase-2/baseline, where build.py was absent and the
+# guard reported failure having measured nothing.
+#
+# So: `size` does no dependency install and no build. It cannot be masked by
+# anything upstream of the assertion it exists to make. A guard whose red can be
+# caused by something other than the condition it checks is not a guard.
+#
+# The job name `size` is load-bearing - it is a required status check on main.
+# Renaming it silently voids that branch protection rule.
 jobs:
   size:
     runs-on: ubuntu-latest
@@ -20,15 +36,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
-      - run: uv sync --all-extras
-
-      - name: Build
-        run: uv run python build.py
 
       - name: Check committed file sizes
         run: |
@@ -52,10 +59,41 @@ jobs:
             fi
           done < <(git ls-files -z)
           echo "checked $seen tracked files against the ${MAX_FILE_MB} MB cap"
+
+          # A scan that walked zero files is a broken scan, not a clean repo.
+          # Without this, a checkout failure or a bad working directory reads as
+          # a pass. Same reasoning as tools/validate.py refusing an empty check
+          # registry: never report success for work that did not happen.
+          if [ "$seen" -eq 0 ]; then
+            echo "::error::no tracked files were scanned; the guard did not run"
+            exit 1
+          fi
           exit $fail
+
+  dist-size:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --all-extras
+
+      - name: Build
+        run: uv run python build.py
 
       - name: Check dist size
         run: |
+          if [ ! -d dist ]; then
+            echo "::error::build produced no dist/ directory"
+            exit 1
+          fi
           mb=$(du -sm dist | cut -f1)
           echo "dist/ is ${mb} MB (cap ${MAX_DIST_MB} MB)"
           if [ "$mb" -gt "$MAX_DIST_MB" ]; then
