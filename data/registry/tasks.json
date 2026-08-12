@@ -6,7 +6,11 @@
     "unit": "µm²",
     "granularity": "design",
     "design_level": true,
-    "metrics": ["mae", "mape", "r2"],
+    "metrics": [
+      "mae",
+      "mape",
+      "r2"
+    ],
     "precision_overrides": {}
   },
   {
@@ -16,7 +20,11 @@
     "unit": "µW",
     "granularity": "design",
     "design_level": true,
-    "metrics": ["mae", "mape", "r2"],
+    "metrics": [
+      "mae",
+      "mape",
+      "r2"
+    ],
     "precision_overrides": {}
   },
   {
@@ -26,7 +34,11 @@
     "unit": "µm",
     "granularity": "design",
     "design_level": true,
-    "metrics": ["mae", "mape", "r2"],
+    "metrics": [
+      "mae",
+      "mape",
+      "r2"
+    ],
     "precision_overrides": {}
   },
   {
@@ -54,7 +66,10 @@
     "unit": "ns",
     "granularity": "design",
     "design_level": true,
-    "metrics": ["mae", "mape"],
+    "metrics": [
+      "mae",
+      "mape"
+    ],
     "precision_overrides": {}
   },
   {
@@ -64,7 +79,13 @@
     "unit": "ns",
     "granularity": "design",
     "design_level": true,
-    "metrics": ["mae", "mpe", "mne", "tpr", "tnr"],
+    "metrics": [
+      "mae",
+      "mpe",
+      "mne",
+      "tpr",
+      "tnr"
+    ],
     "precision_overrides": {}
   },
   {
@@ -74,7 +95,11 @@
     "unit": "ns",
     "granularity": "design",
     "design_level": true,
-    "metrics": ["mae", "mpe", "mne"],
+    "metrics": [
+      "mae",
+      "mpe",
+      "mne"
+    ],
     "precision_overrides": {}
   },
   {
@@ -92,7 +117,11 @@
       "mae_top5",
       "mape_top5"
     ],
-    "precision_overrides": { "mae": 4, "mae_p95": 4, "mae_top5": 4 }
+    "precision_overrides": {
+      "mae": 4,
+      "mae_p95": 4,
+      "mae_top5": 4
+    }
   },
   {
     "id": "timing_path_slack_prediction",
@@ -101,8 +130,18 @@
     "unit": "ns",
     "granularity": "path",
     "design_level": false,
-    "metrics": ["mae", "mpe", "mne", "tpr", "tnr"],
-    "precision_overrides": { "mae": 4, "mpe": 4, "mne": 4 }
+    "metrics": [
+      "mae",
+      "mpe",
+      "mne",
+      "tpr",
+      "tnr"
+    ],
+    "precision_overrides": {
+      "mae": 4,
+      "mpe": 4,
+      "mne": 4
+    }
   },
   {
     "id": "net_arc_delay_prediction",
@@ -111,8 +150,14 @@
     "unit": "ns",
     "granularity": "net_arc",
     "design_level": false,
-    "metrics": ["mae", "mape", "r2"],
-    "precision_overrides": { "mae": 4 }
+    "metrics": [
+      "mae",
+      "mape",
+      "r2"
+    ],
+    "precision_overrides": {
+      "mae": 4
+    }
   },
   {
     "id": "cell_arc_delay_prediction",
@@ -121,8 +166,14 @@
     "unit": "ns",
     "granularity": "cell_arc",
     "design_level": false,
-    "metrics": ["mae", "mape", "r2"],
-    "precision_overrides": { "mae": 4 }
+    "metrics": [
+      "mae",
+      "mape",
+      "r2"
+    ],
+    "precision_overrides": {
+      "mae": 4
+    }
   },
   {
     "id": "cell_arc_slew_prediction",
@@ -131,7 +182,13 @@
     "unit": "ns",
     "granularity": "cell_arc",
     "design_level": false,
-    "metrics": ["mae", "mape", "r2"],
-    "precision_overrides": { "mae": 4 }
+    "metrics": [
+      "mae",
+      "mape",
+      "r2"
+    ],
+    "precision_overrides": {
+      "mae": 4
+    }
   }
 ]

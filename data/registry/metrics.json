@@ -72,7 +72,7 @@
   {
     "id": "mae_p95",
     "label": "MAE P95",
-    "long_label": "95th-percentile absolute error",
+    "long_label": "MAE, 95th percentile",
     "table8_label": "MAE P95",
     "direction": "lower",
     "bias": null,
@@ -82,7 +82,7 @@
   {
     "id": "mape_p95",
     "label": "MAPE P95",
-    "long_label": "95th-percentile absolute percentage error",
+    "long_label": "MAPE, 95th percentile",
     "table8_label": "MAPE P95",
     "direction": "lower",
     "bias": null,
@@ -92,7 +92,7 @@
   {
     "id": "mae_top5",
     "label": "MAE TOP5",
-    "long_label": "MAE over the worst 5% by target magnitude",
+    "long_label": "MAE on the worst 5%",
     "table8_label": "MAE TOP5",
     "direction": "lower",
     "bias": null,
@@ -102,7 +102,7 @@
   {
     "id": "mape_top5",
     "label": "MAPE TOP5",
-    "long_label": "MAPE over the worst 5% by target magnitude",
+    "long_label": "MAPE on the worst 5%",
     "table8_label": "MAPE TOP5",
     "direction": "lower",
     "bias": null,

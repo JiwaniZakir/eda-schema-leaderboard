@@ -1,0 +1,5 @@
+pdk,metal_layers,utilization,utilization_sweep
+ASAP7,9,0.40,0.3|0.4|0.5
+IHP130,7,0.30,0.2|0.3|0.4
+NG45,10,0.40,0.3|0.4|0.5
+SKY130,5,0.30,0.2|0.3|0.4

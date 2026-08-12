@@ -25,12 +25,14 @@ dev = [
     "types-pyyaml>=6.0.12",
 ]
 
+# `eda-validate` must stay a real entry point, never `python -m tools.validate`.
+# Running the module as __main__ creates a second copy of it, so checks
+# registering into the CHECKS dict land in a different dict than the one main()
+# reads, and validation silently passes having done nothing. That bug shipped
+# once already.
 [project.scripts]
-# A real entry point, not `python -m tools.validate`. Running the module as
-# __main__ creates a second copy of it, so checks registering into
-# tools.validate.CHECKS land in a different dict than the one main() reads, and
-# validation silently passes having done nothing.
 eda-validate = "tools.validate:main"
+eda-baseline = "tools.baseline:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -42,6 +44,15 @@ packages = ["tools"]
 [tool.ruff]
 target-version = "py311"
 line-length = 88
+# Markdown is prose, not source. Ruff formats Python code blocks found inside
+# `.md` files, which puts every document under docs/plans/ on the critical path
+# of `make check` and of the CI lint job. Those documents are specifications:
+# their snippets are deliberately partial, they are edited constantly, and a
+# half-written example in a plan must never be able to fail the code gate. Ruff
+# itself calls Markdown formatting experimental. Excluded here rather than in
+# the Makefile so `make check`, CI and an editor integration all agree; CI runs
+# `ruff check .` and `ruff format --check .` directly and reads this file too.
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
@@ -50,7 +61,8 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 python_version = "3.11"
 strict = true
 warn_unreachable = true
-files = ["tools", "tests", "build.py"]
+# Grows as the phases land: tools/ and tests/ in Phase 1, build.py in Phase 3.
+files = ["tools", "tests"]
 
 [[tool.mypy.overrides]]
 module = ["torch.*"]

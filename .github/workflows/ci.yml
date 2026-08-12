@@ -91,9 +91,16 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-extras
-      - run: uv run python build.py
+      # Via make, not `uv run python build.py` directly. build.py is a Phase 3
+      # deliverable, so the raw command makes this required check unsatisfiable
+      # on the Phase 1 and Phase 2 PRs, and branch protection then blocks the
+      # two phases everything else is built on. `make build` skips loudly until
+      # build.py exists and runs it for real afterwards, which is also what
+      # CLAUDE.md promises when it says CI enforces `make check`.
+      - run: make build
       - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
           retention-days: 7
+          if-no-files-found: ignore
