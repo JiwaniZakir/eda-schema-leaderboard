@@ -165,3 +165,39 @@ def test_the_three_arc_tasks_publish_r2() -> None:
         "cell_arc_slew_prediction",
     ):
         assert "r2" in reg.task(tid).metrics
+
+
+def test_void_is_the_two_wirelength_tasks_at_floorplan_only() -> None:
+    assert reg.is_void("total_wirelength_prediction", "floorplan")
+    assert reg.is_void("interconnect_length_prediction", "floorplan")
+    assert not reg.is_void("total_wirelength_prediction", "global_place")
+    assert not reg.is_void("total_area_prediction", "floorplan")
+
+
+def test_degenerate_is_mpe_mne_on_slack_tasks_at_global_route() -> None:
+    assert reg.is_degenerate("worst_slack_prediction", "mpe", "global_route")
+    assert reg.is_degenerate("worst_slack_prediction", "mne", "global_route")
+    assert not reg.is_degenerate("worst_slack_prediction", "mae", "global_route")
+    assert not reg.is_degenerate("worst_slack_prediction", "mpe", "cts")
+
+
+def test_degeneracy_beats_saturation() -> None:
+    """PRECEDENCE IS LOAD-BEARING. Reversing these two still yields 880 live
+    cells and 232 live combos, so the headline counts stay green while 24 cells
+    are silently mistyped. This is the assertion that catches it."""
+    assert reg.is_degenerate("worst_slack_prediction", "mpe", "global_route")
+    assert not reg.is_saturated("worst_slack_prediction", "mpe", "global_route")
+
+
+def test_saturation_is_a_stage_rule_not_a_numeric_test() -> None:
+    assert reg.is_saturated("total_area_prediction", "mae", "global_route")
+    assert reg.is_saturated("worst_slack_prediction", "tpr", "global_route")
+    assert not reg.is_saturated("total_wirelength_prediction", "mae", "global_route")
+    assert not reg.is_saturated("total_area_prediction", "mae", "cts")
+
+
+def test_precision_defaults_to_the_metric_and_is_overridden_per_task() -> None:
+    assert reg.precision("total_area_prediction", "mae") == 2
+    assert reg.precision("total_area_prediction", "r2") == 3
+    assert reg.precision("cell_arc_delay_prediction", "mae") == 4
+    assert reg.precision("timing_path_slack_prediction", "mpe") == 4

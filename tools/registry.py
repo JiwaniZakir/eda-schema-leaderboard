@@ -190,3 +190,52 @@ def task(task_id: str) -> Task:
         return _task_index()[task_id]
     except KeyError:
         raise KeyError(f"unknown task {task_id!r}") from None
+
+
+def is_void(task_id: str, stage_id: str) -> bool:
+    """The cell does not exist. Void cells are excluded from the live count.
+
+    Half-perimeter wirelength is the baseline estimator for both wirelength
+    tasks, and at floorplan there are no placed coordinates to compute it from.
+    """
+    return task_id in stage(stage_id).void_tasks
+
+
+def is_degenerate(task_id: str, metric_id: str, stage_id: str) -> bool:
+    """The cell exists, but its baseline is 0/0 and was never measured.
+
+    Table 8 prints "No positive or negative error, n_p = n_n = 0". These cells
+    stay live and carry baseline_value: null, so nothing can be recorded as
+    beating a baseline that does not exist.
+    """
+    s = stage(stage_id)
+    return task_id in s.degenerate_tasks and metric_id in s.degenerate_metrics
+
+
+def is_saturated(task_id: str, metric_id: str, stage_id: str) -> bool:
+    """The baseline is already at the optimum, so the cell is never ranked.
+
+    Checked AFTER degeneracy, deliberately. A degenerate cell is unmeasured, not
+    perfect, and conflating them mistypes the whole degenerate set while every
+    headline count stays correct.
+
+    This is a stage-and-task rule, never a predicate over values. A test for
+    zero error with a perfect coefficient of determination marks only 5 of the
+    10 saturated tasks, because the other five publish no percentage-error row,
+    no R^2 row, or neither. And the saturated set includes true/false positive
+    rates sitting at 100 %, where an "error is approximately zero" test returns
+    false.
+    """
+    if is_degenerate(task_id, metric_id, stage_id):
+        return False
+    return task_id in stage(stage_id).saturated_tasks
+
+
+def precision(task_id: str, metric_id: str) -> int:
+    """Display decimal places, per (task, metric).
+
+    Ground truth for the plausibility guard: a submission claiming MAE 0.00001
+    on a cell whose ground truth is published to four decimals is claiming
+    precision the dataset cannot express.
+    """
+    return task(task_id).precision_overrides.get(metric_id, metric(metric_id).precision)
