@@ -226,6 +226,96 @@ def test_worst_slack_mpe_ng45_global_route_has_no_baseline() -> None:
     assert entry.bound == bl.Bound(bl.BoundKind.ABSENT, None)
 
 
+# Transcribed by hand from docs/sources/table8_baseline.csv, one row at a time,
+# with the LaTeX source line the parsers agreed on recorded alongside. The
+# spot-checks above are all NG45 and all floorplan, CTS or global route, which
+# leaves a label permutation inside the stage, PDK or metric dimension free to
+# reassign published numbers among the middle stages and the tail metrics
+# without contradicting a single pinned cell. These cover the rest: both middle
+# stages, all three non-NG45 PDKs, and every metric the earlier pins missed.
+#
+# (task, metric, pdk, stage, stored value, src_line)
+PINNED_CELLS = [
+    ("total_power_prediction", "mape", "ihp130", "detailed_place", 0.1683, 18),
+    ("interconnect_length_prediction", "mae_p95", "sky130", "global_place", 38.53, 26),
+    (
+        "interconnect_length_prediction",
+        "mape_p95",
+        "sky130",
+        "global_place",
+        2.9366,
+        27,
+    ),
+    (
+        "interconnect_length_prediction",
+        "mae_top5",
+        "asap7",
+        "detailed_place",
+        11.37,
+        28,
+    ),
+    (
+        "interconnect_length_prediction",
+        "mape_top5",
+        "asap7",
+        "detailed_place",
+        0.1819,
+        29,
+    ),
+    ("worst_slack_prediction", "mpe", "ihp130", "global_place", 0.27, 33),
+    ("worst_slack_prediction", "mne", "ihp130", "global_place", 0.26, 34),
+    ("worst_slack_prediction", "tnr", "asap7", "global_place", 0.6375, 36),
+    ("timing_path_slack_prediction", "mne", "sky130", "detailed_place", 0.5783, 48),
+    ("cell_arc_slew_prediction", "r2", "ihp130", "global_place", 0.965, 59),
+]
+
+
+@pytest.mark.parametrize(
+    ("task_id", "metric_id", "pdk_id", "stage_id", "value", "src_line"),
+    PINNED_CELLS,
+    ids=[f"{c[0]}-{c[1]}-{c[2]}-{c[3]}" for c in PINNED_CELLS],
+)
+def test_pinned_cells_carry_the_number_the_paper_published(
+    task_id: str,
+    metric_id: str,
+    pdk_id: str,
+    stage_id: str,
+    value: float,
+    src_line: int,
+) -> None:
+    """Ten more cells, chosen to cover what the first ten did not.
+
+    mpe and mne are pinned as a PAIR at the same cell, deliberately: they differ
+    by 0.01 there, they are published on adjacent source lines, and the contract
+    rules that ranking them as interchangeable magnitudes is a correctness bug.
+    Pinning only one of the two cannot see them trade places.
+    """
+    entry = bl.lookup(task_id, metric_id, pdk_id, stage_id)
+    assert entry.bound == bl.Bound(bl.BoundKind.EXACT, value)
+    assert entry.src_line == src_line
+    assert entry.baseline_state == bl.PUBLISHED
+    assert entry.source == bl.PAPER
+
+
+def test_the_pinned_cells_reach_every_stage_pdk_and_percent_metric() -> None:
+    """Guards the guard. A pin set that drifted back onto one stage or one PDK
+    would still pass every assertion above while covering nothing."""
+    earlier = {
+        ("total_area_prediction", "mae", "ng45", "floorplan"),
+        ("total_area_prediction", "mape", "ng45", "floorplan"),
+        ("worst_slack_prediction", "tpr", "ng45", "cts"),
+        ("total_wirelength_prediction", "mae", "ng45", "global_route"),
+        ("net_arc_delay_prediction", "mape", "ng45", "floorplan"),
+        ("net_arc_delay_prediction", "r2", "ng45", "floorplan"),
+        ("worst_slack_prediction", "mpe", "ng45", "global_route"),
+    }
+    pinned = {(c[0], c[1], c[2], c[3]) for c in PINNED_CELLS} | earlier
+
+    assert {cell[3] for cell in pinned} == {s.id for s in reg.stages()}
+    assert {cell[2] for cell in pinned} == {p.id for p in reg.pdks()}
+    assert {cell[1] for cell in pinned} == {m.id for m in reg.metrics()}
+
+
 def test_the_loader_rejects_a_corrupted_bound_kind(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
