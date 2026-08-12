@@ -50,6 +50,64 @@ def test_every_pdk_label_joins() -> None:
     assert csv_labels == reg_labels
 
 
+def _fold(text: str) -> str:
+    """Letters and digits only, upper case.
+
+    Table 8 decorates a name with spacing, case and typography that the lab's
+    ids do not carry: `R^2` against `r2`, `MAPE TOP5` against `mape_top5`,
+    `Cell Arc Slew` against `cell_arc_slew`. Folding both sides removes exactly
+    that decoration and leaves the name itself.
+    """
+    return "".join(ch for ch in text if ch.isalnum()).upper()
+
+
+def test_every_label_names_its_own_entry() -> None:
+    """Each join key must spell the entry that claims it.
+
+    Set equality is not identity. Exchanging two entries' table8_label values
+    inside one dimension keeps the label set, the per-task metric sets and the
+    VOID/DEGENERATE classification all intact, so every set-based check stays
+    green while the join silently hands each cell the other one's published
+    number. Restated here against the paper's own printed strings.
+    """
+    published = _csv_rows()
+    mismatches: list[str] = []
+
+    for task in reg.tasks():
+        label = task.table8_label
+        # Table 8 prints the unit inside the row-group label; the name is what
+        # precedes it, and the lab's ids carry a shared `_prediction` suffix.
+        stem = label[: label.rfind("(")] if "(" in label else label
+        if _fold(stem) != _fold(task.id.removesuffix("_prediction")):
+            mismatches.append(f"task {task.id} declares {label!r}")
+
+    for metric in reg.metrics():
+        if _fold(metric.table8_label) != _fold(metric.id):
+            mismatches.append(f"metric {metric.id} declares {metric.table8_label!r}")
+
+    for stage in reg.stages():
+        # Every transition ends at detailed route; the starting stage names it.
+        head = stage.table8_label.split(" to ")[0]
+        if _fold(head) != _fold(stage.id):
+            mismatches.append(f"stage {stage.id} declares {stage.table8_label!r}")
+
+    for pdk in reg.pdks():
+        if _fold(pdk.table8_label) != _fold(pdk.id):
+            mismatches.append(f"pdk {pdk.id} declares {pdk.table8_label!r}")
+
+    assert not mismatches, mismatches
+
+    # Guards the guard: a label that names its entry but appears in no published
+    # row would satisfy the loop above vacuously.
+    for column, labels in (
+        ("task", {t.table8_label for t in reg.tasks()}),
+        ("metric", {m.table8_label for m in reg.metrics()}),
+        ("stage_transition", {s.table8_label for s in reg.stages()}),
+        ("pdk", {p.table8_label for p in reg.pdks()}),
+    ):
+        assert labels <= {row[column] for row in published}
+
+
 def test_table8_labels_are_unique_per_registry() -> None:
     """Duplicate detection BEFORE set comparison. Comparing sets alone hides a
     collision that silently drops a mapping."""

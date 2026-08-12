@@ -1,4 +1,4 @@
-"""Set-based cross-check of data/registry/ against the paper's own numbers.
+"""Cross-check of data/registry/ against the paper's own numbers.
 
 `docs/sources/table8_baseline.csv` is Table 8 parsed to one tidy row per
 (task, metric, stage, pdk), verified by two independent parsers reading the
@@ -6,7 +6,7 @@ LaTeX source. It is the only source in this repository that is independent of
 the registry, so it is the only thing a registry and its own tests cannot both
 misread in the same way.
 
-Two properties make this file worth more than a schema check:
+Three properties make this file worth more than a schema check:
 
 * Every comparison runs in BOTH directions. One-way containment passes on a
   registry that has invented an extra entry, which is how a phantom fifth PDK
@@ -14,13 +14,18 @@ Two properties make this file worth more than a schema check:
 * Join keys are checked for collisions BEFORE the sets are compared. Two entries
   claiming one `table8_label` compare equal as a set while one of them silently
   never resolves.
+* Every join key is checked for IDENTITY, not only for membership. Exchanging
+  two entries' labels inside one dimension leaves the label set, the per-task
+  metric sets and the VOID/DEGENERATE classification all intact, so a purely
+  set-based cross-check stays green while each affected cell is scored against
+  another cell's published number.
 """
 
 from __future__ import annotations
 
 import csv
 from collections import Counter, defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
 from typing import Protocol
 
@@ -39,6 +44,12 @@ KIND_COLUMN = "kind"
 
 VOID_KIND = "VOID"
 DEGENERATE_KIND = "DEGENERATE"
+
+# Two pieces of the published table's typography, not vocabulary. Table 8 spells
+# a stage as a transition into the common target stage, and the lab's task ids
+# carry a suffix the paper's row labels do not print.
+TRANSITION_SEPARATOR = " to "
+TASK_ID_SUFFIX = "_prediction"
 
 SAMPLE = 5
 
@@ -105,6 +116,99 @@ def _dimension(
         messages.append(
             f"{name}: registry labels appear in no CSV row: {_sample(extra)}"
         )
+
+    return messages
+
+
+def _fold(text: str) -> str:
+    """Letters and digits only, upper case.
+
+    The published table decorates a name with case, spacing and typography the
+    lab's ids do not carry: `R^2` against `r2`, `MAPE TOP5` against
+    `mape_top5`, `Cell Arc Slew` against `cell_arc_slew`. Folding both sides
+    removes exactly that decoration and leaves the name itself, so the two can
+    be compared without transcribing a single mapping by hand.
+    """
+    return "".join(ch for ch in text if ch.isalnum()).upper()
+
+
+def _published_name(label: str) -> str:
+    """A published label with nothing stripped. The default extractor."""
+    return label
+
+
+def _task_published_name(label: str) -> str:
+    """Table 8 prints a task's unit inside its own row-group label. The name is
+    what precedes it, so `Total Area (u m^2)` names `total_area`."""
+    opened = label.rfind("(")
+    return label[:opened] if opened != -1 else label
+
+
+def _stage_published_name(label: str) -> str:
+    """Every transition ends at detailed route, so the starting stage is what
+    names the row group: `global place to detailed route` names `global_place`."""
+    return label.split(TRANSITION_SEPARATOR, 1)[0]
+
+
+def _task_registry_name(entry_id: str) -> str:
+    """The lab's task ids all carry one shared suffix, which the paper's row
+    labels do not print. This drops it and nothing else; an id without it is
+    compared whole."""
+    return entry_id.removesuffix(TASK_ID_SUFFIX)
+
+
+def _registry_name(entry_id: str) -> str:
+    """An id with nothing stripped. The default extractor."""
+    return entry_id
+
+
+def _identity(
+    name: str,
+    entries: Sequence[Labelled],
+    *,
+    published_name: Callable[[str], str] = _published_name,
+    registry_name: Callable[[str], str] = _registry_name,
+) -> list[str]:
+    """Every entry's join key must spell the entry that claims it.
+
+    Membership is not identity. `_dimension` proves each label appears in the
+    published column and each column value has a home, which two entries trading
+    labels satisfies perfectly. This restates the join as a per-entry fact: the
+    row `mpe` reads is the row Table 8 prints as MPE, and no other.
+
+    Where a label names a DIFFERENT entry, the message says which, because a
+    permutation is otherwise indistinguishable from a typo in the diagnostics
+    and the two are fixed differently.
+    """
+    messages: list[str] = []
+
+    claimed: dict[str, str] = {}
+    for entry in entries:
+        key = _fold(registry_name(entry.id))
+        if key in claimed:
+            messages.append(
+                f"{name}: {entry.id!r} and {claimed[key]!r} reduce to the same "
+                "name, so no label can distinguish them"
+            )
+        claimed[key] = entry.id
+
+    for entry in entries:
+        mine = _fold(registry_name(entry.id))
+        printed = _fold(published_name(entry.table8_label))
+        if printed == mine:
+            continue
+        named = claimed.get(printed)
+        if named is None:
+            messages.append(
+                f"{name}: {entry.id!r} declares the Table 8 label "
+                f"{entry.table8_label!r}, which names no registry entry"
+            )
+        else:
+            messages.append(
+                f"{name}: {entry.id!r} declares the Table 8 label "
+                f"{entry.table8_label!r}, which is the published row for "
+                f"{named!r}"
+            )
 
     return messages
 
@@ -277,6 +381,15 @@ def check() -> list[str]:
     messages += _dimension("metrics", METRIC_COLUMN, reg.metrics(), csv_rows)
     messages += _dimension("stages", STAGE_COLUMN, reg.stages(), csv_rows)
     messages += _dimension("pdks", PDK_COLUMN, reg.pdks(), csv_rows)
+    messages += _identity(
+        "tasks",
+        reg.tasks(),
+        published_name=_task_published_name,
+        registry_name=_task_registry_name,
+    )
+    messages += _identity("metrics", reg.metrics())
+    messages += _identity("stages", reg.stages(), published_name=_stage_published_name)
+    messages += _identity("pdks", reg.pdks())
     messages += _metric_sets(csv_rows)
 
     resolved = _resolved_quads(csv_rows)
