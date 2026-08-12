@@ -138,16 +138,27 @@ def cell(task_id: str, metric_id: str, pdk_id: str, stage_id: str) -> Cell:
 class Row:
     """One metric row within one stage panel.
 
-    `task_rowspan` is the number of rows the task label spans, and it is 0 on
-    every row after the first of its task. The template renders the label header
-    only when it is non-zero, which is a conditional rather than a computation.
+    `header` names the task AND the metric, because it is the row's only header
+    cell. An earlier draft put the task in a second header column spanning its
+    metrics with scope="rowgroup", which was wrong twice. It was wrong on the
+    spec, because a row group is the tbody that contains it and all of a panel's
+    tasks share one tbody, so the label claimed scope over every other task's
+    rows. It was wrong in practice, because rowgroup scope is not honoured by
+    the common screen readers, so the task never reached a reader at all. A cell
+    is identified by task, metric and PDK, and with one header column each of
+    the three arrives through plain scope="row" and scope="col". See
+    docs/plans/2026-08-11-phase-3-matrix.md, Task 6.
+
+    `starts_task` is true on the first row of each task and carries only a group
+    boundary rule in CSS. It is presentational; the association above is not.
     """
 
     task_id: str
     task_label: str
-    task_rowspan: int
+    starts_task: bool
     metric_id: str
     metric_label: str
+    header: str
     cells: tuple[Cell, ...]
 
 
@@ -162,10 +173,16 @@ class Panel:
     rows: tuple[Row, ...]
 
 
-# The task and metric columns sit left of the PDK columns. Declared here rather
-# than as a colspan literal in the template, so a note still spans the whole
-# table if the registry ever carries a different number of PDKs.
-ROW_HEADER_COLUMNS = 2
+# One row header column sits left of the PDK columns. Declared here rather than
+# as a colspan literal in the template, so a note still spans the whole table if
+# the registry ever carries a different number of PDKs.
+ROW_HEADER_COLUMNS = 1
+
+# Read aloud as the row's accessible name, so it is a comma and not a dash: a
+# screen reader pauses on the comma and announces "Total Area, MAE" the way the
+# heading would be spoken, where a dash is announced by some readers as the word
+# "dash".
+HEADER_JOIN = ", "
 
 
 @cache
@@ -189,13 +206,15 @@ def panels() -> tuple[Panel, ...]:
             if reg.is_void(task.id, stage.id):
                 continue
             for index, metric_id in enumerate(task.metrics):
+                metric_label = reg.metric(metric_id).label
                 rows.append(
                     Row(
                         task_id=task.id,
                         task_label=task.label,
-                        task_rowspan=len(task.metrics) if index == 0 else 0,
+                        starts_task=index == 0,
                         metric_id=metric_id,
-                        metric_label=reg.metric(metric_id).label,
+                        metric_label=metric_label,
+                        header=f"{task.label}{HEADER_JOIN}{metric_label}",
                         cells=tuple(
                             cell(task.id, metric_id, p.id, stage.id) for p in reg.pdks()
                         ),

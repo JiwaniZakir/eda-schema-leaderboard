@@ -7,6 +7,7 @@ build.py or tools/.
 from __future__ import annotations
 
 import re
+import time
 from pathlib import Path
 
 import pytest
@@ -207,13 +208,48 @@ def test_the_saturated_cells_are_all_in_the_last_panel() -> None:
     assert per_panel == [0, 0, 0, 0, 120]
 
 
-def test_the_task_label_is_carried_once_per_task(index_html: str) -> None:
-    """46 rows per panel, 12 task labels. Repeating the label on every row costs
-    6 KiB against an 88 KB cap, which this page cannot spare."""
-    spans = [row.task_rowspan for row in matrix.panels()[1].rows]
-    assert sum(1 for n in spans if n) == 12
-    assert sum(spans) == 46
-    assert index_html.count('scope="rowgroup"') == 58
+def test_every_row_header_names_its_task_and_its_metric() -> None:
+    """A cell is identified by task, metric and PDK. The row header carries the
+    first two, so a reader on any cell of any row can recover all three from the
+    header cells alone."""
+    for panel in matrix.panels():
+        for row in panel.rows:
+            assert row.task_label in row.header
+            assert row.metric_label in row.header
+
+
+def test_each_task_starts_exactly_one_group(index_html: str) -> None:
+    """12 tasks per panel and 10 at floorplan, where the two wirelength tasks
+    have no rows at all."""
+    starts = [sum(1 for row in p.rows if row.starts_task) for p in matrix.panels()]
+    assert starts == [10, 12, 12, 12, 12]
+    assert index_html.count('class="task-start"') == sum(starts)
+
+
+ROW_RE = re.compile(r"<tr[^>]*>(.*?)</tr>", re.DOTALL)
+TABLE_RE = re.compile(r"<table[^>]*>(.*?)</table>", re.DOTALL)
+
+
+def test_no_table_has_more_than_one_header_column(index_html: str) -> None:
+    """The regression guard for the a11y failure this phase actually hit.
+
+    An earlier draft put the task in a second header column, spanning its
+    metrics with scope="rowgroup". Two header columns make the table
+    multi-level, and for a multi-level table scope is not a sufficient
+    association: WCAG technique H43 requires an explicit headers attribute on
+    every one of the 880 cells, which pa11y reported as an error on all five
+    panels and which does not fit the page budget. It was also wrong on its own
+    terms, since a row group is the tbody that contains it and every task in a
+    panel shares one tbody.
+
+    Asserting it here means the structure fails in the same second it regresses,
+    rather than in a CI job that only runs when a watched path changed.
+    """
+    tables = TABLE_RE.findall(index_html)
+    assert len(tables) == 5
+    for table in tables:
+        multi = [row for row in ROW_RE.findall(table) if row.count("<th") > 1]
+        assert len(multi) == 1, "only the column header row may hold several th"
 
 
 def test_no_cell_renders_a_python_repr_or_a_non_number(index_html: str) -> None:
@@ -353,3 +389,44 @@ def test_the_script_names_no_registry_vocabulary() -> None:
         assert stage.id not in text
     for pdk in reg.pdks():
         assert pdk.id not in text
+
+
+PAGE_CAP_BYTES = 88 * 1024
+BUILD_CAP_SECONDS = 60
+
+
+def test_no_page_exceeds_the_budget(site: Path) -> None:
+    """Measured, not assumed. The grid was 74.4 KiB when this phase shipped and
+    the same grid with every cell reading matches_baseline measures 88.0 KiB, so
+    this assertion is expected to bite in Phase 4. When it does, the fix is one
+    page per stage at /stage/<id>/, not a bigger number here."""
+    oversized = {
+        str(path.relative_to(site)): path.stat().st_size
+        for path in site.rglob("*.html")
+        if path.stat().st_size > PAGE_CAP_BYTES
+    }
+    assert oversized == {}
+
+
+def test_the_build_completes_inside_a_minute(tmp_path: Path) -> None:
+    started = time.perf_counter()
+    build.build(tmp_path / "timed")
+    assert time.perf_counter() - started < BUILD_CAP_SECONDS
+
+
+def test_the_site_is_reproducible(tmp_path: Path) -> None:
+    """Two builds, byte identical. A build that varies run to run turns every
+    deploy diff into noise and hides a real change inside it."""
+    first = (build.build(tmp_path / "a") / "index.html").read_bytes()
+    second = (build.build(tmp_path / "b") / "index.html").read_bytes()
+    assert first == second
+
+
+def test_every_asset_the_page_links_exists(site: Path, index_html: str) -> None:
+    """lychee catches this in CI, but only on a PR that touched a watched path.
+    A local assertion fails in the same second the link breaks."""
+    refs = re.findall(r'(?:href|src)="([^"]+)"', index_html)
+    internal = [r for r in refs if not r.startswith(("http", "#", "mailto:"))]
+    assert internal, "the page links no local assets"
+    for ref in internal:
+        assert (site / ref.lstrip("/")).is_file(), ref

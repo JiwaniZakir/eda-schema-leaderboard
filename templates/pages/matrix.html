@@ -19,11 +19,11 @@
 {% if panel.void_tasks %}
 <tr class="void-note"><td colspan="{{ columns }}">Not estimated at this stage, so these tasks have no rows here: {{ panel.void_tasks | join(", ") }}. Cells are not yet placed, so there is no half-perimeter wirelength to measure.</td></tr>
 {% endif %}
-<tr><th scope="col">Task</th><th scope="col">Metric</th>{% for pdk in pdks %}<th scope="col">{{ pdk.label }}</th>{% endfor %}</tr>
+<tr><th scope="col">Task and metric</th>{% for pdk in pdks %}<th scope="col">{{ pdk.label }}</th>{% endfor %}</tr>
 </thead>
 <tbody>
 {% for row in panel.rows %}
-<tr>{% if row.task_rowspan %}<th scope="rowgroup" rowspan="{{ row.task_rowspan }}">{{ row.task_label }}</th>{% endif %}<th scope="row">{{ row.metric_label }}</th>{% for cell in row.cells %}<td class="state-{{ cell.state }}"{% if cell.baseline_kind != "published" %} data-baseline="{{ cell.baseline_kind }}"{% endif %}>{{ cell.display }}<span class="vh">{{ cell.state_label }}</span></td>{% endfor %}</tr>
+<tr{% if row.starts_task %} class="task-start"{% endif %}><th scope="row">{{ row.header }}</th>{% for cell in row.cells %}<td class="state-{{ cell.state }}"{% if cell.baseline_kind != "published" %} data-baseline="{{ cell.baseline_kind }}"{% endif %}>{{ cell.display }}<span class="vh">{{ cell.state_label }}</span></td>{% endfor %}</tr>
 {% endfor %}
 </tbody>
 </table>
