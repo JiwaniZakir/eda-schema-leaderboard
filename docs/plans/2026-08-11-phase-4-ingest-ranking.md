@@ -1845,6 +1845,8 @@ Every one of them is a place the pre-reset build got it wrong or never checked.
   - `ranking.cell_state(task_id: str, metric_id: str, stage_id: str, baseline: Bound, entries: tuple[Bound, ...]) -> CellState`
   - `ranking.bias_sort_key(values: Mapping[str, float]) -> tuple[float, ...]`
   - `ranking.BIAS_ORDER: tuple[str, ...]`
+  - `ranking.PERCENT_SCALE: float` (the ONLY x100 in the project; Phase 5's
+    `cellpage.format_value` imports it rather than carrying its own literal)
 
 **Four values, not a bool.** Against `MAPE > 10000 %` a submission at 15000 % is genuinely undecidable, and against `R^2 < -1` one at -3 is too. That is 32 cells where guessing would publish a verdict the paper's own data cannot support.
 
@@ -2172,7 +2174,14 @@ from functools import cache
 from tools import registry as reg
 from tools.baseline import Bound, BoundKind
 
-_PERCENT_SCALE = 100.0
+PERCENT_SCALE = 100.0
+"""The one place the x100 happens.
+
+Public, and imported rather than re-declared, because the contract's central
+rule is that a percent metric is scaled EXACTLY ONCE at the display boundary.
+A second copy is not a duplicate constant, it is a second boundary. Phase 5's
+cellpage.format_value must import this rather than carry its own 100.0
+literal, and a test asserts exactly one definition exists under tools/."""
 
 HIGHER = "higher"
 
@@ -2221,7 +2230,7 @@ def _display_units(metric_id: str, value: float) -> float:
     fractions, so rounding 0.1243 and 0.1249 to the metric's 2 decimals makes
     both 0.12 and reports two different published numbers as equal.
     """
-    return value * _PERCENT_SCALE if reg.metric(metric_id).percent else value
+    return value * PERCENT_SCALE if reg.metric(metric_id).percent else value
 
 
 def _quantize(task_id: str, metric_id: str, value: float) -> float:

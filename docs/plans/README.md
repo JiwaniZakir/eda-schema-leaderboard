@@ -38,7 +38,7 @@ run against the diff.
 | 6 | [guard](2026-08-11-phase-6-guard.md) | the five contamination layers |
 | 7 | [synthetic decision](2026-08-11-phase-7-synthetic-decision.md) | a decision, and possibly no code |
 | 8 | [explore, card, submit, model](2026-08-11-phase-8-explore-card-submit-model.md) | the remaining pages |
-| 9 | [themes, deploy, transfer](2026-08-11-phase-9-themes-deploy-transfer.md) | two themes and the handover |
+| 9 | [themes, deploy, transfer](2026-08-11-phase-9-themes-deploy-transfer.md) | two themes, the citation and its DOI, and the handover |
 
 ## Rules that apply to every phase
 

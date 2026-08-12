@@ -531,7 +531,7 @@ import build
 @pytest.fixture(scope="session")
 def built_dist(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
     dest = tmp_path_factory.mktemp("dist")
-    build.build_site(dest)
+    build.build(dest)
     yield dest
 ```
 
@@ -1172,11 +1172,16 @@ def test_tiers_are_ordered_by_strictness() -> None:
         assert lower <= higher
 
 
-def test_the_split_overlap_layer_binds_in_every_division() -> None:
+def test_the_splits_layer_binds_in_every_division() -> None:
     """Train/test overlap is the one thing no division excuses. An open division
-    that permitted it would let a lookup table lead the board."""
+    that permitted it would let a lookup table lead the board.
+
+    The layer id is `splits`, which is the key Phase 6's dispatcher registers. An
+    earlier draft of this file said `split_overlap`, which is in tools/guard.LAYERS
+    nowhere, so this assertion and the two above it were all false as written.
+    """
     for division in submission.DIVISIONS:
-        assert "split_overlap" in division.requires, division.id
+        assert "splits" in division.requires, division.id
 
 
 def test_every_tier_division_and_badge_id_appears_in_the_document() -> None:
@@ -1264,13 +1269,21 @@ class Badge:
     id: str
     label: str
     criterion: str
+```
 
+**Layer ids come from Phase 6, verbatim.** `tools/guard/__init__.py` registers
+`schema`, `features`, `splits`, `divisions`, `runnability` and `plausibility`, and
+those keys are what `guard.LAYERS` is indexed by. An earlier draft of this file
+wrote `feature_stage`, `split_overlap` and `division`, which made
+`test_every_tier_requires_only_guard_layers_that_exist` false as written. Phase 6's
+ids are canonical because they are the dict keys the dispatcher actually uses.
 
+```python
 TIERS: tuple[Tier, ...] = (
     Tier(
-        id="self-reported",
+        id="self_reported",
         label="Self-reported",
-        requires=("feature_stage", "split_overlap", "division", "plausibility"),
+        requires=("features", "splits", "divisions", "plausibility"),
         reproduced=False,
         description=(
             "The numbers are as submitted. Every static guard passed, but no code "
@@ -1281,16 +1294,17 @@ TIERS: tuple[Tier, ...] = (
         id="reproduced",
         label="Reproduced",
         requires=(
-            "feature_stage",
-            "split_overlap",
-            "division",
+            "features",
+            "splits",
+            "divisions",
             "plausibility",
             "runnability",
         ),
         reproduced=True,
         description=(
-            "Your predict.py ran on our runner against the smoke slice and "
-            "returned the reported metrics within tolerance."
+            "Your predict.py ran on our runner against ground truth for the test "
+            "split you declared, and returned the reported metrics within "
+            "tolerance."
         ),
     ),
     Tier(
@@ -1399,7 +1413,7 @@ def predict(model: Any, rows: Sequence[dict[str, float]]) -> list[float]:
     """
 ```
 
-**The runner.** No network. Read-only mount. Ten minutes of wall clock on the smoke slice. The failure of the runnability layer is a tier ceiling, not a rejection: the entry still lands as `self-reported`.
+**The runner.** No network. Read-only mount. Ten minutes of wall clock on the smoke slice. The failure of the runnability layer is a tier ceiling, not a rejection: the entry still lands as `self_reported`.
 
 **Checkpoints are never unpickled.** We read tensor shapes out of the zip with a restricted reader that returns an inert placeholder for every foreign global, so no code inside a checkpoint executes. `weights_only=True` is not the mechanism, and asking us to pass `weights_only=False` is asking for arbitrary code execution on the runner. Ship weights your own `load()` can read; we only introspect shapes for the architecture diagram, and a checkpoint we cannot introspect renders without one rather than being rejected.
 
