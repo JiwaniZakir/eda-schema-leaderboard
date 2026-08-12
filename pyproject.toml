@@ -32,6 +32,7 @@ dev = [
 # once already.
 [project.scripts]
 eda-validate = "tools.validate:main"
+eda-baseline = "tools.baseline:main"
 
 [build-system]
 requires = ["hatchling"]

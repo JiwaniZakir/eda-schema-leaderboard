@@ -1,4 +1,4 @@
-.PHONY: install ingest synth validate build serve lint typecheck test check clean
+.PHONY: install ingest synth baseline validate build serve lint typecheck test check clean
 
 # Where the lab's results tree lives. Override for a different checkout:
 #   make ingest EXPERIMENTS=~/Downloads/eda-ml-models
@@ -22,6 +22,13 @@ ingest:
 
 synth:
 	@if [ ! -f tools/synth.py ]; then echo "synth: tools/synth.py does not exist yet (Phase 7, if ever)"; exit 1; fi; uv run python -m tools.synth
+
+# Regenerates a TRACKED file, so it is deliberately not a dependency of `check`.
+# A drifting CSV must fail the gate through test_the_committed_file_matches_a_
+# fresh_build, not silently rewrite committed data as a side effect of running
+# it.
+baseline:
+	@if [ ! -f tools/baseline.py ]; then echo "baseline: tools/baseline.py does not exist yet (Phase 2)"; exit 1; fi; uv run eda-baseline
 
 validate:
 	@if [ ! -f tools/validate.py ]; then echo "validate: SKIPPED, tools/validate.py does not exist yet (Phase 1)"; else uv run eda-validate; fi

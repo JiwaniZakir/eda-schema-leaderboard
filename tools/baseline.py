@@ -16,6 +16,7 @@ Two conversions happen on read, here and nowhere else:
 from __future__ import annotations
 
 import csv
+import json
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
@@ -237,3 +238,40 @@ def build() -> tuple[Baseline, ...]:
             )
         )
     return tuple(entries)
+
+
+def to_json(entries: tuple[Baseline, ...]) -> str:
+    """Serialize deterministically.
+
+    Order is registry order, taken from build(), so the file reads in the same
+    sequence as the matrix and a diff stays local to what actually changed.
+    """
+    payload = {
+        "generated_from": CSV_PATH.relative_to(ROOT).as_posix(),
+        "cells": [
+            {
+                "task": entry.task,
+                "metric": entry.metric,
+                "pdk": entry.pdk,
+                "stage": entry.stage,
+                "baseline_state": entry.baseline_state,
+                "bound": {"kind": entry.bound.kind, "value": entry.bound.value},
+                "source": entry.source,
+                "src_line": entry.src_line,
+            }
+            for entry in entries
+        ],
+    }
+    return json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+
+
+def main() -> int:
+    """Regenerate data/baseline.json. Entry point for `eda-baseline`."""
+    entries = build()
+    BASELINE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    BASELINE_PATH.write_text(to_json(entries), encoding="utf-8")
+    print(
+        f"baseline: wrote {len(entries)} cells to "
+        f"{BASELINE_PATH.relative_to(ROOT).as_posix()}"
+    )
+    return 0

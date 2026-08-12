@@ -142,3 +142,21 @@ def test_the_sentinel_key_set_is_derived_from_the_raw_csv() -> None:
     by scanning the raw value strings, which is a different route than
     parse_bound takes, so a sentinel demoted to an exact value is caught."""
     assert len(bl.published_sentinel_keys()) == 32
+
+
+def test_regeneration_is_byte_identical() -> None:
+    assert bl.to_json(bl.build()) == bl.to_json(bl.build())
+
+
+def test_the_committed_file_matches_a_fresh_build() -> None:
+    """data/baseline.json is generated, never edited. If this fails, either the
+    CSV moved or somebody typed into the file."""
+    assert bl.BASELINE_PATH.read_text(encoding="utf-8") == bl.to_json(bl.build())
+
+
+def test_the_emitted_json_carries_no_float_noise() -> None:
+    """A reviewer diffing this file against the paper must see 0.1243 where the
+    paper says 12.43 %, not 0.12429999999999999."""
+    text = bl.BASELINE_PATH.read_text(encoding="utf-8")
+    assert "0000000" not in text
+    assert "9999999" not in text
