@@ -67,6 +67,30 @@ Every phase's requirements implicitly include these.
 
 ---
 
+## Detailed phase plans
+
+This file is the roadmap: scope, gates and open decisions.
+The task-level implementation plans live in `docs/plans/`, one per phase, each
+with bite-sized TDD steps, real code and exact commands.
+
+| Phase | Plan | Ships |
+|---|---|---|
+| 1 | [registries](docs/plans/2026-08-11-phase-1-registries.md) | the five registry files and the typed loader |
+| 2 | [baseline](docs/plans/2026-08-11-phase-2-baseline.md) | `data/baseline.json` from the paper CSV |
+| 3 | [matrix](docs/plans/2026-08-11-phase-3-matrix.md) | **a real page on Pages** |
+| 4 | [ingest and ranking](docs/plans/2026-08-11-phase-4-ingest-ranking.md) | the 20 real combos, and ranking with a consumer |
+| 5 | [cell pages](docs/plans/2026-08-11-phase-5-cell-pages.md) | 232 pre-rendered pages |
+| 6 | [guard](docs/plans/2026-08-11-phase-6-guard.md) | the five contamination layers |
+| 7 | [synthetic decision](docs/plans/2026-08-11-phase-7-synthetic-decision.md) | a decision, and possibly no code |
+| 8 | [explore, card, submit, model](docs/plans/2026-08-11-phase-8-explore-card-submit-model.md) | the remaining pages |
+| 9 | [themes, deploy, transfer](docs/plans/2026-08-11-phase-9-themes-deploy-transfer.md) | two themes and the handover |
+
+Read the roadmap for *why* and the phase plan for *how*.
+Where they disagree, the roadmap is authoritative on scope and the phase plan is
+authoritative on implementation detail.
+
+---
+
 ## Phase 0 - Reset and corrections
 
 **Status: this PR.**
@@ -495,6 +519,15 @@ Then transfer to `drexel-ice`, re-apply branch protection and CODEOWNERS, add th
 required approving review that Phase 0 deferred, update the CNAME, and **re-run
 the negative test against the transferred repo**. Protection that silently did not
 survive is worse than none, because you will believe it is there.
+
+> **`gh repo transfer` does not exist.** Verified against gh 2.83.2:
+> `unknown command "transfer" for "gh repo"`. An earlier draft of this plan
+> quoted it. Use the REST endpoint instead:
+>
+> ```bash
+> gh api -X POST repos/JiwaniZakir/eda-schema-leaderboard/transfer \
+>   -f new_owner=drexel-ice
+> ```
 
 ### Gate
 
