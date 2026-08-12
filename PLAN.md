@@ -328,6 +328,14 @@ on `1/1 URLs` for each theme, and lychee checked 32 links with 0 errors once it
 was given `--root-dir`, which it needs to resolve this page's root-relative
 asset links at all.
 
+**The exit criterion is not met yet.**
+Every gate above is green and the page was driven end to end in Chrome against a
+local build served under the Pages base path, in both themes, but the merge and
+the deploy have not happened, so `https://jiwanizakir.github.io/eda-schema-leaderboard/`
+still serves the 279-byte scaffold.
+Phase 3 is not done until that URL serves the matrix and a human has clicked
+through all five stages on it.
+
 ### What the real grid settled, and what it did not
 
 Open decision 3, the twelve cells already optimal at CTS, **stays open.**
