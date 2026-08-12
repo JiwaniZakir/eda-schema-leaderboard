@@ -26,6 +26,18 @@ class Circuit:
     registers: int
 
 
+@dataclass(frozen=True, slots=True)
+class Metric:
+    id: str
+    label: str
+    long_label: str
+    table8_label: str
+    direction: str
+    bias: str | None
+    percent: bool
+    precision: int
+
+
 @cache
 def _load(name: str) -> tuple[dict[str, Any], ...]:
     """Read one registry file. Cached, so the JSON is parsed once per process."""
@@ -39,3 +51,22 @@ def _load(name: str) -> tuple[dict[str, Any], ...]:
 @cache
 def circuits() -> tuple[Circuit, ...]:
     return tuple(Circuit(**row) for row in _load("circuits"))
+
+
+@cache
+def metrics() -> tuple[Metric, ...]:
+    return tuple(Metric(**row) for row in _load("metrics"))
+
+
+@cache
+def _metric_index() -> dict[str, Metric]:
+    return {m.id: m for m in metrics()}
+
+
+def metric(metric_id: str) -> Metric:
+    """Look up one metric. Raises KeyError on an unknown id, deliberately: a
+    silent default here would let a typo rank in the wrong direction."""
+    try:
+        return _metric_index()[metric_id]
+    except KeyError:
+        raise KeyError(f"unknown metric {metric_id!r}") from None
