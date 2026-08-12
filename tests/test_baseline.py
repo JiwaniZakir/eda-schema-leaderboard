@@ -6,6 +6,8 @@ Expected values and counts live here, in tests. They must never appear in tools/
 from __future__ import annotations
 
 import csv
+import json
+from pathlib import Path
 
 import pytest
 
@@ -160,3 +162,88 @@ def test_the_emitted_json_carries_no_float_noise() -> None:
     text = bl.BASELINE_PATH.read_text(encoding="utf-8")
     assert "0000000" not in text
     assert "9999999" not in text
+
+
+def test_the_loader_round_trips_the_builder() -> None:
+    assert bl.baselines() == {e.key: e for e in bl.build()}
+
+
+def test_lookup_rejects_a_void_cell() -> None:
+    """Void cells are absent by design. A silent default here would resurrect the
+    40 cells the paper says do not exist."""
+    with pytest.raises(KeyError):
+        bl.lookup("total_wirelength_prediction", "mae", "ng45", "floorplan")
+
+
+def test_total_area_mae_ng45_floorplan_matches_table_8() -> None:
+    """Table 8 prints 1,781.97. MAE is not a percent metric, so it is stored
+    as-is."""
+    entry = bl.lookup("total_area_prediction", "mae", "ng45", "floorplan")
+    assert entry.bound == bl.Bound(bl.BoundKind.EXACT, 1781.97)
+    assert entry.baseline_state == bl.PUBLISHED
+    assert entry.source == bl.PAPER
+
+
+def test_total_area_mape_ng45_floorplan_is_stored_as_a_fraction() -> None:
+    """Table 8 prints 12.43 %."""
+    entry = bl.lookup("total_area_prediction", "mape", "ng45", "floorplan")
+    assert entry.bound == bl.Bound(bl.BoundKind.EXACT, 0.1243)
+
+
+def test_worst_slack_tpr_ng45_cts_is_exactly_one() -> None:
+    """Table 8 prints 100.00 %. A rate at its ceiling, which is why saturation is
+    a stage rule and not an is-the-error-near-zero test."""
+    entry = bl.lookup("worst_slack_prediction", "tpr", "ng45", "cts")
+    assert entry.bound == bl.Bound(bl.BoundKind.EXACT, 1.0)
+
+
+def test_total_wirelength_mae_ng45_global_route_is_still_live() -> None:
+    """The two wirelength tasks are the reason saturation excludes them. At
+    global route their baseline error is nowhere near zero."""
+    entry = bl.lookup("total_wirelength_prediction", "mae", "ng45", "global_route")
+    assert entry.bound == bl.Bound(bl.BoundKind.EXACT, 13698.67)
+    assert not reg.is_saturated("total_wirelength_prediction", "mae", "global_route")
+
+
+def test_net_arc_delay_mape_ng45_floorplan_is_an_upper_sentinel() -> None:
+    """Table 8 prints "> 10000 %". Stored as a bound at 100.0, which is 10000 %
+    as a fraction, with no invented underlying value."""
+    entry = bl.lookup("net_arc_delay_prediction", "mape", "ng45", "floorplan")
+    assert entry.bound == bl.Bound(bl.BoundKind.GREATER_THAN, 100.0)
+
+
+def test_net_arc_delay_r2_ng45_floorplan_is_a_lower_sentinel() -> None:
+    """Table 8 prints "< -1". R2 is not a percent metric, so no scaling."""
+    entry = bl.lookup("net_arc_delay_prediction", "r2", "ng45", "floorplan")
+    assert entry.bound == bl.Bound(bl.BoundKind.LESS_THAN, -1.0)
+
+
+def test_worst_slack_mpe_ng45_global_route_has_no_baseline() -> None:
+    """Table 8 prints "No positive or negative error, n_p = n_n = 0". That is a
+    0/0, not a zero, and nothing may be scored as beating it."""
+    entry = bl.lookup("worst_slack_prediction", "mpe", "ng45", "global_route")
+    assert entry.baseline_state == bl.DEGENERATE
+    assert entry.bound == bl.Bound(bl.BoundKind.ABSENT, None)
+
+
+def test_the_loader_rejects_a_corrupted_bound_kind(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The kind crosses a JSON boundary as text. Read back as a bare str, a
+    drifted kind makes every `bound.kind == BoundKind.ABSENT` silently False,
+    which is how a comparison gets drawn against a 0/0 baseline. BoundKind's own
+    docstring promises this raises at the parse boundary, so the loader must
+    coerce through the enum rather than storing whatever the file said.
+    """
+    payload = json.loads(bl.BASELINE_PATH.read_text(encoding="utf-8"))
+    payload["cells"][0]["bound"]["kind"] = "exakt"
+    corrupted = tmp_path / "baseline.json"
+    corrupted.write_text(json.dumps(payload), encoding="utf-8")
+
+    monkeypatch.setattr(bl, "BASELINE_PATH", corrupted)
+    bl.baselines.cache_clear()
+    try:
+        with pytest.raises(ValueError):
+            bl.baselines()
+    finally:
+        bl.baselines.cache_clear()

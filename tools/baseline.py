@@ -265,6 +265,59 @@ def to_json(entries: tuple[Baseline, ...]) -> str:
     return json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
 
 
+@cache
+def baselines() -> dict[CellKey, Baseline]:
+    """Read data/baseline.json. The only read path for published baselines.
+
+    Void cells are absent from the mapping, because they are absent from the file
+    and from the grid.
+
+    The kind is coerced back THROUGH BoundKind rather than stored as the bare str
+    json.loads returns. That is the whole reason BoundKind is an enum: a drifted
+    or corrupted kind must raise here, at the parse boundary, instead of
+    surviving as a str that makes every `is BoundKind.ABSENT` silently False and
+    lets a comparison be drawn against a 0/0 baseline.
+    """
+    payload = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
+    entries: dict[CellKey, Baseline] = {}
+    for row in payload["cells"]:
+        entry = Baseline(
+            task=row["task"],
+            metric=row["metric"],
+            pdk=row["pdk"],
+            stage=row["stage"],
+            baseline_state=row["baseline_state"],
+            bound=Bound(
+                kind=BoundKind(row["bound"]["kind"]), value=row["bound"]["value"]
+            ),
+            source=row["source"],
+            src_line=row["src_line"],
+        )
+        if entry.key in entries:
+            raise ValueError(f"duplicate baseline entry for {entry.key}")
+        entries[entry.key] = entry
+    return entries
+
+
+def lookup(task_id: str, metric_id: str, pdk_id: str, stage_id: str) -> Baseline:
+    """Look up one cell. Raises KeyError on an unknown or void cell, deliberately.
+
+    A default here would fabricate a baseline for a cell the paper never
+    published, and the leaderboard's central claim is a comparison against it.
+
+    This is the ONE accessor. Callers that want only the published bound write
+    `lookup(...).bound`; there is no second `bound_for` entry point, because two
+    names for one lookup is how Phases 3 through 8 came to disagree about which
+    one existed. `lookup` rather than `baseline` so the call does not stutter as
+    `baseline.baseline(...)` at every site.
+    """
+    key = (task_id, metric_id, pdk_id, stage_id)
+    try:
+        return baselines()[key]
+    except KeyError:
+        raise KeyError(f"no baseline for {key!r}; void cells are absent") from None
+
+
 def main() -> int:
     """Regenerate data/baseline.json. Entry point for `eda-baseline`."""
     entries = build()
