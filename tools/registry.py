@@ -61,6 +61,18 @@ class Stage:
     degenerate_metrics: tuple[str, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class Task:
+    id: str
+    label: str
+    table8_label: str
+    unit: str
+    granularity: str
+    design_level: bool
+    metrics: tuple[str, ...]
+    precision_overrides: dict[str, int]
+
+
 @cache
 def _load(name: str) -> tuple[dict[str, Any], ...]:
     """Read one registry file. Cached, so the JSON is parsed once per process."""
@@ -148,3 +160,33 @@ def stage(stage_id: str) -> Stage:
         return _stage_index()[stage_id]
     except KeyError:
         raise KeyError(f"unknown stage {stage_id!r}") from None
+
+
+@cache
+def tasks() -> tuple[Task, ...]:
+    """Returned in Table 8 row order. `metrics` is ordered the same way, so a
+    renderer can walk a task's rows straight down the published table."""
+    return tuple(
+        Task(
+            **{
+                **row,
+                "metrics": tuple(row["metrics"]),
+                "precision_overrides": dict(row["precision_overrides"]),
+            }
+        )
+        for row in _load("tasks")
+    )
+
+
+@cache
+def _task_index() -> dict[str, Task]:
+    return {t.id: t for t in tasks()}
+
+
+def task(task_id: str) -> Task:
+    """Look up one task. Raises KeyError on an unknown id: task ids keep the
+    lab's `_prediction` suffix, and a stripped one must not silently resolve."""
+    try:
+        return _task_index()[task_id]
+    except KeyError:
+        raise KeyError(f"unknown task {task_id!r}") from None

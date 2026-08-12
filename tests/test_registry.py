@@ -103,3 +103,65 @@ def test_the_third_pdk_is_ihp_not_iph() -> None:
     parse invents a phantom fifth PDK."""
     assert {p.id for p in reg.pdks()} == {"ng45", "sky130", "ihp130", "asap7"}
     assert not any("iph" in p.id.lower() for p in reg.pdks())
+
+
+METRICS_PER_TASK = {
+    "total_area_prediction": 3,
+    "total_power_prediction": 3,
+    "total_wirelength_prediction": 3,
+    "interconnect_length_prediction": 7,
+    "worst_arrival_time_prediction": 2,
+    "worst_slack_prediction": 5,
+    "total_negative_slack_prediction": 3,
+    "timing_path_arrival_time_prediction": 6,
+    "timing_path_slack_prediction": 5,
+    "net_arc_delay_prediction": 3,
+    "cell_arc_delay_prediction": 3,
+    "cell_arc_slew_prediction": 3,
+}
+
+
+def test_twelve_tasks_load() -> None:
+    assert len(reg.tasks()) == 12
+
+
+def test_task_ids_keep_the_prediction_suffix() -> None:
+    """The lab's own tooling and the on-disk results tree use these strings.
+    Shortening them buys tidier URLs and costs a translation layer at every
+    submission boundary."""
+    assert all(t.id.endswith("_prediction") for t in reg.tasks())
+
+
+def test_per_task_metric_counts_match_table_8() -> None:
+    assert {t.id: len(t.metrics) for t in reg.tasks()} == METRICS_PER_TASK
+
+
+def test_every_task_metric_exists_in_the_metric_registry() -> None:
+    known = {m.id for m in reg.metrics()}
+    for t in reg.tasks():
+        assert set(t.metrics) <= known, f"{t.id} references unknown metrics"
+
+
+def test_six_tasks_are_design_level() -> None:
+    """This selects how records are gathered before metrics are computed, so it
+    is load-bearing rather than descriptive."""
+    design = {t.id for t in reg.tasks() if t.design_level}
+    assert design == {
+        "total_area_prediction",
+        "total_power_prediction",
+        "total_wirelength_prediction",
+        "worst_arrival_time_prediction",
+        "worst_slack_prediction",
+        "total_negative_slack_prediction",
+    }
+
+
+def test_the_three_arc_tasks_publish_r2() -> None:
+    """The paper's prose says R2 is omitted for all timing metrics. Table 8
+    contradicts it. Following the prose derives 43 metric rows, not 46."""
+    for tid in (
+        "net_arc_delay_prediction",
+        "cell_arc_delay_prediction",
+        "cell_arc_slew_prediction",
+    ):
+        assert "r2" in reg.task(tid).metrics
