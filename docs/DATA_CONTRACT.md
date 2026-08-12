@@ -373,12 +373,55 @@ Options, in the order they should be considered:
 3. Rank on pooled to match the paper, and lose the robustness macro-mean was chosen
    for.
 
-> **OPEN (decision needed, and it gates Phase 3).**
+> **OPEN (decision needed, and it gates Phase 4).**
 > Recommendation is option 2: compute both, rank on macro-mean, display the
 > published pooled value as "as published" so the site never contradicts the paper
 > it cites.
-> Phase 3's existing ">10x divergence" warning is the detector for this, and its
-> plan note already half-anticipated the cause.
+> The ">10x divergence" warning in the ingest phase is the detector for this.
+
+### Measured 2026-08-11, and it narrows the decision sharply
+
+The `eval.log` for `total_area` at NG45 floorplan was parsed and compared against
+Table 8 directly.
+
+**Table 8's baseline is literally the `eval.log` "Overall" line.**
+Published MAE is `1,781.97`; the log's `Overall Baseline MAE` is `1781.9696`.
+That is no longer an inference about how the paper aggregated, it is a match.
+
+**For this design-level task the two estimators barely differ:**
+
+| Estimator | Baseline MAE | Baseline MAPE |
+|---|---|---|
+| pooled (`Overall`, = Table 8) | 1,781.9696 | 12.43 % |
+| macro-mean over 18 circuits | 1,789.5997 | 12.42 % |
+| divergence | **1.004x (+0.4 %)** | 0.01 pp |
+
+**Why, and where it stops being true.**
+For the six `design_level` tasks each circuit contributes roughly one row per
+config, so pooling is already close to weighting circuits equally.
+For the six finer-grained tasks it is not: `interconnect_length`,
+`net_arc_delay`, `cell_arc_delay`, `cell_arc_slew`, `timing_path_arrival_time`
+and `timing_path_slack` produce one row per net, arc or path, and `ethernet` has
+orders of magnitude more of them than `ss_pcm`.
+There, pooling is dominated by the largest circuits and the two estimators will
+diverge materially.
+
+**So the decision only has teeth on the six non-design-level tasks**, and we
+cannot measure the size of the effect until the lab ships data for them.
+Ranking on macro-mean and displaying pooled as "as published" is safe for both
+groups and needs no further measurement to adopt.
+
+### The pooled R² trap, now with a number
+
+The same log reports `Overall Baseline R2: 0.9892`, which reads as an excellent
+baseline.
+The per-circuit R² median is **-26.86**, and **0 of 18 circuits are positive**.
+
+Every individual circuit is worse than predicting its own mean, while the pooled
+figure says the opposite, because pooling across circuits of very different
+absolute scale lets between-circuit variance masquerade as explained variance.
+This is why the contract forbids ingesting the `Overall` block and the CSV R²
+columns. It is the single clearest illustration of the hazard.
 
 ## Cell states
 
@@ -475,13 +518,14 @@ p.24).
 These are the 8 void `(task, pdk, stage)` combos, and the reason 240 combos reduce
 to 232.
 
-> **OPEN (contradicts Table 1).**
+> **OPEN (contradicts Table 1). Verified 2026-08-11 - the contradiction is real.**
 > The intuitive explanation, that HPWL needs placed coordinates which do not exist
 > at floorplan, is not what Table 1 says.
-> Table 1 lists `Netlist.total_hpwl` as available from **`FP - F`**, which would
-> make a floorplan-stage estimate available for `total_wirelength`.
-> Per-net `Net.hpwl` is listed `GP - F`, which *is* consistent with
+> Read directly from the table source: `total_hpwl` is listed at **`FP - F`**,
+> which would make a floorplan-stage estimate available for `total_wirelength`.
+> Per-net `hpwl` is listed at **`GP - F`**, which *is* consistent with
 > `interconnect_length` being void.
+> So the two tasks are not symmetric, and only `total_wirelength` is in dispute.
 > So Table 8's footnote and Table 1 disagree for one of the two tasks.
 > This matters because Phase 5 guard layer 1 keys on Table 1's stage availability,
 > so a rule derived from the footnote will contradict the registry generated from
@@ -566,8 +610,15 @@ Each input source therefore converts differently, and this is the part that bite
 | a submission's declared value | fraction, per `schema/submission.schema.json` | none |
 
 The CSV is the trap.
-211 of its 252 percent values exceed 1.0, so it is unambiguously in display units
+It holds 324 published percent-metric cells, of which 20 are the `> 10000 %`
+sentinel and 304 carry an exact number.
+**250 of those 304 exceed 1.0**, so the file is unambiguously in display units
 even though it is the baseline source.
+
+> Count the population carefully.
+> The CSV spells the tail metrics `MAPE P95` and `MAPE TOP5` with a **space**.
+> Filtering on `MAPE_P95` silently drops 72 cells and yields 252 instead of 324,
+> which is how an earlier draft of this section got its numbers wrong.
 
 ### Why getting this wrong is not obvious
 
@@ -595,8 +646,11 @@ bounds. Verified against the CSV:
 catches the 100x error outright: a percent-stored TPR lands in 58.9 to 100.
 
 MAPE is unbounded above. Its largest published value is the `> 10000 %` sentinel,
-which is `100.0` as a fraction, and 48 of 244 published MAPE cells legitimately
-exceed 150 %. A naive `[0, 1.5]` ceiling would reject all 48. **Do not add one.**
+which is `100.0` as a fraction.
+Of the 244 published MAPE-family cells, **28 of the 224 exact ones legitimately
+exceed 150 %**, and the other 20 are the sentinel itself.
+A naive `[0, 1.5]` ceiling would therefore reject 48 cells outright.
+**Do not add one.**
 
 For the MAPE family the detector is the cross-check instead: compare every ingested
 value against the published baseline for the same cell and flag an
@@ -644,9 +698,22 @@ Carried forward rather than resolved, and none block Phase 1.
    correctness rather than presentation. See the section above; it gates Phase 3.
 2. The "three prediction tasks" line on p.21 contradicts the abstract and Table 8.
 3. `place_resize` appears in Section 6.2 prose but not in Table 8.
-4. Table 1's caption defines eight stage codes, but only `FP-F`, `GP-F`, `CTS-F`,
-   `DR-F` and bare `F` were observed in its rows. Confirm before generating
-   `attributes.json` in Phase 5.
+4. **Confirmed 2026-08-11.** Table 1's caption defines eight stage codes, but its
+   rows use only five. Counted directly from
+   `docs/sources/verbatim/table1_attributes.txt`: `FP - F` 91 times, `GP - F` 19,
+   `DR - F` 19, `CTS - F` 6, and bare `F` exactly once, on
+   `Netlist.cell_placement_filler`. `PR`, `DP` and `GR` appear in no row at all.
+   `attributes.json` therefore needs a five-value vocabulary, not eight.
+
+   Note the file is a **two-column** layout, so a stage code can sit mid-line
+   rather than at the end. Counting with a line-anchored regex undercounts the
+   left column and misses the single bare `F` entirely.
+
+   Also unrecorded until now: **32 attributes carry no stage column at all**
+   (Design Flow, Constraints, Design Stage, Standard Cell). They need an explicit
+   "available at every stage" encoding rather than a silent default to floorplan.
+   The arithmetic is 136 staged plus 32 stageless = **168 attributes**, which is
+   the total that makes a dropped row visible.
 5. Table 8 reports rounded values. Sub-precision baselines at `global_route` are
    published as `0.00` and may be small but nonzero. Only the lab's source data
    could distinguish these, and nothing in the leaderboard depends on it.
