@@ -43,6 +43,15 @@ packages = ["tools"]
 [tool.ruff]
 target-version = "py311"
 line-length = 88
+# Markdown is prose, not source. Ruff formats Python code blocks found inside
+# `.md` files, which puts every document under docs/plans/ on the critical path
+# of `make check` and of the CI lint job. Those documents are specifications:
+# their snippets are deliberately partial, they are edited constantly, and a
+# half-written example in a plan must never be able to fail the code gate. Ruff
+# itself calls Markdown formatting experimental. Excluded here rather than in
+# the Makefile so `make check`, CI and an editor integration all agree; CI runs
+# `ruff check .` and `ruff format --check .` directly and reads this file too.
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
