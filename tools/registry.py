@@ -239,3 +239,51 @@ def precision(task_id: str, metric_id: str) -> int:
     precision the dataset cannot express.
     """
     return task(task_id).precision_overrides.get(metric_id, metric(metric_id).precision)
+
+
+@cache
+def metric_rows_expanded() -> tuple[tuple[Task, str], ...]:
+    """Every (Task, metric_id) pair, with the task object rather than its id.
+
+    Callers that need the task's unit or precision alongside the row use this;
+    metric_rows() is the id-only view over the same sequence.
+    """
+    return tuple((t, metric_id) for t in tasks() for metric_id in t.metrics)
+
+
+@cache
+def metric_rows() -> tuple[tuple[str, str], ...]:
+    """Every (task_id, metric_id) pair, in Table 8 row order.
+
+    This is the published table's row count, derived from the ragged per-task
+    metric sets rather than stated.
+    """
+    return tuple((t.id, metric_id) for t, metric_id in metric_rows_expanded())
+
+
+@cache
+def live_combos() -> tuple[tuple[str, str, str], ...]:
+    """(task, pdk, stage) triples that are not void. One shard file each."""
+    return tuple(
+        (t.id, p.id, s.id)
+        for t in tasks()
+        for p in pdks()
+        for s in stages()
+        if not is_void(t.id, s.id)
+    )
+
+
+@cache
+def live_cells() -> tuple[tuple[str, str, str, str], ...]:
+    """(task, metric, pdk, stage) quads that are not void.
+
+    Degenerate cells stay in: their baseline is unmeasured, not absent, so they
+    are rendered without a comparison rather than dropped from the grid.
+    """
+    return tuple(
+        (task_id, metric_id, p.id, s.id)
+        for task_id, metric_id in metric_rows()
+        for p in pdks()
+        for s in stages()
+        if not is_void(task_id, s.id)
+    )

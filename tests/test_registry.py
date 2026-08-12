@@ -201,3 +201,72 @@ def test_precision_defaults_to_the_metric_and_is_overridden_per_task() -> None:
     assert reg.precision("total_area_prediction", "r2") == 3
     assert reg.precision("cell_arc_delay_prediction", "mae") == 4
     assert reg.precision("timing_path_slack_prediction", "mpe") == 4
+
+
+def test_metric_rows_derive_to_46() -> None:
+    assert len(reg.metric_rows()) == 46
+
+
+def test_live_combos_derive_to_232() -> None:
+    assert len(reg.live_combos()) == 232
+
+
+def test_live_cells_derive_to_880() -> None:
+    assert len(reg.live_cells()) == 880
+
+
+def test_the_partition_not_just_the_total() -> None:
+    """ASSERT THE PARTITION. 880 stays correct while degeneracy and saturation
+    are swapped; 40/24/120 does not."""
+    all_cells = [
+        (t.id, m, p.id, s.id)
+        for t, m in reg.metric_rows_expanded()
+        for p in reg.pdks()
+        for s in reg.stages()
+    ]
+    assert len(all_cells) == 920
+
+    void = [c for c in all_cells if reg.is_void(c[0], c[3])]
+    degen = [c for c in all_cells if reg.is_degenerate(c[0], c[1], c[3])]
+    sat = [c for c in all_cells if reg.is_saturated(c[0], c[1], c[3])]
+
+    assert len(void) == 40, "void cells"
+    assert len(degen) == 24, "degenerate cells"
+    assert len(sat) == 120, "saturated cells"
+    assert len(all_cells) - len(void) == 880, "live cells"
+
+
+def test_no_cell_is_both_degenerate_and_saturated() -> None:
+    for t, m, _p, s in reg.live_cells():
+        assert not (reg.is_degenerate(t, m, s) and reg.is_saturated(t, m, s))
+
+
+def test_no_count_literal_appears_in_tools() -> None:
+    """Counts are derived. A literal here means the derivation was replaced by a
+    constant and the registry stopped being the source of truth.
+
+    Parsed with `ast`, not grepped. A regex over raw text also matches prose, and
+    this module's own docstrings legitimately discuss the 24 degenerate cells and
+    the 46 metric rows. Grepping would force those explanations out of the code
+    to satisfy a test about code, which is the tail wagging the dog. The AST
+    contains no comments at all and represents a docstring as a str constant, so
+    both are excluded for free.
+    """
+    import ast
+    from pathlib import Path
+
+    forbidden = {46, 232, 880, 856, 120, 24, 40, 920}
+    root = Path(__file__).resolve().parent.parent / "tools"
+    offenders: list[str] = []
+    for py in sorted(root.rglob("*.py")):
+        tree = ast.parse(py.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            # `type(...) is int` rather than isinstance: True is an int subclass
+            # and a bare `True` in source must not be read as the number 1.
+            if (
+                isinstance(node, ast.Constant)
+                and type(node.value) is int
+                and node.value in forbidden
+            ):
+                offenders.append(f"{py.name}:{node.lineno} hardcodes {node.value}")
+    assert not offenders, offenders
