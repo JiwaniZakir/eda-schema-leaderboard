@@ -83,7 +83,7 @@ with bite-sized TDD steps, real code and exact commands.
 | 6 | [guard](docs/plans/2026-08-11-phase-6-guard.md) | the five contamination layers |
 | 7 | [synthetic decision](docs/plans/2026-08-11-phase-7-synthetic-decision.md) | a decision, and possibly no code |
 | 8 | [explore, card, submit, model](docs/plans/2026-08-11-phase-8-explore-card-submit-model.md) | the remaining pages |
-| 9 | [themes, deploy, transfer](docs/plans/2026-08-11-phase-9-themes-deploy-transfer.md) | two themes and the handover |
+| 9 | [themes, deploy, transfer](docs/plans/2026-08-11-phase-9-themes-deploy-transfer.md) | two themes, the handover, and the DOI that makes it citable |
 | 10 | [publish path](docs/plans/2026-08-11-phase-10-publish-path.md) | **submissions actually reach the grid** |
 
 Read the roadmap for *why* and the phase plan for *how*.
@@ -510,7 +510,7 @@ pytest tests/test_pages.py tests/test_arch_render.py
 
 ---
 
-## Phase 9 - Themes, deploy and transfer
+## Phase 9 - Themes, deploy, transfer and citability
 
 Two stylesheets against one CSS-variable contract, switched by one line in
 `build.py`. `drexel` (#07294D navy, #FFC600 gold, serif headings) and `neutral`.
@@ -520,6 +520,35 @@ Then transfer to `drexel-ice`, re-apply branch protection and CODEOWNERS, add th
 required approving review that Phase 0 deferred, update the CNAME, and **re-run
 the negative test against the transferred repo**. Protection that silently did not
 survive is worse than none, because you will believe it is there.
+
+### Citability, added 2026-08-11
+
+The goal calls for a **citable** leaderboard, and the 2026-08-11 review found the
+word owned by no phase: `DOI`, `Zenodo`, `CITATION.cff`, BibTeX and `ORCID`
+appeared zero times across the repo, CI and all nine plans. `docs/CARD.yaml` did
+carry a `citation:` field, but its value cited the **source paper**, not this
+leaderboard, and `version: "0.1"` was a hand-maintained string with nothing
+binding it to content.
+
+Five tasks close it: `CITATION.cff` validated against the real CFF 1.2.0 schema,
+a content fingerprint so the version cannot silently drift from the data it
+describes, a `/cite/` surface generated from one source of truth rather than
+maintained in two places, a defined release artifact, and the manual Zenodo
+checklist that mints the DOI.
+
+> **Ordering rule: transfer first, DOI last.** A DOI records an immutable
+> snapshot, so minting one before the transfer freezes a URL that stops
+> resolving on transfer day, and the plan already warns not to assume a
+> redirect. This is enforced mechanically rather than remembered:
+> `checks.citation.expected_site_url()` derives the expected URL from
+> `repository-code` and `static/CNAME`, so from the moment the repo moves,
+> `make check` is red until the citation is repointed. If the transfer is
+> abandoned rather than delayed, the rule is satisfied by settling the address,
+> so minting under the current owner is allowed.
+
+The first DOI therefore describes a leaderboard with no submission path, since
+Phase 10 follows. That is deliberate, not an oversight: the snapshot is `v0.1.x`
+and Phase 10 becomes `v0.2.0`.
 
 > **`gh repo transfer` does not exist.** Verified against gh 2.83.2:
 > `unknown command "transfer" for "gh repo"`. An earlier draft of this plan
@@ -534,11 +563,25 @@ survive is worse than none, because you will believe it is there.
 
 ```bash
 pytest tests/test_themes.py     # both implement every variable in the contract
+pytest tests/test_citation.py   # CITATION.cff validates against CFF 1.2.0
+make version                    # the fingerprint matches the committed data
 gh workflow run deploy.yml && gh run watch
 curl -sI https://<domain>/ | head -1     # 200
+curl -s  https://<domain>/cite/ | grep -c '@misc'   # BibTeX for BOTH works
 du -sh dist/                             # well under 1 GB
-# repository_dispatch from the experiments repo triggers a rebuild
 ```
+
+> **The `repository_dispatch` gate was dishonest and is restated.** An earlier
+> draft gated on "a dispatch from the experiments repo triggers a rebuild",
+> which passes while proving nothing: `deploy.yml` runs only `build.py`, it has
+> no ingest step, and the sibling experiments checkout does not exist on the
+> runner. So the dispatch rebuilds `main` from already-committed shards and
+> produces a byte-identical site, which Phase 3 separately asserts. Gate on the
+> real question instead: **what is the documented path for new lab results to
+> reach the site**, end to end, and does a human have to run `make ingest`
+> locally and open a PR? If that is the answer, it belongs in `docs/RELEASES.md`
+> as the release process rather than being implied by a workflow trigger that
+> does not do it.
 
 ---
 
