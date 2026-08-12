@@ -430,3 +430,63 @@ def test_every_asset_the_page_links_exists(site: Path, index_html: str) -> None:
     assert internal, "the page links no local assets"
     for ref in internal:
         assert (site / ref.lstrip("/")).is_file(), ref
+
+
+CTS = "cts"
+
+CTS_OPTIMAL = (
+    ("total_area_prediction", "r2", "ng45"),
+    ("total_area_prediction", "r2", "sky130"),
+    ("total_area_prediction", "r2", "ihp130"),
+    ("total_area_prediction", "r2", "asap7"),
+    ("total_power_prediction", "r2", "ng45"),
+    ("total_power_prediction", "r2", "ihp130"),
+    ("total_power_prediction", "r2", "asap7"),
+    ("cell_arc_delay_prediction", "mae", "ihp130"),
+    ("cell_arc_delay_prediction", "mae", "asap7"),
+    ("worst_slack_prediction", "tpr", "ng45"),
+    ("worst_slack_prediction", "tpr", "asap7"),
+    ("worst_slack_prediction", "mpe", "asap7"),
+)
+
+
+def _sits_at_its_optimum(task_id: str, metric_id: str, pdk_id: str) -> bool:
+    """Whether the published baseline is already at the theoretical optimum.
+
+    Derived from the baseline and the metric's own direction, deliberately not
+    from any list. A higher-is-better metric tops out at 1, and an error metric
+    bottoms out at 0. A sentinel is a threshold rather than a number, so it can
+    never be shown to sit at the optimum and is excluded.
+    """
+    bound = bl.lookup(task_id, metric_id, pdk_id, CTS).bound
+    if bound.kind is not bl.BoundKind.EXACT:
+        return False
+    return bound.value == (1.0 if reg.metric(metric_id).direction == "higher" else 0.0)
+
+
+def test_the_cts_optimal_cells_are_not_saturated_yet() -> None:
+    """PLAN.md open decision 3, deliberately unresolved.
+
+    Twelve cells are at the theoretical optimum at CTS and can only be tied. The
+    saturation rule is anchored on global_route, so it does not reach them and
+    they will render as permanently baseline_leads once entries exist. This test
+    pins today's behaviour rather than endorsing it: a ruling that extends
+    saturation must change this test, and it will not pass by accident.
+
+    The list is cross-checked against the baseline rather than asserted against
+    itself, so it cannot quietly stop being the set it claims to be. A
+    thirteenth optimal cell, or a twelfth that stopped being optimal, fails here
+    instead of being carried forward as a stale count in a docstring.
+    """
+    assert len(CTS_OPTIMAL) == 12
+    derived = {
+        (task_id, metric_id, pdk_id)
+        for task_id, metric_id, pdk_id, stage_id in reg.live_cells()
+        if stage_id == CTS and _sits_at_its_optimum(task_id, metric_id, pdk_id)
+    }
+    assert derived == set(CTS_OPTIMAL)
+
+    for task_id, metric_id, pdk_id in CTS_OPTIMAL:
+        entry = matrix.cell(task_id, metric_id, pdk_id, CTS)
+        assert not reg.is_saturated(task_id, metric_id, CTS)
+        assert entry.state == matrix.NO_ENTRY
