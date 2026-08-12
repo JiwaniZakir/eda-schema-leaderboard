@@ -163,7 +163,10 @@ from tools import registry as reg
 
 TABLE1 = (
     Path(__file__).resolve().parent.parent
-    / "docs" / "sources" / "verbatim" / "table1_attributes.txt"
+    / "docs"
+    / "sources"
+    / "verbatim"
+    / "table1_attributes.txt"
 )
 
 STAGE_CODE = re.compile(r"\b(FP|GP|PR|DP|CTS|GR|DR)\s*-\s*F\b")
@@ -212,7 +215,9 @@ def test_stageless_attributes_are_the_four_static_entities() -> None:
     """Static library and constraint data. earliest_stage None means available at
     EVERY stage, never unavailable. Defaulting these to floorplan is the bug this
     pins."""
-    namespaces = {a.namespace for a in reg.attributes() if a.earliest_stage_code is None}
+    namespaces = {
+        a.namespace for a in reg.attributes() if a.earliest_stage_code is None
+    }
     assert namespaces == {"design_flow", "constraints", "design_stage", "standard_cell"}
 
 
@@ -442,7 +447,12 @@ def test_every_layer_is_registered() -> None:
     """Five layers plus schema. A layer that fails to import registers nothing
     and the stack then passes having run less than it claims."""
     assert set(guard.LAYERS) == {
-        "schema", "features", "splits", "divisions", "runnability", "plausibility",
+        "schema",
+        "features",
+        "splits",
+        "divisions",
+        "runnability",
+        "plausibility",
     }
 
 
@@ -674,7 +684,12 @@ The per-group members, all of them `FP - F` in Table 1:
 Append to `tests/test_guard.py`:
 
 ```python
-LAB_GROUP_SIZES = {"netlist": 9, "cell_metrics": 19, "power_metrics": 7, "timing_metrics": 6}
+LAB_GROUP_SIZES = {
+    "netlist": 9,
+    "cell_metrics": 19,
+    "power_metrics": 7,
+    "timing_metrics": 6,
+}
 
 
 def test_the_lab_declares_forty_one_features() -> None:
@@ -1248,7 +1263,9 @@ def check(sub: Submission) -> list[Finding]:
     findings: list[Finding] = []
     train, test = reg.canonical_split()
 
-    if set(sub["split"]["train"]) != set(train) or set(sub["split"]["test"]) != set(test):
+    if set(sub["split"]["train"]) != set(train) or set(sub["split"]["test"]) != set(
+        test
+    ):
         findings.append(
             Finding(
                 "divisions",
@@ -1524,7 +1541,9 @@ _ADDRESS_SPACE_BYTES = 4 * 1024 * 1024 * 1024
 _MAX_PROCESSES = 64
 _MAX_FILE_BYTES = 64 * 1024 * 1024
 
-SMOKE_SLICE = Path(__file__).resolve().parent.parent.parent / "data" / "smoke" / "slice.csv"
+SMOKE_SLICE = (
+    Path(__file__).resolve().parent.parent.parent / "data" / "smoke" / "slice.csv"
+)
 
 
 def smoke_slice_path() -> Path:
@@ -1577,7 +1596,10 @@ def run_predict(
     elapsed = time.monotonic() - started
     if proc.returncode != 0:
         return RunResult(
-            False, False, proc.returncode, elapsed,
+            False,
+            False,
+            proc.returncode,
+            elapsed,
             f"predict.py exited {proc.returncode}: {stderr.strip()[:500]}",
         )
 
@@ -1586,14 +1608,20 @@ def run_predict(
         predictions = payload["predictions"]
     except (json.JSONDecodeError, KeyError, TypeError):
         return RunResult(
-            False, False, proc.returncode, elapsed,
+            False,
+            False,
+            proc.returncode,
+            elapsed,
             "predict.py output has the wrong shape: expected JSON "
             '{"predictions": [...]} on stdout',
         )
 
     if not isinstance(predictions, list) or not predictions:
         return RunResult(
-            False, False, proc.returncode, elapsed,
+            False,
+            False,
+            proc.returncode,
+            elapsed,
             "predict.py output has the wrong shape: predictions must be a "
             "non-empty list",
         )
@@ -1686,7 +1714,10 @@ def test_layer_5_flags_mae_below_the_expressible_floor() -> None:
 def test_layer_5_does_not_flag_the_same_value_on_a_2dp_task() -> None:
     """The floor is per (task, metric), from reg.precision. A single global
     epsilon flags legitimate 4dp submissions or misses 2dp ones."""
-    assert guard.plausibility.expressible_floor("cell_arc_delay_prediction", "mae") == 0.0001
+    assert (
+        guard.plausibility.expressible_floor("cell_arc_delay_prediction", "mae")
+        == 0.0001
+    )
     assert guard.plausibility.expressible_floor("total_area_prediction", "mae") == 0.01
 
 
@@ -1816,7 +1847,9 @@ def check(sub: Submission) -> list[Finding]:
         if _cell_is_rankable(task_id, "mpe", stage_id) and _cell_is_rankable(
             task_id, "mae", stage_id
         ):
-            mpe_rank = ranking.rank_of(task_id, "mpe", pdk_id, stage_id, sub["metrics"]["mpe"])
+            mpe_rank = ranking.rank_of(
+                task_id, "mpe", pdk_id, stage_id, sub["metrics"]["mpe"]
+            )
             mae_pctl = ranking.percentile_of(
                 task_id, "mae", pdk_id, stage_id, sub["metrics"]["mae"]
             )
@@ -1945,7 +1978,9 @@ import yaml
 
 WORKFLOW = (
     Path(__file__).resolve().parent.parent
-    / ".github" / "workflows" / "validate-submission.yml"
+    / ".github"
+    / "workflows"
+    / "validate-submission.yml"
 )
 
 

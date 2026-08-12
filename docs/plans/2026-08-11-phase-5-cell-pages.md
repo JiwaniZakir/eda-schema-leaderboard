@@ -478,10 +478,17 @@ Append to `tests/test_registry.py`:
 
 ```python
 UNIT_KINDS = {
-    "mae": "target", "mape": "percent", "r2": "none",
-    "mpe": "target", "mne": "target", "tpr": "percent", "tnr": "percent",
-    "mae_p95": "target", "mape_p95": "percent",
-    "mae_top5": "target", "mape_top5": "percent",
+    "mae": "target",
+    "mape": "percent",
+    "r2": "none",
+    "mpe": "target",
+    "mne": "target",
+    "tpr": "percent",
+    "tnr": "percent",
+    "mae_p95": "target",
+    "mape_p95": "percent",
+    "mae_top5": "target",
+    "mape_top5": "percent",
 }
 
 
@@ -584,18 +591,26 @@ def test_percent_metrics_are_scaled_once_at_display() -> None:
     """0.1243 stored is 12.43 % displayed. Twice gives 1243 %, never gives 0.12."""
     assert cellpage.format_value("total_area_prediction", "mape", 0.1243) == "12.43 %"
     assert cellpage.format_value("worst_slack_prediction", "tpr", 1.0) == "100.00 %"
-    assert cellpage.format_value("total_area_prediction", "mae", 1781.9696) == "1,781.97"
+    assert (
+        cellpage.format_value("total_area_prediction", "mae", 1781.9696) == "1,781.97"
+    )
 
 
 def test_display_precision_comes_from_the_registry() -> None:
-    assert cellpage.format_value("cell_arc_delay_prediction", "mae", 0.00012345) == "0.0001"
+    assert (
+        cellpage.format_value("cell_arc_delay_prediction", "mae", 0.00012345)
+        == "0.0001"
+    )
     assert cellpage.format_value("total_area_prediction", "r2", 0.98765) == "0.988"
 
 
 def test_sentinel_bounds_render_as_bounds() -> None:
     over = Bound(BoundKind.GREATER_THAN, 100.0)
     under = Bound(BoundKind.LESS_THAN, -1.0)
-    assert cellpage.format_bound("cell_arc_delay_prediction", "mape", over) == "> 10,000.00 %"
+    assert (
+        cellpage.format_bound("cell_arc_delay_prediction", "mape", over)
+        == "> 10,000.00 %"
+    )
     assert cellpage.format_bound("cell_arc_delay_prediction", "r2", under) == "< -1.000"
 
 
@@ -604,8 +619,13 @@ def test_an_entry_ranks_on_the_basis_it_declares() -> None:
     the better of the two per entry would make the column meaningless, because
     the two are different estimators of different quantities."""
     record = shards.Record(
-        metric="mae", model_id="m1", model_label="M1", source="submission",
-        value_macro=1789.6, value_pooled=1.0, ranked_on="macro",
+        metric="mae",
+        model_id="m1",
+        model_label="M1",
+        source="submission",
+        value_macro=1789.6,
+        value_pooled=1.0,
+        ranked_on="macro",
     )
     entry = cellpage.entry_from(record, "total_area_prediction", "mae")
     assert entry.value == 1789.6
@@ -616,11 +636,18 @@ def test_entries_are_listed_even_when_the_state_says_no_entry() -> None:
     cell_state collapses that to NO_ENTRY. Deciding what to LIST from the state
     would hide real submissions on all 24 degenerate cells."""
     row = cellpage.metric_row(
-        "worst_slack_prediction", "mpe", "ng45", "global_route",
+        "worst_slack_prediction",
+        "mpe",
+        "ng45",
+        "global_route",
         records=(
             shards.Record(
-                metric="mpe", model_id="m1", model_label="M1",
-                source="submission", value_macro=0.5, value_pooled=None,
+                metric="mpe",
+                model_id="m1",
+                model_label="M1",
+                source="submission",
+                value_macro=0.5,
+                value_pooled=None,
                 ranked_on="macro",
             ),
         ),
@@ -646,7 +673,9 @@ def test_the_payload_is_valid_json_with_no_nan() -> None:
 
 
 def test_the_payload_cannot_close_its_own_script_element() -> None:
-    assert "</" not in cellpage.payload(cellpage.page("total_area_prediction", "ng45", "cts"))
+    assert "</" not in cellpage.payload(
+        cellpage.page("total_area_prediction", "ng45", "cts")
+    )
 ```
 
 - [ ] **Step 5: Run to verify they fail**
@@ -797,8 +826,12 @@ def entry_from(record: shards.Record, task_id: str, metric_id: str) -> Entry:
         model_label=record.model_label,
         source=record.source,
         value=value,
-        display=NO_BASELINE if value is None else format_value(task_id, metric_id, value),
-        pooled_display="" if pooled is None else format_value(task_id, metric_id, pooled),
+        display=NO_BASELINE
+        if value is None
+        else format_value(task_id, metric_id, value),
+        pooled_display=""
+        if pooled is None
+        else format_value(task_id, metric_id, pooled),
         verdict="",
         rank=None,
     )
@@ -822,12 +855,16 @@ def _ranked(
         verdict = ranking.compare(
             task_id, metric_id, Bound(BoundKind.EXACT, entry.value), bound
         ).value
-        tied = previous is not None and ranking.compare(
-            task_id,
-            metric_id,
-            Bound(BoundKind.EXACT, entry.value),
-            Bound(BoundKind.EXACT, previous.value),
-        ) is ranking.Comparison.EQUAL
+        tied = (
+            previous is not None
+            and ranking.compare(
+                task_id,
+                metric_id,
+                Bound(BoundKind.EXACT, entry.value),
+                Bound(BoundKind.EXACT, previous.value),
+            )
+            is ranking.Comparison.EQUAL
+        )
         rank = previous.rank if tied and previous is not None else position
         entry = dataclasses.replace(entry, verdict=verdict, rank=rank)
         ranked.append(entry)
@@ -855,9 +892,7 @@ def metric_row(
 
     if reg.is_saturated(task_id, metric_id, stage_id):
         mode, note = "not_ranked", SATURATED_NOTE
-        placed = tuple(
-            dataclasses.replace(e, verdict="", rank=None) for e in entries
-        )
+        placed = tuple(dataclasses.replace(e, verdict="", rank=None) for e in entries)
     else:
         placed = _ranked(task_id, metric_id, stage_id, bound, entries)
         if bound.kind is BoundKind.ABSENT:
@@ -870,9 +905,7 @@ def metric_row(
         metric_id,
         stage_id,
         bound,
-        tuple(
-            Bound(BoundKind.EXACT, e.value) for e in placed if e.value is not None
-        ),
+        tuple(Bound(BoundKind.EXACT, e.value) for e in placed if e.value is not None),
     )
     metric = reg.metric(metric_id)
     return MetricRow(
@@ -1022,12 +1055,16 @@ def test_the_baseline_is_pinned_above_the_ranking_on_every_page(site: Path) -> N
         for section in sections:
             assert 'class="baseline"' in section
             if 'class="ranking"' in section:
-                assert section.index('class="baseline"') < section.index('class="ranking"')
+                assert section.index('class="baseline"') < section.index(
+                    'class="ranking"'
+                )
 
 
 def test_saturated_rows_render_the_notice_and_no_ranking(site: Path) -> None:
     for page in _pages():
-        html = (site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))).read_text()
+        html = (
+            site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))
+        ).read_text()
         for section, row in zip(_sections(html), page.rows, strict=True):
             if row.mode != "not_ranked":
                 continue
@@ -1039,7 +1076,9 @@ def test_saturated_rows_render_the_notice_and_no_ranking(site: Path) -> None:
 
 def test_degenerate_rows_render_the_paper_note_and_no_comparison(site: Path) -> None:
     for page in _pages():
-        html = (site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))).read_text()
+        html = (
+            site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))
+        ).read_text()
         for section, row in zip(_sections(html), page.rows, strict=True):
             if row.baseline_kind != "absent":
                 continue
@@ -1052,7 +1091,9 @@ def test_degenerate_rows_render_the_paper_note_and_no_comparison(site: Path) -> 
 def test_sentinel_rows_render_the_bound(site: Path) -> None:
     seen = 0
     for page in _pages():
-        html = (site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))).read_text()
+        html = (
+            site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))
+        ).read_text()
         for section, row in zip(_sections(html), page.rows, strict=True):
             if row.baseline_kind not in {"greater_than", "less_than"}:
                 continue
@@ -1067,11 +1108,21 @@ def test_an_undecidable_entry_says_so_rather_than_guessing() -> None:
     Rendering it as a loss would be a fabrication."""
     html = render_row(
         cellpage.metric_row(
-            "cell_arc_delay_prediction", "r2", "ng45", "cts",
-            records=(shards.Record(
-                metric="r2", model_id="m1", model_label="M1", source="submission",
-                value_macro=-3.0, value_pooled=None, ranked_on="macro",
-            ),),
+            "cell_arc_delay_prediction",
+            "r2",
+            "ng45",
+            "cts",
+            records=(
+                shards.Record(
+                    metric="r2",
+                    model_id="m1",
+                    model_label="M1",
+                    source="submission",
+                    value_macro=-3.0,
+                    value_pooled=None,
+                    ranked_on="macro",
+                ),
+            ),
         )
     )
     assert 'data-verdict="undecidable"' in html
@@ -1452,15 +1503,23 @@ def test_the_json_export_parses_and_carries_no_nan(site: Path) -> None:
         for poison in ("NaN", "Infinity", "-Infinity"):
             assert poison not in text, combo
         data = json.loads(text)
-        assert (data["combo"]["task"], data["combo"]["pdk"], data["combo"]["stage"]) == combo
+        assert (
+            data["combo"]["task"],
+            data["combo"]["pdk"],
+            data["combo"]["stage"],
+        ) == combo
 
 
 def _read_csv(site: Path, combo: tuple[str, str, str]) -> list[dict[str, str]]:
-    text = (site / str(urls.cell_export_path(*combo, "csv"))).read_text(encoding="utf-8")
+    text = (site / str(urls.cell_export_path(*combo, "csv"))).read_text(
+        encoding="utf-8"
+    )
     return list(csv.DictReader(io.StringIO(text)))
 
 
-def test_the_csv_carries_one_baseline_row_per_metric_plus_every_entry(site: Path) -> None:
+def test_the_csv_carries_one_baseline_row_per_metric_plus_every_entry(
+    site: Path,
+) -> None:
     for page in _pages():
         combo = (page.task_id, page.pdk_id, page.stage_id)
         rows = _read_csv(site, combo)
@@ -1483,9 +1542,12 @@ def test_the_csv_stores_a_fraction_and_displays_a_percent(site: Path) -> None:
         for r in _read_csv(site, combo):
             if r["bound"] != "exact" or not r["value_stored"]:
                 continue
-            assert cellpage.format_value(
-                page.task_id, r["metric"], float(r["value_stored"])
-            ) == r["value_display"]
+            assert (
+                cellpage.format_value(
+                    page.task_id, r["metric"], float(r["value_stored"])
+                )
+                == r["value_display"]
+            )
             checked += 1
     assert checked > 0
 
@@ -1570,9 +1632,23 @@ Append to `tools/cellpage.py`, and add `csv`, `io` and `Iterator` to the imports
 # entry. The baseline is a row rather than a column so a spreadsheet can sort on
 # value_stored without leaving it behind.
 CSV_COLUMNS: tuple[str, ...] = (
-    "task", "pdk", "stage", "metric", "direction", "state", "mode",
-    "record", "model", "source", "rank", "verdict",
-    "bound", "value_stored", "stored_unit", "value_display", "display_unit",
+    "task",
+    "pdk",
+    "stage",
+    "metric",
+    "direction",
+    "state",
+    "mode",
+    "record",
+    "model",
+    "source",
+    "rank",
+    "verdict",
+    "bound",
+    "value_stored",
+    "stored_unit",
+    "value_display",
+    "display_unit",
 )
 
 
@@ -1640,8 +1716,8 @@ def csv_text(cell_page: CellPage) -> str:
 Add `json_url: str` and `csv_url: str` to `CellPage`, set in `page()`:
 
 ```python
-        json_url=urls.cell_export_url(task_id, pdk_id, stage_id, "json"),
-        csv_url=urls.cell_export_url(task_id, pdk_id, stage_id, "csv"),
+json_url = (urls.cell_export_url(task_id, pdk_id, stage_id, "json"),)
+csv_url = (urls.cell_export_url(task_id, pdk_id, stage_id, "csv"),)
 ```
 
 - [ ] **Step 5: Write the files from build.py**
@@ -1764,11 +1840,15 @@ def test_a_listed_combo_renders_two_figures(
         "release_url": "https://github.com/drexel-ice/eda-schema-leaderboard/releases/download/plots-v1/",
         "assets": [
             {
-                "task": "total_area_prediction", "pdk": "ng45", "stage": "cts",
+                "task": "total_area_prediction",
+                "pdk": "ng45",
+                "stage": "cts",
                 "model": "total_area_prediction__ng45__cts__pred_vs_actual_grid.png",
                 "baseline": "total_area_prediction__ng45__cts__baseline_pred_vs_actual_grid.png",
-                "width": 1800, "height": 1200,
-                "model_bytes": 1483920, "baseline_bytes": 1502301,
+                "width": 1800,
+                "height": 1200,
+                "model_bytes": 1483920,
+                "baseline_bytes": 1502301,
             }
         ],
     }
@@ -1811,14 +1891,24 @@ def test_a_manifest_cannot_name_a_combo_that_has_no_page(
     """total_wirelength at floorplan is void. A figure for it would link nowhere."""
     path = tmp_path / "plots.json"
     path.write_text(
-        json.dumps({
-            "release_tag": "t", "release_url": "https://example.invalid/",
-            "assets": [{
-                "task": "total_wirelength_prediction", "pdk": "ng45",
-                "stage": "floorplan", "model": "a.png", "baseline": "b.png",
-                "width": 1, "height": 1, "model_bytes": 1,
-            }],
-        }),
+        json.dumps(
+            {
+                "release_tag": "t",
+                "release_url": "https://example.invalid/",
+                "assets": [
+                    {
+                        "task": "total_wirelength_prediction",
+                        "pdk": "ng45",
+                        "stage": "floorplan",
+                        "model": "a.png",
+                        "baseline": "b.png",
+                        "width": 1,
+                        "height": 1,
+                        "model_bytes": 1,
+                    }
+                ],
+            }
+        ),
         encoding="utf-8",
     )
     monkeypatch.setattr(plots, "MANIFEST_PATH", path)
@@ -1834,8 +1924,10 @@ def test_png_size_reads_the_header_without_a_dependency(tmp_path: Path) -> None:
     png = tmp_path / "t.png"
     png.write_bytes(
         b"\x89PNG\r\n\x1a\n"
-        + (13).to_bytes(4, "big") + b"IHDR"
-        + (1800).to_bytes(4, "big") + (1200).to_bytes(4, "big")
+        + (13).to_bytes(4, "big")
+        + b"IHDR"
+        + (1800).to_bytes(4, "big")
+        + (1200).to_bytes(4, "big")
     )
     assert plots.png_size(png) == (1800, 1200)
     bad = tmp_path / "b.png"
@@ -1949,9 +2041,7 @@ def manifest() -> dict[str, Any]:
 
 @lru_cache(maxsize=1)
 def _index() -> dict[tuple[str, str, str], dict[str, Any]]:
-    return {
-        (a["task"], a["pdk"], a["stage"]): a for a in manifest()["assets"]
-    }
+    return {(a["task"], a["pdk"], a["stage"]): a for a in manifest()["assets"]}
 
 
 def plot_for(task_id: str, pdk_id: str, stage_id: str) -> Plot | None:
@@ -2023,7 +2113,9 @@ def collect(source: Path, out: Path, tag: str, repo: str) -> Path:
         encoding="utf-8",
     )
     print(f"collected {len(assets)} combos into {out}")
-    print(f"  gh release create {tag} --repo {repo} --notes 'predicted vs actual figures'")
+    print(
+        f"  gh release create {tag} --repo {repo} --notes 'predicted vs actual figures'"
+    )
     print(f"  gh release upload {tag} --repo {repo} {out}/*.png")
     return MANIFEST_PATH
 ```
@@ -2160,16 +2252,18 @@ def test_the_payload_counts_match_the_rows_it_ships_with() -> None:
         data = json.loads(cellpage.payload(page))
         for row, sent in zip(page.rows, data["rows"], strict=True):
             for axis in ("source", "verdict"):
-                assert sum(sent["counts"][axis].values()) == len(row.entries), row.metric_id
+                assert sum(sent["counts"][axis].values()) == len(row.entries), (
+                    row.metric_id
+                )
 
 
 def test_the_build_time_counts_match_the_rendered_rows(site: Path) -> None:
     """The cross-check the browser performs, performed here too. If these two
     ever disagree the banner fires in production, so it must be impossible."""
     for page in _pages():
-        html = (site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))).read_text(
-            encoding="utf-8"
-        )
+        html = (
+            site / str(urls.cell_output_path(page.task_id, page.pdk_id, page.stage_id))
+        ).read_text(encoding="utf-8")
         for section, row in zip(_sections(html), page.rows, strict=True):
             for source, n in cellpage.filter_counts(row)["source"].items():
                 assert section.count(f'data-source="{source}"') == n
@@ -2204,23 +2298,29 @@ def test_a_multi_entry_row_renders_one_tr_per_entry() -> None:
     cell. This is the shape the controls are written against."""
     records = tuple(
         shards.Record(
-            metric="mae", model_id=f"m{i}", model_label=f"Model {i}",
-            source="submission", value_macro=1000.0 + i, value_pooled=None,
+            metric="mae",
+            model_id=f"m{i}",
+            model_label=f"Model {i}",
+            source="submission",
+            value_macro=1000.0 + i,
+            value_pooled=None,
             ranked_on="macro",
         )
         for i in range(3)
     )
     html = render_row(
-        cellpage.metric_row("total_area_prediction", "mae", "ng45", "cts", records=records)
+        cellpage.metric_row(
+            "total_area_prediction", "mae", "ng45", "cts", records=records
+        )
     )
     assert html.count("<tr data-model=") == 3
     assert 'data-verdict="better"' in html or 'data-verdict="worse"' in html
 
 
 def test_the_filter_script_is_loaded_locally_and_deferred(site: Path) -> None:
-    html = (site / str(urls.cell_output_path("total_area_prediction", "ng45", "cts"))).read_text(
-        encoding="utf-8"
-    )
+    html = (
+        site / str(urls.cell_output_path("total_area_prediction", "ng45", "cts"))
+    ).read_text(encoding="utf-8")
     tag = next(t for t in re.findall(r"<script[^>]*>", html) if "cell-filters.js" in t)
     assert "defer" in tag
     assert f'src="{urls.BASE_PATH}js/cell-filters.js"' in tag
@@ -2237,12 +2337,14 @@ def test_the_filter_script_computes_nothing() -> None:
 def test_the_filter_script_only_reads_attributes_the_page_renders(site: Path) -> None:
     source = JS.read_text(encoding="utf-8")
     used = set(re.findall(r"dataset\.(\w+)", source))
-    html = (site / str(urls.cell_output_path("total_area_prediction", "ng45", "cts"))).read_text(
-        encoding="utf-8"
-    )
+    html = (
+        site / str(urls.cell_output_path("total_area_prediction", "ng45", "cts"))
+    ).read_text(encoding="utf-8")
     for name in used:
         attribute = re.sub(r"([A-Z])", r"-\1", name).lower()
-        assert f"data-{attribute}=" in html, f"cell-filters.js reads a dead data-{attribute}"
+        assert f"data-{attribute}=" in html, (
+            f"cell-filters.js reads a dead data-{attribute}"
+        )
 ```
 
 - [ ] **Step 2: Run to verify they fail**
@@ -2537,7 +2639,9 @@ def test_no_cell_page_exceeds_the_page_budget(site: Path) -> None:
     for size, combo in sizes[-5:]:
         print(f"{size / 1024:6.1f} KiB  {'/'.join(combo)}")
     worst_size, worst = sizes[-1]
-    assert worst_size <= PAGE_BUDGET, f"{'/'.join(worst)} is {worst_size / 1024:.1f} KiB"
+    assert worst_size <= PAGE_BUDGET, (
+        f"{'/'.join(worst)} is {worst_size / 1024:.1f} KiB"
+    )
 
 
 def test_the_exports_are_measured_as_site_weight(site: Path) -> None:

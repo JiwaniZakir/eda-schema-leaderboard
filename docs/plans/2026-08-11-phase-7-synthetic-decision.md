@@ -971,7 +971,8 @@ def test_every_empty_rankable_cell_is_filled(generated: Path) -> None:
     rankable = [
         c
         for c in reg.live_cells()
-        if not reg.is_saturated(c[0], c[1], c[3]) and not reg.is_degenerate(c[0], c[1], c[3])
+        if not reg.is_saturated(c[0], c[1], c[3])
+        and not reg.is_degenerate(c[0], c[1], c[3])
     ]
     empty = [c for c in rankable if c[0] != "total_area_prediction"]
     assert len(empty) == 688
@@ -1026,7 +1027,13 @@ def test_error_decreases_monotonically_across_stages(generated: Path) -> None:
     for task_id, metric_id in reg.metric_rows():
         for pdk in reg.pdks():
             chain = [
-                (order[s.id], min(float(r["value"]) for r in cells[(task_id, metric_id, pdk.id, s.id)]))
+                (
+                    order[s.id],
+                    min(
+                        float(r["value"])
+                        for r in cells[(task_id, metric_id, pdk.id, s.id)]
+                    ),
+                )
                 for s in reg.stages()
                 if (task_id, metric_id, pdk.id, s.id) in cells
             ]
@@ -1150,7 +1157,9 @@ def test_the_check_rejects_a_record_with_no_source(tmp_path: Path) -> None:
     assert synthetic.check(root=tmp_path) != []
 
 
-def test_the_check_rejects_a_synthetic_record_in_a_saturated_cell(tmp_path: Path) -> None:
+def test_the_check_rejects_a_synthetic_record_in_a_saturated_cell(
+    tmp_path: Path,
+) -> None:
     from tools.checks import synthetic
 
     shard = tmp_path / "cells" / "x" / "ng45" / "global_route.json"
@@ -1175,7 +1184,11 @@ def test_the_check_rejects_manifest_drift(tmp_path: Path) -> None:
     from tools.checks import synthetic
 
     synth.generate(out_dir=tmp_path)
-    victim = next(p for p in sorted(tmp_path.rglob("*.json")) if p.name != "synthetic_manifest.json")
+    victim = next(
+        p
+        for p in sorted(tmp_path.rglob("*.json"))
+        if p.name != "synthetic_manifest.json"
+    )
     victim.write_text(victim.read_text().replace("synthetic", "synthetic ", 1))
     assert synthetic.check(root=tmp_path) != []
 ```
@@ -1277,7 +1290,9 @@ def test_the_rendered_matrix_shows_the_marker_and_its_legend() -> None:
 
 
 def test_a_synthetic_cell_page_says_so_above_the_ranking() -> None:
-    page = DIST / "cell" / "total_power_prediction" / "ng45" / "floorplan" / "index.html"
+    page = (
+        DIST / "cell" / "total_power_prediction" / "ng45" / "floorplan" / "index.html"
+    )
     html = page.read_text(encoding="utf-8")
     assert "synthetic" in html.lower()
     assert html.index("synthetic") < html.index("<table")
@@ -1390,7 +1405,7 @@ def test_generating_one_combo_alone_matches_generating_the_whole_grid(
     assert alone is not None
     from tools.ingest import shard_path
 
-    on_disk = (whole / shard_path("cell_arc_slew_prediction", "asap7", "cts").name)
+    on_disk = whole / shard_path("cell_arc_slew_prediction", "asap7", "cts").name
     assert on_disk.exists()
 
 
@@ -1402,7 +1417,10 @@ def test_regeneration_leaves_the_working_tree_clean(run: int) -> None:
 
     subprocess.run(["make", "synth"], check=True, capture_output=True)
     diff = subprocess.run(
-        ["git", "diff", "--stat", "--", "data/"], check=True, capture_output=True, text=True
+        ["git", "diff", "--stat", "--", "data/"],
+        check=True,
+        capture_output=True,
+        text=True,
     )
     assert diff.stdout == ""
 ```

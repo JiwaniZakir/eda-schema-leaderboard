@@ -1028,9 +1028,7 @@ class TagStrippingLoader(yaml.SafeLoader):
     """SafeLoader that reads through a python tag instead of honouring it."""
 
 
-def _plain(
-    loader: yaml.SafeLoader, _suffix: str, node: yaml.Node
-) -> Any:  # noqa: ANN401
+def _plain(loader: yaml.SafeLoader, _suffix: str, node: yaml.Node) -> Any:  # noqa: ANN401
     """Construct the node as the plain data it is written as.
 
     A tagged mapping becomes a dict, a tagged sequence a list, a tagged scalar a
@@ -1759,7 +1757,9 @@ def main() -> int:
         written += 1
 
     tasks = sorted({c.task for c in combos})
-    print(f"ingest: wrote {written} shards for {len(tasks)} task(s): {', '.join(tasks)}")
+    print(
+        f"ingest: wrote {written} shards for {len(tasks)} task(s): {', '.join(tasks)}"
+    )
     return 0
 ```
 
@@ -1945,7 +1945,9 @@ def test_percent_metrics_scale_to_display_units_BEFORE_rounding() -> None:
 
 def test_a_non_percent_metric_is_not_scaled() -> None:
     assert (
-        ranking.compare("total_area_prediction", "mae", exact(1781.971), exact(1781.972))
+        ranking.compare(
+            "total_area_prediction", "mae", exact(1781.971), exact(1781.972)
+        )
         is ranking.Comparison.EQUAL
     )
 
@@ -2078,7 +2080,11 @@ def test_a_win_outranks_a_tie_in_the_same_cell() -> None:
 def test_only_losses_is_baseline_leads() -> None:
     assert (
         ranking.cell_state(
-            "total_area_prediction", "mae", "floorplan", exact(1781.97), (exact(9000.0),)
+            "total_area_prediction",
+            "mae",
+            "floorplan",
+            exact(1781.97),
+            (exact(9000.0),),
         )
         is ranking.CellState.BASELINE_LEADS
     )
@@ -2325,9 +2331,7 @@ def bias_sort_key(values: Mapping[str, float]) -> tuple[float, ...]:
     missing measurement is not a perfect one.
     """
     return tuple(
-        rank_key(metric_id, values[metric_id])
-        if metric_id in values
-        else float("inf")
+        rank_key(metric_id, values[metric_id]) if metric_id in values else float("inf")
         for metric_id in _bias_metrics()
     )
 ```
@@ -2407,9 +2411,7 @@ def test_a_combo_with_no_shard_loads_as_empty_rather_than_raising() -> None:
 
 def test_records_are_flattened_one_per_metric_and_model() -> None:
     records = shards.load("total_area_prediction", "ng45", "floorplan")
-    assert {r.metric for r in records} == set(
-        reg.task("total_area_prediction").metrics
-    )
+    assert {r.metric for r in records} == set(reg.task("total_area_prediction").metrics)
     assert {r.model_id for r in records} == {"lab-fixed-mlp"}
     assert {r.source for r in records} == {"submission"}
 
@@ -2718,7 +2720,9 @@ def percentile_of(
 In `build.py`, add `from tools import ranking, shards` to the imports and replace whatever Phase 3 put in the cell's `state` field:
 
 ```python
-def cell_context(task_id: str, metric_id: str, pdk_id: str, stage_id: str) -> dict[str, Any]:
+def cell_context(
+    task_id: str, metric_id: str, pdk_id: str, stage_id: str
+) -> dict[str, Any]:
     """Everything the template needs for one cell. All computation lands here.
 
     Templates hold loops and conditionals only, so the state string is decided in
@@ -2951,9 +2955,12 @@ def test_a_rate_outside_the_unit_interval_is_caught(mutable_cells: Path) -> None
 def test_no_ceiling_guard_exists_on_the_mape_family() -> None:
     """48 published cells would be rejected by a [0, 1.5] ceiling. The check must
     not have grown one."""
-    assert check_mod._rate_failures(
-        task_id="cell_arc_slew_prediction", metric_id="mape", value=11.3469
-    ) == []
+    assert (
+        check_mod._rate_failures(
+            task_id="cell_arc_slew_prediction", metric_id="mape", value=11.3469
+        )
+        == []
+    )
 
 
 def test_the_shard_count_matches_the_combos_on_disk() -> None:
@@ -3079,7 +3086,9 @@ def check() -> list[str]:
                 failures.append(f"{combo}: entry source {entry.get('source')!r}")
             for metric_id, value in entry["metrics"].items():
                 if metric_id not in known:
-                    failures.append(f"{combo}: metric {metric_id!r} is not on this task")
+                    failures.append(
+                        f"{combo}: metric {metric_id!r} is not on this task"
+                    )
                     continue
                 failures += _rate_failures(
                     task_id=task_id, metric_id=metric_id, value=value["macro"]

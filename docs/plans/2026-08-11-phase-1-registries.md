@@ -986,7 +986,9 @@ from pathlib import Path
 from tools import registry as reg
 from tools.checks import registry_csv
 
-CSV_PATH = Path(__file__).resolve().parent.parent / "docs" / "sources" / "table8_baseline.csv"
+CSV_PATH = (
+    Path(__file__).resolve().parent.parent / "docs" / "sources" / "table8_baseline.csv"
+)
 
 
 def _csv_rows() -> list[dict[str, str]]:
@@ -1182,16 +1184,38 @@ def mutable_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterato
     shutil.copytree(reg.REGISTRY_DIR, dest)
     monkeypatch.setattr(reg, "REGISTRY_DIR", dest)
     for fn in (
-        reg._load, reg.tasks, reg.metrics, reg.stages, reg.pdks, reg.circuits,
-        reg._task_index, reg._metric_index, reg._stage_index, reg._pdk_index,
-        reg.metric_rows, reg.metric_rows_expanded, reg.live_combos, reg.live_cells,
+        reg._load,
+        reg.tasks,
+        reg.metrics,
+        reg.stages,
+        reg.pdks,
+        reg.circuits,
+        reg._task_index,
+        reg._metric_index,
+        reg._stage_index,
+        reg._pdk_index,
+        reg.metric_rows,
+        reg.metric_rows_expanded,
+        reg.live_combos,
+        reg.live_cells,
     ):
         fn.cache_clear()
     yield dest
     for fn in (
-        reg._load, reg.tasks, reg.metrics, reg.stages, reg.pdks, reg.circuits,
-        reg._task_index, reg._metric_index, reg._stage_index, reg._pdk_index,
-        reg.metric_rows, reg.metric_rows_expanded, reg.live_combos, reg.live_cells,
+        reg._load,
+        reg.tasks,
+        reg.metrics,
+        reg.stages,
+        reg.pdks,
+        reg.circuits,
+        reg._task_index,
+        reg._metric_index,
+        reg._stage_index,
+        reg._pdk_index,
+        reg.metric_rows,
+        reg.metric_rows_expanded,
+        reg.live_combos,
+        reg.live_cells,
     ):
         fn.cache_clear()
 
@@ -1205,6 +1229,7 @@ def _rewrite(path: Path, mutate) -> None:
 def test_reversed_stage_order_is_caught(mutable_registry: Path) -> None:
     """Pre-reset this passed. sorted(orders) == range(1, n+1) is true on a
     reversed sequence."""
+
     def mutate(rows: list[dict]) -> None:
         n = len(rows)
         for r in rows:
@@ -1213,12 +1238,17 @@ def test_reversed_stage_order_is_caught(mutable_registry: Path) -> None:
     _rewrite(mutable_registry / "stages.json", mutate)
     with pytest.raises(AssertionError):
         assert tuple(s.id for s in reg.stages()) == (
-            "floorplan", "global_place", "detailed_place", "cts", "global_route",
+            "floorplan",
+            "global_place",
+            "detailed_place",
+            "cts",
+            "global_route",
         )
 
 
 def test_corrupted_circuit_attribute_is_caught(mutable_registry: Path) -> None:
     """Pre-reset, ethernet.registers 10,544 -> 87 left 115/115 green."""
+
     def mutate(rows: list[dict]) -> None:
         for r in rows:
             if r["id"] == "ethernet":
@@ -1233,6 +1263,7 @@ def test_corrupted_circuit_attribute_is_caught(mutable_registry: Path) -> None:
 def test_swapped_degeneracy_and_saturation_is_caught(mutable_registry: Path) -> None:
     """The dangerous one: 880 and 232 both stay correct while 24 cells are
     silently mistyped. Only the partition catches it."""
+
     def mutate(rows: list[dict]) -> None:
         for r in rows:
             if r["id"] == "global_route":
@@ -1251,6 +1282,7 @@ def test_swapped_degeneracy_and_saturation_is_caught(mutable_registry: Path) -> 
 
 def test_a_phantom_pdk_is_caught(mutable_registry: Path) -> None:
     """Table 8 misspells IHP130 as IPH130 five times."""
+
     def mutate(rows: list[dict]) -> None:
         for r in rows:
             if r["id"] == "ihp130":

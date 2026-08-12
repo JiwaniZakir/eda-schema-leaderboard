@@ -147,9 +147,9 @@ def test_filter_by_pdk() -> None:
         selected = explore.filter_rows(all_rows, pdk=pdk.id)
         assert selected, pdk.id
         assert {r.pdk for r in selected} == {pdk.id}
-    assert sum(
-        len(explore.filter_rows(all_rows, pdk=p.id)) for p in reg.pdks()
-    ) == len(all_rows)
+    assert sum(len(explore.filter_rows(all_rows, pdk=p.id)) for p in reg.pdks()) == len(
+        all_rows
+    )
 
 
 def test_filter_by_stage() -> None:
@@ -258,7 +258,9 @@ def test_percent_conversion_has_exactly_one_home() -> None:
             "\n".join(line.split("#", 1)[0] for line in path.read_text().splitlines())
         )
     )
-    assert len(offenders) <= 1, f"percent conversion is in more than one module: {offenders}"
+    assert len(offenders) <= 1, (
+        f"percent conversion is in more than one module: {offenders}"
+    )
 ```
 
 - [ ] **Step 2: Run it to make sure it fails**
@@ -372,7 +374,9 @@ def _axis_vocabularies(all_rows: Sequence[Row]) -> dict[str, list[tuple[str, str
         "metric": [(m.id, m.label) for m in reg.metrics() if m.id in present["metric"]],
         "pdk": [(p.id, p.label) for p in reg.pdks() if p.id in present["pdk"]],
         "stage": [(s.id, s.label) for s in reg.stages() if s.id in present["stage"]],
-        "source": [(s, SOURCE_LABELS[s]) for s in SOURCE_ORDER if s in present["source"]],
+        "source": [
+            (s, SOURCE_LABELS[s]) for s in SOURCE_ORDER if s in present["source"]
+        ],
     }
 
 
@@ -393,8 +397,7 @@ def payload(all_rows: Sequence[Row]) -> dict[str, Any]:
         "states": states.values,
         "columns": {
             **{
-                axis: [codes[axis][getattr(r, axis)] for r in all_rows]
-                for axis in AXES
+                axis: [codes[axis][getattr(r, axis)] for r in all_rows] for axis in AXES
             },
             "entry": [entries.code[r.entry] for r in all_rows],
             "state": [states.code[r.state] for r in all_rows],
@@ -1006,9 +1009,7 @@ def load_card(path: Path = CARD_PATH) -> Card:
     problems.extend(_licensing_problems(found.get("licensing")))
 
     if problems:
-        raise CardError(
-            f"{path} is incomplete:\n  " + "\n  ".join(problems)
-        )
+        raise CardError(f"{path} is incomplete:\n  " + "\n  ".join(problems))
     ...
 ```
 
@@ -1146,7 +1147,9 @@ def test_every_tier_requires_only_guard_layers_that_exist() -> None:
     not silently leave the published criteria describing a layer that is gone."""
     known = set(guard.LAYERS)
     for tier in submission.TIERS:
-        assert set(tier.requires) <= known, f"{tier.id} names {set(tier.requires) - known}"
+        assert set(tier.requires) <= known, (
+            f"{tier.id} names {set(tier.requires) - known}"
+        )
 
 
 def test_every_division_requires_only_guard_layers_that_exist() -> None:
@@ -1354,7 +1357,9 @@ BADGES: tuple[Badge, ...] = (
     ),
 )
 
-PREDICT_SIGNATURE = "def predict(model: Any, rows: Sequence[dict[str, float]]) -> list[float]:"
+PREDICT_SIGNATURE = (
+    "def predict(model: Any, rows: Sequence[dict[str, float]]) -> list[float]:"
+)
 ```
 
 - [ ] **Step 4: Write docs/SUBMISSION.md**
@@ -1529,9 +1534,7 @@ def test_a_transposed_read_is_rejected_rather_than_rendered() -> None:
         )
 
 
-@pytest.mark.parametrize(
-    "name", ["mlp_lab", "gnn_pool", "cnn_small", "automl_stack"]
-)
+@pytest.mark.parametrize("name", ["mlp_lab", "gnn_pool", "cnn_small", "automl_stack"])
 def test_one_layout_function_serves_every_family(name: str) -> None:
     """The gate says one renderer, four families. This is that claim, tested."""
     result = archlayout.layout(_load(name))
@@ -1539,9 +1542,7 @@ def test_one_layout_function_serves_every_family(name: str) -> None:
     assert result.total_params == arch.param_count(_load(name))
 
 
-@pytest.mark.parametrize(
-    "name", ["mlp_lab", "gnn_pool", "cnn_small", "automl_stack"]
-)
+@pytest.mark.parametrize("name", ["mlp_lab", "gnn_pool", "cnn_small", "automl_stack"])
 def test_no_two_blocks_overlap(name: str) -> None:
     """Every pair, not only adjacent pairs. Adjacent-only passes on a layout that
     wraps a later block back over an earlier one."""
@@ -1918,10 +1919,7 @@ def test_no_badge_status_is_written_as_a_literal_in_the_template() -> None:
     from pathlib import Path
 
     template = (
-        Path(__file__).resolve().parent.parent
-        / "templates"
-        / "pages"
-        / "model.html"
+        Path(__file__).resolve().parent.parent / "templates" / "pages" / "model.html"
     ).read_text()
     assert "pass" not in template.lower().replace("passive", "")
 
@@ -1961,8 +1959,7 @@ def test_both_themes_declare_every_architecture_variable() -> None:
     )
     assert len(themes) >= 2
     declared = [
-        set(re.findall(r"(--arch-[a-z0-9-]+)\s*:", path.read_text()))
-        for path in themes
+        set(re.findall(r"(--arch-[a-z0-9-]+)\s*:", path.read_text())) for path in themes
     ]
     assert declared[0], "no architecture variables declared at all"
     assert all(names == declared[0] for names in declared), {

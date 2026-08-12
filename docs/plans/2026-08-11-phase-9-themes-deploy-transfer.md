@@ -182,7 +182,9 @@ def test_a_declaration_after_a_brace_is_found() -> None:
 
 def test_a_var_reference_is_not_a_declaration() -> None:
     assert cssvars.declared("a { color: var(--text); }") == frozenset()
-    assert cssvars.referenced("a { color: var(--text, #000); }") == frozenset({"--text"})
+    assert cssvars.referenced("a { color: var(--text, #000); }") == frozenset(
+        {"--text"}
+    )
 
 
 def test_resolve_follows_indirection() -> None:
@@ -365,7 +367,9 @@ def check() -> list[str]:
 
     required = cssvars.contract()
     if not required:
-        return ["no var() references found outside the themes; the contract cannot be empty"]
+        return [
+            "no var() references found outside the themes; the contract cannot be empty"
+        ]
 
     per_theme = cssvars.theme_variables()
     internal = cssvars.theme_internal_references()
@@ -373,7 +377,9 @@ def check() -> list[str]:
     for name in sorted(per_theme):
         declared = per_theme[name]
         for missing in sorted(required - declared):
-            failures.append(f"{name}.css does not define {missing}, which the site reads")
+            failures.append(
+                f"{name}.css does not define {missing}, which the site reads"
+            )
         for dead in sorted(declared - required - internal):
             failures.append(f"{name}.css defines {dead}, which nothing reads")
 
@@ -382,7 +388,9 @@ def check() -> list[str]:
     for other in names[1:]:
         for var in sorted(per_theme[first] ^ per_theme[other]):
             owner = first if var in per_theme[first] else other
-            failures.append(f"{var} is defined only by {owner}.css; every theme defines the same set")
+            failures.append(
+                f"{var} is defined only by {owner}.css; every theme defines the same set"
+            )
 
     return failures
 ```
@@ -802,8 +810,8 @@ import re
 from tools import contrast, cssvars
 from tools.checks import register
 
-TEXT_MINIMUM = 4.5      # WCAG 2.1 AA, 1.4.3, normal-size text
-GRAPHIC_MINIMUM = 3.0   # WCAG 2.1 AA, 1.4.11, non-text contrast
+TEXT_MINIMUM = 4.5  # WCAG 2.1 AA, 1.4.3, normal-size text
+GRAPHIC_MINIMUM = 3.0  # WCAG 2.1 AA, 1.4.11, non-text contrast
 
 # Foreground, background, threshold. Named because the relationship between
 # these two variables is not recoverable from their names.

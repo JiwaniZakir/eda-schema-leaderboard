@@ -110,14 +110,18 @@ from tools import baseline as bl
 
 
 def test_a_plain_value_parses_through_its_thousands_separator() -> None:
-    assert bl.parse_bound("1,781.97", percent=False) == bl.Bound(bl.BoundKind.EXACT, 1781.97)
+    assert bl.parse_bound("1,781.97", percent=False) == bl.Bound(
+        bl.BoundKind.EXACT, 1781.97
+    )
 
 
 def test_a_percent_value_is_divided_by_one_hundred() -> None:
     """The CSV is in DISPLAY units. Storage is a fraction. Inverting this makes
     every MAPE cell render baseline_leads and every TPR/TNR cell render
     beats_baseline, with no error raised anywhere."""
-    assert bl.parse_bound("12.43 %", percent=True) == bl.Bound(bl.BoundKind.EXACT, 0.1243)
+    assert bl.parse_bound("12.43 %", percent=True) == bl.Bound(
+        bl.BoundKind.EXACT, 0.1243
+    )
 
 
 def test_the_percent_conversion_carries_no_float_noise() -> None:
@@ -134,15 +138,21 @@ def test_a_rate_at_one_hundred_percent_becomes_exactly_one() -> None:
 def test_the_upper_sentinel_becomes_a_greater_than_bound() -> None:
     """The paper thresholded the underlying number away, so it does not exist and
     must never be invented. The threshold converts like any other percent."""
-    assert bl.parse_bound("> 10000 %", percent=True) == bl.Bound(bl.BoundKind.GREATER_THAN, 100.0)
+    assert bl.parse_bound("> 10000 %", percent=True) == bl.Bound(
+        bl.BoundKind.GREATER_THAN, 100.0
+    )
 
 
 def test_the_lower_sentinel_becomes_a_less_than_bound() -> None:
-    assert bl.parse_bound("< -1", percent=False) == bl.Bound(bl.BoundKind.LESS_THAN, -1.0)
+    assert bl.parse_bound("< -1", percent=False) == bl.Bound(
+        bl.BoundKind.LESS_THAN, -1.0
+    )
 
 
 def test_a_negative_value_parses_as_an_exact_bound() -> None:
-    assert bl.parse_bound("-0.402", percent=False) == bl.Bound(bl.BoundKind.EXACT, -0.402)
+    assert bl.parse_bound("-0.402", percent=False) == bl.Bound(
+        bl.BoundKind.EXACT, -0.402
+    )
 
 
 def test_an_empty_value_is_rejected_rather_than_defaulted() -> None:
@@ -155,7 +165,9 @@ def test_an_empty_value_is_rejected_rather_than_defaulted() -> None:
 def test_percent_comes_from_the_registry_not_from_the_suffix() -> None:
     """The trailing '%' is a formatting artifact of the table. The registry's
     metric.percent flag is the rule, and it is what the caller passes."""
-    assert bl.parse_bound("12.43 %", percent=False) == bl.Bound(bl.BoundKind.EXACT, 12.43)
+    assert bl.parse_bound("12.43 %", percent=False) == bl.Bound(
+        bl.BoundKind.EXACT, 12.43
+    )
 ```
 
 - [ ] **Step 2: Run it to make sure it fails**
@@ -199,6 +211,7 @@ PUBLISHED = "published"
 DEGENERATE = "degenerate"
 
 _PERCENT_SCALE = Decimal(100)
+
 
 class BoundKind(StrEnum):
     """The four shapes a published baseline can take.
@@ -863,8 +876,12 @@ def test_sentinel_bounds_point_away_from_the_good_direction() -> None:
     """20 greater_than, every one on a lower-is-better metric. 12 less_than,
     every one on a higher-is-better metric. That asymmetry is what makes a
     submission on the defined side of the threshold a decidable win."""
-    upper = [e for e in bl.baselines().values() if e.bound.kind is bl.BoundKind.GREATER_THAN]
-    lower = [e for e in bl.baselines().values() if e.bound.kind is bl.BoundKind.LESS_THAN]
+    upper = [
+        e for e in bl.baselines().values() if e.bound.kind is bl.BoundKind.GREATER_THAN
+    ]
+    lower = [
+        e for e in bl.baselines().values() if e.bound.kind is bl.BoundKind.LESS_THAN
+    ]
     assert len(upper) == 20
     assert len(lower) == 12
     assert all(reg.metric(e.metric).direction == "lower" for e in upper)
@@ -896,7 +913,9 @@ def test_the_mape_family_has_no_ceiling() -> None:
     over_one = [
         e
         for e in family
-        if e.bound.kind is bl.BoundKind.EXACT and e.bound.value is not None and e.bound.value > 1.0
+        if e.bound.kind is bl.BoundKind.EXACT
+        and e.bound.value is not None
+        and e.bound.value > 1.0
     ]
     assert len(over_one) == 33
 
@@ -994,7 +1013,10 @@ def check() -> list[str]:
         # on the defined side of the threshold is a decidable win. Reading the
         # sentinel set straight off the raw CSV text is a different route than
         # parse_bound takes, so a demotion to an exact value is caught here.
-        is_sentinel = entry.bound.kind in (bl.BoundKind.GREATER_THAN, bl.BoundKind.LESS_THAN)
+        is_sentinel = entry.bound.kind in (
+            bl.BoundKind.GREATER_THAN,
+            bl.BoundKind.LESS_THAN,
+        )
         if key in sentinels and not is_sentinel:
             failures.append(f"{key}: published as a sentinel, stored as an exact value")
         if is_sentinel and key not in sentinels:
