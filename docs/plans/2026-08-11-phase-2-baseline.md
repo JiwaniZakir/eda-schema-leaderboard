@@ -766,6 +766,12 @@ def baselines() -> dict[CellKey, Baseline]:
 
     Void cells are absent from the mapping, because they are absent from the file
     and from the grid.
+
+    The kind is coerced back THROUGH BoundKind rather than stored as the bare str
+    json.loads returns. That is the whole reason BoundKind is an enum: a drifted
+    or corrupted kind must raise here, at the parse boundary, instead of
+    surviving as a str that makes every `is BoundKind.ABSENT` silently False and
+    lets a comparison be drawn against a 0/0 baseline.
     """
     payload = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
     entries: dict[CellKey, Baseline] = {}
@@ -776,7 +782,9 @@ def baselines() -> dict[CellKey, Baseline]:
             pdk=row["pdk"],
             stage=row["stage"],
             baseline_state=row["baseline_state"],
-            bound=Bound(kind=row["bound"]["kind"], value=row["bound"]["value"]),
+            bound=Bound(
+                kind=BoundKind(row["bound"]["kind"]), value=row["bound"]["value"]
+            ),
             source=row["source"],
             src_line=row["src_line"],
         )
