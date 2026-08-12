@@ -6,6 +6,7 @@ build.py or tools/.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -151,3 +152,73 @@ def test_the_three_baseline_kinds_partition_the_live_cells() -> None:
 def test_a_void_cell_has_no_context_at_all() -> None:
     with pytest.raises(KeyError):
         matrix.cell("total_wirelength_prediction", "mae", "ng45", "floorplan")
+
+
+CELL_RE = re.compile(r'<td class="state-([a-z_]+)"')
+
+
+def test_the_grid_holds_one_cell_element_per_live_cell(index_html: str) -> None:
+    """Derived from the registry, not from a literal in the template."""
+    assert len(CELL_RE.findall(index_html)) == len(reg.live_cells())
+    assert len(reg.live_cells()) == 880
+
+
+def test_every_cell_carries_exactly_one_state_class(index_html: str) -> None:
+    """A cell with two state classes renders in whichever colour lost the
+    cascade, which is a coin toss that looks deliberate."""
+    for found in CELL_RE.findall(index_html):
+        assert found in {matrix.NO_ENTRY, matrix.SATURATED}
+    assert '<td class="state-' in index_html
+    assert re.search(r'<td class="state-\w+ state-', index_html) is None
+
+
+def test_the_panels_are_the_registry_stages_in_order() -> None:
+    assert tuple(p.stage_id for p in matrix.panels()) == tuple(
+        s.id for s in reg.stages()
+    )
+    assert [s.order for s in reg.stages()] == [1, 2, 3, 4, 5]
+
+
+def test_the_void_rows_are_structurally_absent_not_empty() -> None:
+    """Void is a (task, stage) fact, so the two wirelength tasks contribute no
+    rows at all at floorplan. An empty <td> would say the measurement is missing;
+    an absent row says it does not exist."""
+    floorplan = matrix.panels()[0]
+    assert floorplan.stage_id == "floorplan"
+    tasks_present = {row.task_id for row in floorplan.rows}
+    assert "total_wirelength_prediction" not in tasks_present
+    assert "interconnect_length_prediction" not in tasks_present
+    assert len(tasks_present) == 10
+
+
+def test_the_per_panel_cell_counts_match_the_partition() -> None:
+    """144 + 184 * 4 = 880. Asserting only the total would pass while a void row
+    moved from floorplan to another stage."""
+    counts = [sum(len(row.cells) for row in p.rows) for p in matrix.panels()]
+    assert counts == [144, 184, 184, 184, 184]
+    assert sum(counts) == 880
+
+
+def test_the_saturated_cells_are_all_in_the_last_panel() -> None:
+    per_panel = [
+        sum(1 for row in p.rows for c in row.cells if c.state == matrix.SATURATED)
+        for p in matrix.panels()
+    ]
+    assert per_panel == [0, 0, 0, 0, 120]
+
+
+def test_the_task_label_is_carried_once_per_task(index_html: str) -> None:
+    """46 rows per panel, 12 task labels. Repeating the label on every row costs
+    6 KiB against an 88 KB cap, which this page cannot spare."""
+    spans = [row.task_rowspan for row in matrix.panels()[1].rows]
+    assert sum(1 for n in spans if n) == 12
+    assert sum(spans) == 46
+    assert index_html.count('scope="rowgroup"') == 58
+
+
+def test_no_cell_renders_a_python_repr_or_a_non_number(index_html: str) -> None:
+    """The failure this catches is a None that reached a format string and a
+    context key the template read but build.py never set."""
+    for token in ("None", "nan", "NaN", "undefined", "null", "Undefined"):
+        assert token not in index_html
+    assert '<td class="state-no_entry"></td>' not in index_html

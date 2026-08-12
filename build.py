@@ -16,6 +16,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
 from tools import matrix
+from tools import registry as reg
 
 ROOT = Path(__file__).resolve().parent
 TEMPLATE_DIR = ROOT / "templates"
@@ -94,7 +95,12 @@ def build(dist: Path | None = None) -> Path:
 def _render_matrix(env: Environment, out: Path) -> None:
     template = env.get_template("pages/matrix.html")
     (out / "index.html").write_text(
-        template.render(base_path=BASE_PATH, panels=matrix.panels()),
+        template.render(
+            base_path=BASE_PATH,
+            panels=matrix.panels(),
+            pdks=reg.pdks(),
+            columns=matrix.column_count(),
+        ),
         encoding="utf-8",
     )
 

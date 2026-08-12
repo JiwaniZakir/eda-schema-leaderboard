@@ -15,6 +15,7 @@ rule".
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cache
 
 from tools import baseline as bl
 from tools import registry as reg
@@ -133,7 +134,80 @@ def cell(task_id: str, metric_id: str, pdk_id: str, stage_id: str) -> Cell:
     )
 
 
-def panels() -> tuple[object, ...]:
-    """The five stage panels. Task 3 fills this in; the signature does not
-    change, and build.py already renders whatever it returns."""
-    return ()
+@dataclass(frozen=True, slots=True)
+class Row:
+    """One metric row within one stage panel.
+
+    `task_rowspan` is the number of rows the task label spans, and it is 0 on
+    every row after the first of its task. The template renders the label header
+    only when it is non-zero, which is a conditional rather than a computation.
+    """
+
+    task_id: str
+    task_label: str
+    task_rowspan: int
+    metric_id: str
+    metric_label: str
+    cells: tuple[Cell, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class Panel:
+    """One stage. Rendered as one table, captioned with the stage transition."""
+
+    stage_id: str
+    stage_label: str
+    caption: str
+    void_tasks: tuple[str, ...]
+    rows: tuple[Row, ...]
+
+
+# The task and metric columns sit left of the PDK columns. Declared here rather
+# than as a colspan literal in the template, so a note still spans the whole
+# table if the registry ever carries a different number of PDKs.
+ROW_HEADER_COLUMNS = 2
+
+
+@cache
+def column_count() -> int:
+    """Columns in one panel table: the two row headers plus one per PDK."""
+    return ROW_HEADER_COLUMNS + len(reg.pdks())
+
+
+@cache
+def panels() -> tuple[Panel, ...]:
+    """The whole grid, in registry order.
+
+    Driven from reg.stages(), reg.tasks() and each task's own metric list, so a
+    row exists because the registry says the cell is live and never because a
+    template iterated something convenient.
+    """
+    built: list[Panel] = []
+    for stage in reg.stages():
+        rows: list[Row] = []
+        for task in reg.tasks():
+            if reg.is_void(task.id, stage.id):
+                continue
+            for index, metric_id in enumerate(task.metrics):
+                rows.append(
+                    Row(
+                        task_id=task.id,
+                        task_label=task.label,
+                        task_rowspan=len(task.metrics) if index == 0 else 0,
+                        metric_id=metric_id,
+                        metric_label=reg.metric(metric_id).label,
+                        cells=tuple(
+                            cell(task.id, metric_id, p.id, stage.id) for p in reg.pdks()
+                        ),
+                    )
+                )
+        built.append(
+            Panel(
+                stage_id=stage.id,
+                stage_label=stage.label,
+                caption=stage.table8_label,
+                void_tasks=tuple(reg.task(t).label for t in stage.void_tasks),
+                rows=tuple(rows),
+            )
+        )
+    return tuple(built)
