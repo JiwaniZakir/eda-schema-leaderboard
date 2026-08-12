@@ -38,8 +38,20 @@ jobs:
           # Note: --exclude-mail was removed from lychee; mailto links are now
           # skipped by default and the opt-in is --include-mail. PLAN.md's Phase 7
           # gate still quotes the old flag.
+          #
+          # --root-dir is required from Phase 3 on. The page links its assets
+          # root-relative (/static/css/base.css), because the deploy serves the
+          # site under SITE_BASE, and lychee refuses to resolve a root-relative
+          # link in a local file unless it is told what the root is: "Cannot
+          # resolve root-relative link ... provide a root dir". It must point at
+          # dist and not at the workspace, because static/css/theme.css exists
+          # only in the built site; resolving against the repo would report a
+          # false failure for it and a false pass for base.css. Verified with
+          # lychee 0.24.2 that docs/ and ./*.md carry no root-relative link, so
+          # one root serves all three inputs.
           args: >-
             --no-progress
             --accept 200,206,429
+            --root-dir ${{ github.workspace }}/dist
             dist/ docs/ ./*.md
           fail: true

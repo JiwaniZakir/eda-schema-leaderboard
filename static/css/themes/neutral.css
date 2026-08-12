@@ -1,0 +1,58 @@
+/*
+ * Neutral. Near-white ground, near-black text, one accent, dense table headers.
+ *
+ * The restraint is the design: this is the theme for a reader who came to look
+ * at the numbers, so nothing competes with them. One accent (#005ea2) does
+ * links, focus and the active stage pill.
+ */
+
+:root {
+  --font-body: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  --ground: #ffffff;
+  --surface: #fafafa;
+  --surface-raised: #ffffff;
+  --border: #d4d4d4;
+  --border-strong: #8a8a8a;   /* 3.31:1 on --surface */
+
+  --text: #171717;            /* 17.93:1 on --ground */
+  --text-muted: #525252;      /* 7.49:1 on --surface */
+  --link: #005ea2;            /* 6.72:1 on --ground */
+  --link-visited: #6b2fa0;    /* 8.27:1 on --ground */
+
+  --accent: #005ea2;
+  --accent-ink: #ffffff;      /* 6.72:1 on --accent */
+  --focus: #005ea2;
+
+  --pill-bg: #efefef;
+  --pill-ink: #171717;               /* 15.59:1 on --pill-bg */
+  --pill-active-bg: #005ea2;
+  --pill-active-ink: #ffffff;        /* 6.72:1 */
+
+  --table-header-bg: #efefef;
+  --table-header-ink: #171717;       /* 15.59:1 */
+  --table-header-pad: 0.25rem 0.5rem;
+  --table-row-alt: #f5f5f5;
+  --table-cell-pad: 0.3rem 0.5rem;
+
+  --void-ink: #8e8e8e;        /* 3.28:1 on --ground */
+
+  --state-beats-key: #007a5e;
+  --state-matches-key: #0072b2;
+  --state-leads-key: #c04a00;
+  --state-none-key: #6b6b6b;
+  --state-saturated-key: #5b6770;
+
+  --state-beats-bg: #eaf6f1;
+  --state-beats-ink: #0f5140;      /* 8.34:1 ink, 4.80:1 key */
+  --state-matches-bg: #e8f1f8;
+  --state-matches-ink: #0b4a75;    /* 8.16:1 ink, 4.54:1 key */
+  --state-leads-bg: #fcede3;
+  --state-leads-ink: #8a3b00;      /* 6.79:1 ink, 4.35:1 key */
+  --state-none-bg: #f4f4f4;
+  --state-none-ink: #4a4a4a;       /* 8.06:1 ink, 4.85:1 key */
+  --state-saturated-bg: #eaeaea;
+  --state-saturated-ink: #454545;  /* 7.97:1 ink, 4.82:1 key */
+}

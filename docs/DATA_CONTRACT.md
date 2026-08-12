@@ -14,25 +14,39 @@ When the two disagree, this document is wrong and gets fixed first.
 
 Verbatim source material is preserved under `docs/sources/`:
 
-| File | What it is |
-|---|---|
-| `table8_baseline_source.tex` | Table 8 as LaTeX, from the arXiv e-print tarball |
-| `table8_baseline.csv` | Table 8 parsed to 920 tidy rows, one per `(task, metric, stage, pdk)` |
-| `table8_pdf_layout.txt` | Table 8 region via `pdftotext -layout`, for cross-checking |
-| `table8_recovered.md` | Human-readable transcription of all 5 stage groups |
-| `table1_attributes.txt` | Table 1, attribute stage-availability |
-| `table2_circuits.txt` | Table 2, circuit characteristics |
+| File | Committed | What it is |
+|---|---|---|
+| `sources/table8_baseline.csv` | **yes** | Table 8 parsed to 920 tidy rows, one per `(task, metric, stage, pdk)` |
+| `sources/table2_circuits.csv` | **yes** | Table 2's 18 circuits: `circuit,inputs,outputs,registers` |
+| `sources/pdk_physical.csv` | **yes** | Metal routing layers per PDK, from Section 4.1 |
+| `sources/verbatim/table8_baseline_source.tex` | no | Table 8 as LaTeX, from the arXiv e-print tarball |
+| `sources/verbatim/table8_pdf_layout.txt` | no | Table 8 region via `pdftotext -layout`, for cross-checking. **Truncated** - see PROVENANCE.md |
+| `sources/verbatim/table8_recovered.md` | no | Human-readable transcription of all 5 stage groups |
+| `sources/verbatim/table1_attributes.txt` | no | Table 1, attribute stage-availability |
+| `sources/verbatim/table2_circuits.txt` | no | Table 2, circuit characteristics |
+
+`verbatim/` is gitignored on purpose: it is the authors' copyrighted text and
+republishing it is not ours to do. The CSV holds measurements, which are facts, and
+is the only thing under `docs/` the build reads. See `docs/sources/PROVENANCE.md`.
 
 All 856 published cells in the CSV were cross-checked against the PDF text layer.
 Zero mismatches.
+Re-verified 2026-08-11 by an independent second parser run directly against the
+LaTeX source, diffing positionally: **920/920 cells agree.** The `kind` column also
+proved a perfect discriminator of the LaTeX column structure - `VAL` maps to a
+single column, `VOID` and `DEGENERATE` to a `\multicolumn` span, with zero
+violations - which confirms the classification came from table structure rather
+than from inference over values.
 
-### A correction to the build plan
+### Why the whole table is recoverable
 
-PLAN.md Phase 2 states that only 14 of 20 stage-PDK column groups are recoverable,
-that CTS carries NG45 and SKY130 only, that `global_route` is missing entirely,
-and that the source CSV must be requested from Pratik.
+A pre-reset draft of the build plan held that only 14 of the 20 stage-PDK column
+groups could be recovered, that CTS carried NG45 and SKY130 only, that
+`global_route` was missing entirely, and that the source CSV would have to be
+requested from Pratik.
 
-That is not correct.
+All four claims were wrong, and the correction is kept here because it is the
+reason this project has no external data dependency.
 Table 8 sits entirely on **page 28**, inside a `\begin{landscape}` block and a
 `\resizebox`.
 The rotation and rescaling are what shred naive text extraction, not a page break.
@@ -40,6 +54,8 @@ The LaTeX source and `pdftotext -layout` both read all 20 groups cleanly.
 
 **No external data request is needed.**
 Every baseline entry is `"source": "paper"`.
+The post-reset `PLAN.md` no longer makes the original claim; this section now
+records why it was dropped rather than rebutting live text.
 
 ## The grid
 
@@ -211,7 +227,7 @@ A model that always predicts wildly pessimistic slack never overestimates, score
 `mpe = 0`, and takes first place in the `mpe` cell while being useless.
 This is accepted rather than patched, because `mae` is a separate cell in the same
 grid and such a model places last there.
-Phase 5's plausibility layer should flag a submission that leads an `mpe` cell
+Phase 6's plausibility layer should flag a submission that leads an `mpe` cell
 while sitting in the tail of the corresponding `mae` cell.
 
 ### TPR and TNR are classification metrics
@@ -363,12 +379,55 @@ Options, in the order they should be considered:
 3. Rank on pooled to match the paper, and lose the robustness macro-mean was chosen
    for.
 
-> **OPEN (decision needed, and it gates Phase 3).**
+> **OPEN (decision needed, and it gates Phase 4).**
 > Recommendation is option 2: compute both, rank on macro-mean, display the
 > published pooled value as "as published" so the site never contradicts the paper
 > it cites.
-> Phase 3's existing ">10x divergence" warning is the detector for this, and its
-> plan note already half-anticipated the cause.
+> The ">10x divergence" warning in the ingest phase is the detector for this.
+
+### Measured 2026-08-11, and it narrows the decision sharply
+
+The `eval.log` for `total_area` at NG45 floorplan was parsed and compared against
+Table 8 directly.
+
+**Table 8's baseline is literally the `eval.log` "Overall" line.**
+Published MAE is `1,781.97`; the log's `Overall Baseline MAE` is `1781.9696`.
+That is no longer an inference about how the paper aggregated, it is a match.
+
+**For this design-level task the two estimators barely differ:**
+
+| Estimator | Baseline MAE | Baseline MAPE |
+|---|---|---|
+| pooled (`Overall`, = Table 8) | 1,781.9696 | 12.43 % |
+| macro-mean over 18 circuits | 1,789.5997 | 12.42 % |
+| divergence | **1.004x (+0.4 %)** | 0.01 pp |
+
+**Why, and where it stops being true.**
+For the six `design_level` tasks each circuit contributes roughly one row per
+config, so pooling is already close to weighting circuits equally.
+For the six finer-grained tasks it is not: `interconnect_length`,
+`net_arc_delay`, `cell_arc_delay`, `cell_arc_slew`, `timing_path_arrival_time`
+and `timing_path_slack` produce one row per net, arc or path, and `ethernet` has
+orders of magnitude more of them than `ss_pcm`.
+There, pooling is dominated by the largest circuits and the two estimators will
+diverge materially.
+
+**So the decision only has teeth on the six non-design-level tasks**, and we
+cannot measure the size of the effect until the lab ships data for them.
+Ranking on macro-mean and displaying pooled as "as published" is safe for both
+groups and needs no further measurement to adopt.
+
+### The pooled R² trap, now with a number
+
+The same log reports `Overall Baseline R2: 0.9892`, which reads as an excellent
+baseline.
+The per-circuit R² median is **-26.86**, and **0 of 18 circuits are positive**.
+
+Every individual circuit is worse than predicting its own mean, while the pooled
+figure says the opposite, because pooling across circuits of very different
+absolute scale lets between-circuit variance masquerade as explained variance.
+This is why the contract forbids ingesting the `Overall` block and the CSV R²
+columns. It is the single clearest illustration of the hazard.
 
 ## Cell states
 
@@ -411,8 +470,9 @@ Two ways that goes wrong:
   The other five have no MAPE row, no R² row, or neither: `worst_arrival_time` and
   `timing_path_arrival_time` publish no R², and the three slack tasks publish
   neither.
-- 8 of the 120 are `tpr`/`tnr` at `100.00 %`. A test for "error is approximately
-  zero" against a rate sitting at its ceiling returns false.
+- 16 of the 120 are `tpr`/`tnr` at `100.00 %`: `worst_slack` and
+  `timing_path_slack`, two metrics each, across 4 PDKs. A test for "error is
+  approximately zero" against a rate sitting at its ceiling returns false.
 
 The underlying fact is real: by global route the tool estimate has converged on the
 detailed-route value for every task except the two wirelength ones, whose baseline
@@ -428,7 +488,9 @@ The rule above is simply the reliable way to express it.
 > The stage rule above does not cover them, so they render as rankable and
 > permanently `baseline_leads`.
 > Whether to extend saturation to any baseline-optimal cell, or accept the
-> stage rule and let these twelve sit, is a decision Phase 6 needs.
+> stage rule and let these twelve sit, is a decision Phase 3 surfaces and the
+> maintainer rules. It has no observable effect until entries exist, so it is
+> pinned by a test in Phase 3 and decided before Phase 4 lights the states.
 
 ## Void and degenerate cells
 
@@ -464,15 +526,16 @@ p.24).
 These are the 8 void `(task, pdk, stage)` combos, and the reason 240 combos reduce
 to 232.
 
-> **OPEN (contradicts Table 1).**
+> **OPEN (contradicts Table 1). Verified 2026-08-11 - the contradiction is real.**
 > The intuitive explanation, that HPWL needs placed coordinates which do not exist
 > at floorplan, is not what Table 1 says.
-> Table 1 lists `Netlist.total_hpwl` as available from **`FP - F`**, which would
-> make a floorplan-stage estimate available for `total_wirelength`.
-> Per-net `Net.hpwl` is listed `GP - F`, which *is* consistent with
+> Read directly from the table source: `total_hpwl` is listed at **`FP - F`**,
+> which would make a floorplan-stage estimate available for `total_wirelength`.
+> Per-net `hpwl` is listed at **`GP - F`**, which *is* consistent with
 > `interconnect_length` being void.
+> So the two tasks are not symmetric, and only `total_wirelength` is in dispute.
 > So Table 8's footnote and Table 1 disagree for one of the two tasks.
-> This matters because Phase 5 guard layer 1 keys on Table 1's stage availability,
+> This matters because Phase 6 guard layer 1 keys on Table 1's stage availability,
 > so a rule derived from the footnote will contradict the registry generated from
 > Table 1.
 > Resolve before generating `attributes.json`.
@@ -504,7 +567,13 @@ against a baseline that was never measured.
 ## Published sentinels
 
 Table 8 prints two sentinel forms, p.26.
-Both must round-trip: preserve the real value, display the sentinel.
+
+**Correction 2026-08-11.** PLAN.md previously required both to "round-trip,
+preserving the real value and displaying the sentinel". That is unsatisfiable for
+baselines: the paper thresholded the underlying number away, so it does not exist
+in any source we have. A sentinel baseline is stored as a **one-sided bound**, not
+as a value with a display override. Only submissions carry an exact number on these
+32 cells.
 
 | Published | Count | Rule |
 |---|---|---|
@@ -517,15 +586,84 @@ Both must round-trip: preserve the real value, display the sentinel.
 > That leaves win/loss undefined: against `R² < -1`, a submission at −0.5 clearly
 > wins and one at −3 is undecidable; against `MAPE > 10000 %`, a submission at
 > 15000 % is undecidable.
-> 32 cells need a rule before Phase 6 colours them.
+> 32 cells need a rule before Phase 4 colours them.
 > Recommendation is to treat a sentinel baseline as beatable only by a submission
 > on the defined side of the threshold, and to render anything else as
 > `no_comparison` rather than guessing.
 
 Both are applied at format time, after the percent conversion, over a value stored
 as a fraction.
-MAPE, TPR and TNR are all stored in `[0, 1]` and multiplied by 100 for display.
-The `×100` happens exactly once, at the display boundary, and never at ingest.
+
+## Percent storage - the single authoritative rule
+
+**Ruled 2026-08-11.**
+This is the highest-risk convention in the project and three documents previously
+disagreed about it.
+`CLAUDE.md` said multiply by 100 at ingest; this contract said never at ingest;
+`PLAN.md`'s Phase 3 gate asserted `0.0051 -> 0.51`.
+Following the wrong one corrupts published results silently, so the rule is stated
+here once and everything else defers to it.
+
+**Percent-format metrics are `mape`, `mape_p95`, `mape_top5`, `tpr` and `tnr`.**
+
+**Everything under `data/` stores them as a fraction in `[0, 1]`.**
+The `×100` happens exactly once, at the display boundary, and nowhere else.
+
+Each input source therefore converts differently, and this is the part that bites:
+
+| Source | Native form | Conversion on read |
+|---|---|---|
+| `docs/sources/table8_baseline.csv` | **display percent** (`12.43 %`, range 0 to 10000) | **divide by 100** |
+| the lab's `eval.log` | **fraction** (`0.0051`) | **none** |
+| a submission's declared value | fraction, per `schema/submission.schema.json` | none |
+
+The CSV is the trap.
+It holds 324 published percent-metric cells, of which 20 are the `> 10000 %`
+sentinel and 304 carry an exact number.
+**250 of those 304 exceed 1.0**, so the file is unambiguously in display units
+even though it is the baseline source.
+
+> Count the population carefully.
+> The CSV spells the tail metrics `MAPE P95` and `MAPE TOP5` with a **space**.
+> Filtering on `MAPE_P95` silently drops 72 cells and yields 252 instead of 324,
+> which is how an earlier draft of this section got its numbers wrong.
+
+### Why getting this wrong is not obvious
+
+If baselines are stored as fractions and model values as percents, model numbers
+are 100x larger than baselines for the same true error.
+`mape` is lower-better, so **every MAPE cell silently renders `baseline_leads`**.
+`tpr` and `tnr` are higher-better, so **every TPR/TNR cell silently renders
+`beats_baseline`**.
+
+Neither raises an error, and the result is entirely believable for models the
+project already documents as undertrained at 50 gradient steps.
+That is what makes it dangerous: the bug looks like a finding.
+
+### How to guard it
+
+A single range check does not work, because the two families have different
+bounds. Verified against the CSV:
+
+| Metric | Fraction range in Table 8 | Guard |
+|---|---|---|
+| `tpr`, `tnr` | 0.0839 to 1.0000 | **assert `0 <= v <= 1`** - a true rate, tight and exact |
+| `mape`, `mape_p95`, `mape_top5` | 0.0000 to 100.0000 | **no range guard is possible** |
+
+`tpr`/`tnr` are rates and genuinely cannot exceed 1, so the assertion is free and
+catches the 100x error outright: a percent-stored TPR lands in 58.9 to 100.
+
+MAPE is unbounded above. Its largest published value is the `> 10000 %` sentinel,
+which is `100.0` as a fraction.
+Of the 244 published MAPE-family cells, **28 of the 224 exact ones legitimately
+exceed 150 %**, and the other 20 are the sentinel itself.
+A naive `[0, 1.5]` ceiling would therefore reject 48 cells outright.
+**Do not add one.**
+
+For the MAPE family the detector is the cross-check instead: compare every ingested
+value against the published baseline for the same cell and flag an
+order-of-magnitude divergence. A systematic 100x offset across a whole metric is
+the signature, and it is visible in aggregate where it is invisible per cell.
 
 ## Display precision
 
@@ -540,7 +678,7 @@ The reference implementation rounds a specific set of `(task, metric)` pairs to
 | `cell_arc_delay_prediction` | mae |
 | `cell_arc_slew_prediction` | mae |
 
-This is the ground truth for Phase 5's plausibility layer, which flags an error
+This is the ground truth for Phase 6's plausibility layer, which flags an error
 below the dataset's own reported precision.
 It is the source for PLAN.md's assertion that `cell_arc_delay` has 4-decimal
 ground truth, so a submission claiming `MAE = 0.00001` there is claiming precision
@@ -565,16 +703,30 @@ No baseline is synthetic.
 Carried forward rather than resolved, and none block Phase 1.
 
 1. **Baseline is pooled, our models are macro-mean.** The one gap that affects
-   correctness rather than presentation. See the section above; it gates Phase 3.
+   correctness rather than presentation. See the section above; it gates Phase 4,
+   which is where ingest lands under the vertical-slice ordering.
 2. The "three prediction tasks" line on p.21 contradicts the abstract and Table 8.
 3. `place_resize` appears in Section 6.2 prose but not in Table 8.
-4. Table 1's caption defines eight stage codes, but only `FP-F`, `GP-F`, `CTS-F`,
-   `DR-F` and bare `F` were observed in its rows. Confirm before generating
-   `attributes.json` in Phase 5.
+4. **Confirmed 2026-08-11.** Table 1's caption defines eight stage codes, but its
+   rows use only five. Counted directly from
+   `docs/sources/verbatim/table1_attributes.txt`: `FP - F` 91 times, `GP - F` 19,
+   `DR - F` 19, `CTS - F` 6, and bare `F` exactly once, on
+   `Netlist.cell_placement_filler`. `PR`, `DP` and `GR` appear in no row at all.
+   `attributes.json` therefore needs a five-value vocabulary, not eight.
+
+   Note the file is a **two-column** layout, so a stage code can sit mid-line
+   rather than at the end. Counting with a line-anchored regex undercounts the
+   left column and misses the single bare `F` entirely.
+
+   Also unrecorded until now: **32 attributes carry no stage column at all**
+   (Design Flow, Constraints, Design Stage, Standard Cell). They need an explicit
+   "available at every stage" encoding rather than a silent default to floorplan.
+   The arithmetic is 136 staged plus 32 stageless = **168 attributes**, which is
+   the total that makes a dropped row visible.
 5. Table 8 reports rounded values. Sub-precision baselines at `global_route` are
    published as `0.00` and may be small but nonzero. Only the lab's source data
    could distinguish these, and nothing in the leaderboard depends on it.
-6. The upstream results tree carries no `submission.yaml`, though PLAN.md Phase 3
+6. The upstream results tree carries no `submission.yaml`, though PLAN.md Phase 4
    expects one. The lab's own seed entry needs a provenance record authored by us.
 
 ## Licensing
@@ -585,3 +737,125 @@ and therefore incompatible.
 Read it as a specification, write our own implementation, and take vocabularies
 from the paper's published tables rather than from its source.
 See `docs/sources/PROVENANCE.md`.
+
+---
+
+# Appendix A - Registry generation reference
+
+**Added 2026-08-11**, when `data/registry/` was deleted in the reset.
+
+The five registry files were verified correct against the CSV on every axis before
+deletion, so their content is recorded here rather than discarded.
+This appendix plus `docs/sources/table8_baseline.csv` is sufficient to regenerate
+all five with no other input.
+
+The `table8_label` column is the **join key** onto the CSV.
+It is the single reason a rebuilt registry can be checked against the paper rather
+than merely against itself, so it is not optional.
+
+## `tasks.json`
+
+`metrics[]` comes from the per-task metric sets table above.
+`precision_overrides` comes from the display precision table above; every task not
+listed has `{}` and inherits each metric's default.
+
+| id | table8_label (join key) | unit | granularity | design_level | precision_overrides |
+|---|---|---|---|---|---|
+| `total_area_prediction` | `Total Area (u m^2)` | µm² | design | true | `{}` |
+| `total_power_prediction` | `Total Power (u W)` | µW | design | true | `{}` |
+| `total_wirelength_prediction` | `Total wirelength (u m)` | µm | design | true | `{}` |
+| `interconnect_length_prediction` | `Interconnect length (u m)` | µm | net | false | `{}` |
+| `worst_arrival_time_prediction` | `Worst Arrival Time (ns)` | ns | design | true | `{}` |
+| `worst_slack_prediction` | `Worst Slack (ns)` | ns | design | true | `{}` |
+| `total_negative_slack_prediction` | `Total Negative Slack (ns)` | ns | design | true | `{}` |
+| `timing_path_arrival_time_prediction` | `Timing Path Arrival Time (ns)` | ns | path | false | `{mae:4, mae_p95:4, mae_top5:4}` |
+| `timing_path_slack_prediction` | `Timing Path Slack (ns)` | ns | path | false | `{mae:4, mpe:4, mne:4}` |
+| `net_arc_delay_prediction` | `Net Arc Delay (ns)` | ns | net_arc | false | `{mae:4}` |
+| `cell_arc_delay_prediction` | `Cell Arc Delay (ns)` | ns | cell_arc | false | `{mae:4}` |
+| `cell_arc_slew_prediction` | `Cell Arc Slew (ns)` | ns | cell_arc | false | `{mae:4}` |
+
+`design_level: true` marks the six upstream `NETLIST_LEVEL_PROBLEMS`.
+It selects how records are gathered before metrics are computed, so it is
+load-bearing rather than descriptive.
+
+## `metrics.json`
+
+`percent: true` is exactly the set that is stored as a fraction and multiplied by
+100 at display. See the percent storage rule above; this column is that rule in
+machine-readable form.
+
+| id | table8_label | direction | bias | percent | precision |
+|---|---|---|---|---|---|
+| `mae` | `MAE` | lower | null | false | 2 |
+| `mape` | `MAPE` | lower | null | **true** | 2 |
+| `r2` | `R^2` | **higher** | null | false | 3 |
+| `mpe` | `MPE` | lower | `optimistic` | false | 2 |
+| `mne` | `MNE` | lower | `conservative` | false | 2 |
+| `tpr` | `TPR` | **higher** | null | **true** | 2 |
+| `tnr` | `TNR` | **higher** | null | **true** | 2 |
+| `mae_p95` | `MAE P95` | lower | null | false | 2 |
+| `mape_p95` | `MAPE P95` | lower | null | **true** | 2 |
+| `mae_top5` | `MAE TOP5` | lower | null | false | 2 |
+| `mape_top5` | `MAPE TOP5` | lower | null | **true** | 2 |
+
+## `stages.json`
+
+The void, saturated and degenerate sets are encoded **on the stage**, because all
+three rules are stage-anchored. This is what makes saturation a structural lookup
+rather than a predicate over values.
+
+| id | table8_label | order |
+|---|---|---|
+| `floorplan` | `floorplan to detailed route` | 1 |
+| `global_place` | `global place to detailed route` | 2 |
+| `detailed_place` | `detailed place to detailed route` | 3 |
+| `cts` | `CTS to detailed route` | 4 |
+| `global_route` | `global route to detailed route` | 5 |
+
+`floorplan.void_tasks` = `total_wirelength_prediction`,
+`interconnect_length_prediction`. Every other stage has `[]`.
+
+`global_route.saturated_tasks` = the ten tasks that are **not**
+`total_wirelength_prediction` or `interconnect_length_prediction`. Every other
+stage has `[]`.
+
+`global_route.degenerate_tasks` = `worst_slack_prediction`,
+`total_negative_slack_prediction`, `timing_path_slack_prediction`, with
+`degenerate_metrics` = `mpe`, `mne`. Every other stage has `[]`.
+
+**Precedence is load-bearing: degeneracy is checked before saturation.**
+Reversing the two still yields 880 live cells and 232 live combos, so the headline
+counts stay green while 24 cells are silently mistyped from `DEGENERATE` to
+`SATURATED`. A test asserting only the totals cannot catch it. Assert the
+**40 / 24 / 120 partition**, not the 880.
+
+`order` has the same property: a test asserting `sorted(orders) == range(1, n+1)`
+passes on a fully reversed sequence. Assert the ids in order, not the set.
+
+## `pdks.json`
+
+`table8_label` is `upper(id)` for all four, but it is stored explicitly so path
+parsing and CSV joining share one declared vocabulary rather than a convention.
+
+| id | table8_label | long_label | metal_layers | utilization | utilization_sweep |
+|---|---|---|---|---|---|
+| `ng45` | `NG45` | Nangate 45 nm | 10 | 0.40 | 0.3, 0.4, 0.5 |
+| `sky130` | `SKY130` | SkyWater 130 nm | 5 | 0.30 | 0.2, 0.3, 0.4 |
+| `ihp130` | `IHP130` | IHP SG13G2 130 nm | 7 | 0.30 | 0.2, 0.3, 0.4 |
+| `asap7` | `ASAP7` | ASAP 7 nm | 9 | 0.40 | 0.3, 0.4, 0.5 |
+
+Results-tree directory names are uppercase (`default_config_ASAP7_cts`).
+Parse case-insensitively and normalize to the lowercase id, or all 20 combos
+silently fail to resolve.
+
+## `circuits.json`
+
+Eighteen records of `id`, `inputs`, `outputs`, `registers`, transcribed from the
+Table 2 section above, which is authoritative.
+
+> **These 54 values had zero verification before the reset.**
+> Mutating `ethernet.registers` from 10,544 to 87 left the entire 115-test suite
+> green. The same held for `pdks.metal_layers`, `pdks.utilization`, `stages.order`
+> and `tasks.unit` - roughly 60 transcribed values that were loaded and typed but
+> never checked against any source.
+> The rebuilt registry must include a check that these match `docs/sources/`.

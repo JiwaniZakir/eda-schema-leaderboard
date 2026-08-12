@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}EDA-Schema leaderboard{% endblock %}</title>
+<link rel="stylesheet" href="{{ base_path }}static/css/theme.css">
+<link rel="stylesheet" href="{{ base_path }}static/css/base.css">
+{% block head %}{% endblock %}
+</head>
+<body>
+<a class="skip" href="#main">Skip to the matrix</a>
+<header class="site-header">
+<h1>EDA-Schema leaderboard</h1>
+<p class="tagline">Published baselines from EDA-Schema-V2, arXiv:2605.06952.</p>
+</header>
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+<p>Baseline values are the paper's Table 8. Source: <a href="https://arxiv.org/abs/2605.06952">arXiv:2605.06952</a>.</p>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

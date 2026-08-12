@@ -1,21 +1,29 @@
-"""Validation checks, registered into tools.validate.CHECKS.
+"""Validation checks, registered by name.
 
-Each check is a pure function returning the failures it found, so `make validate`
-can report everything wrong in one run rather than forcing a fix-and-rerun cycle.
+Checks import THIS module and register into CHECKS. tools/validate.py reads the
+same dict. It must be imported as a package, never run as __main__, or the two
+end up with different dicts and validation silently passes having run nothing.
 """
 
-from tools.validate import CHECKS
+from __future__ import annotations
 
-from .baseline_csv import check_baseline_csv
-from .no_unpickling import check_no_unpickling
-from .registry_consistency import check_registry_consistency
+from collections.abc import Callable
 
-CHECKS["baseline-csv"] = check_baseline_csv
-CHECKS["no-unpickling"] = check_no_unpickling
-CHECKS["registry-consistency"] = check_registry_consistency
+CHECKS: dict[str, Callable[[], list[str]]] = {}
 
-__all__ = [
-    "check_baseline_csv",
-    "check_no_unpickling",
-    "check_registry_consistency",
-]
+
+def register(name: str) -> Callable[[Callable[[], list[str]]], Callable[[], list[str]]]:
+    """Register a check under `name`. The decorated function returns one message
+    per failure and an empty list on success."""
+
+    def decorate(fn: Callable[[], list[str]]) -> Callable[[], list[str]]:
+        if name in CHECKS:
+            raise KeyError(f"a check named {name!r} is already registered")
+        CHECKS[name] = fn
+        return fn
+
+    return decorate
+
+
+from tools.checks import baseline as _baseline  # noqa: E402,F401
+from tools.checks import registry_csv as _registry_csv  # noqa: E402,F401

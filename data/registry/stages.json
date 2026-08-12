@@ -14,7 +14,7 @@
   },
   {
     "id": "global_place",
-    "label": "Global place",
+    "label": "Global Place",
     "table8_label": "global place to detailed route",
     "order": 2,
     "void_tasks": [],
@@ -24,7 +24,7 @@
   },
   {
     "id": "detailed_place",
-    "label": "Detailed place",
+    "label": "Detailed Place",
     "table8_label": "detailed place to detailed route",
     "order": 3,
     "void_tasks": [],
@@ -44,7 +44,7 @@
   },
   {
     "id": "global_route",
-    "label": "Global route",
+    "label": "Global Route",
     "table8_label": "global route to detailed route",
     "order": 5,
     "void_tasks": [],
@@ -65,9 +65,6 @@
       "total_negative_slack_prediction",
       "timing_path_slack_prediction"
     ],
-    "degenerate_metrics": [
-      "mpe",
-      "mne"
-    ]
+    "degenerate_metrics": ["mpe", "mne"]
   }
 ]

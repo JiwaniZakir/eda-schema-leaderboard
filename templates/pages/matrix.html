@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="intro">No submissions yet. Every cell shows the value the paper published for that baseline.</p>
+<div class="stage-strip" data-stage-strip role="group" aria-label="Stage transition" hidden>
+{% for stage in stages %}
+<button class="stage-pill" type="button" data-stage="{{ stage.id }}" aria-pressed="{{ "true" if loop.first else "false" }}" data-label="{{ stage.label }}">{{ stage.label }}</button>
+{% endfor %}
+</div>
+<dl class="legend">
+{% for item in legend %}
+<div><dt class="state-{{ item.id }}">{{ item.label }}</dt><dd>{{ item.explanation }}</dd></div>
+{% endfor %}
+</dl>
+{% for panel in panels %}
+<section class="panel" id="stage-{{ panel.stage_id }}" data-stage-panel="{{ panel.stage_id }}" aria-labelledby="caption-{{ panel.stage_id }}" tabindex="0">
+<table>
+<caption id="caption-{{ panel.stage_id }}">{{ panel.caption }}</caption>
+<thead>
+{% if panel.void_tasks %}
+<tr class="void-note"><td colspan="{{ columns }}">Not estimated at this stage, so these tasks have no rows here: {{ panel.void_tasks | join(", ") }}. Cells are not yet placed, so there is no half-perimeter wirelength to measure.</td></tr>
+{% endif %}
+<tr><th scope="col">Task and metric</th>{% for pdk in pdks %}<th scope="col">{{ pdk.label }}</th>{% endfor %}</tr>
+</thead>
+<tbody>
+{% for row in panel.rows %}
+<tr{% if row.starts_task %} class="task-start"{% endif %}><th scope="row">{{ row.header }}</th>{% for cell in row.cells %}<td class="state-{{ cell.state }}"{% if cell.baseline_kind != "published" %} data-baseline="{{ cell.baseline_kind }}"{% endif %}>{{ cell.display }}<span class="vh">{{ cell.state_label }}</span></td>{% endfor %}</tr>
+{% endfor %}
+</tbody>
+</table>
+</section>
+{% endfor %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ base_path }}static/js/matrix.js" defer></script>
+{% endblock %}

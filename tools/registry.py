@@ -1,14 +1,10 @@
-"""Typed loaders for the five registries.
+"""Typed access to data/registry/.
 
-This is the only import path for grid vocabulary. Never hardcode a task, metric,
-PDK, stage or circuit name anywhere else; read it from here.
+This module is the ONLY import path for vocabulary. Nothing else in the project
+may hardcode a task, metric, stage, PDK or circuit name.
 
-The registries are generated to match `docs/DATA_CONTRACT.md`, which is the
-document of record when the two disagree.
-
-**No count in this module is a literal.** 46, 232, 880, 920 are all derived, and
-`tests/test_no_hardcoded_counts.py` enforces that. A registry that hardcodes 880
-cannot tell you when it has drifted from the data it claims to describe.
+Counts are derived here and asserted in tests. No count literal belongs in this
+file.
 """
 
 from __future__ import annotations
@@ -23,69 +19,23 @@ REGISTRY_DIR = Path(__file__).resolve().parent.parent / "data" / "registry"
 
 
 @dataclass(frozen=True, slots=True)
-class Task:
-    """One prediction target.
-
-    `id` is the lab's own identifier, suffixed `_prediction`, matching upstream
-    `drexel-ice/EDA-schema` and the results-tree layout. Do not shorten it;
-    submissions are keyed on this string.
-
-    `design_level` is behaviourally load-bearing, not descriptive: Phase 3 ingest
-    reads one pooled `all_circuits.csv` for these six tasks and per-circuit CSVs
-    for the rest. `granularity` is descriptive only.
-    """
-
+class Circuit:
     id: str
-    label: str
-    table8_label: str
-    unit: str
-    granularity: str
-    design_level: bool
-    metrics: tuple[str, ...]
-    precision_overrides: dict[str, int]
+    inputs: int
+    outputs: int
+    registers: int
 
 
 @dataclass(frozen=True, slots=True)
 class Metric:
-    """One metric row.
-
-    `direction` is what ranking optimizes, declared once here and read everywhere.
-
-    `bias` is set only on `mpe` and `mne`. The paper prefers a conservative miss
-    over an optimistic one of equal magnitude, and ranking these as plain
-    magnitude is a correctness bug rather than a style choice.
-
-    `percent` values are stored as fractions in [0, 1] and multiplied by 100 only
-    at display, exactly once.
-    """
-
     id: str
     label: str
     long_label: str
     table8_label: str
-    direction: str  # "higher" | "lower"
-    bias: str | None  # "conservative" | "optimistic" | None
+    direction: str
+    bias: str | None
     percent: bool
     precision: int
-
-
-@dataclass(frozen=True, slots=True)
-class Stage:
-    """One stage transition, always predicting the post-`detailed_route` value.
-
-    Carries the grid's three exception rules as data rather than as code in some
-    other module, so `is_void`, `is_saturated` and `is_degenerate` all derive from
-    here and cannot drift from one another.
-    """
-
-    id: str
-    label: str
-    table8_label: str
-    order: int
-    void_tasks: tuple[str, ...]
-    saturated_tasks: tuple[str, ...]
-    degenerate_tasks: tuple[str, ...]
-    degenerate_metrics: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,187 +50,181 @@ class Pdk:
 
 
 @dataclass(frozen=True, slots=True)
-class Circuit:
+class Stage:
     id: str
-    inputs: int
-    outputs: int
-    registers: int
+    label: str
+    table8_label: str
+    order: int
+    void_tasks: tuple[str, ...]
+    saturated_tasks: tuple[str, ...]
+    degenerate_tasks: tuple[str, ...]
+    degenerate_metrics: tuple[str, ...]
 
 
-def _load(name: str) -> list[dict[str, Any]]:
-    path = REGISTRY_DIR / f"{name}.json"
-    with path.open(encoding="utf-8") as fh:
-        data = json.load(fh)
-    if not isinstance(data, list):
-        raise TypeError(f"{path} must hold a JSON array, got {type(data).__name__}")
-    return data
+@dataclass(frozen=True, slots=True)
+class Task:
+    id: str
+    label: str
+    table8_label: str
+    unit: str
+    granularity: str
+    design_level: bool
+    metrics: tuple[str, ...]
+    precision_overrides: dict[str, int]
 
 
 @cache
-def tasks() -> tuple[Task, ...]:
-    return tuple(
-        Task(
-            id=r["id"],
-            label=r["label"],
-            table8_label=r["table8_label"],
-            unit=r["unit"],
-            granularity=r["granularity"],
-            design_level=r["design_level"],
-            metrics=tuple(r["metrics"]),
-            precision_overrides=dict(r["precision_overrides"]),
-        )
-        for r in _load("tasks")
-    )
+def _load(name: str) -> tuple[dict[str, Any], ...]:
+    """Read one registry file. Cached, so the JSON is parsed once per process."""
+    path = REGISTRY_DIR / f"{name}.json"
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(rows, list) or not rows:
+        raise ValueError(f"{path} must be a non-empty JSON array")
+    return tuple(rows)
+
+
+@cache
+def circuits() -> tuple[Circuit, ...]:
+    return tuple(Circuit(**row) for row in _load("circuits"))
 
 
 @cache
 def metrics() -> tuple[Metric, ...]:
-    return tuple(
-        Metric(
-            id=r["id"],
-            label=r["label"],
-            long_label=r["long_label"],
-            table8_label=r["table8_label"],
-            direction=r["direction"],
-            bias=r["bias"],
-            percent=r["percent"],
-            precision=r["precision"],
-        )
-        for r in _load("metrics")
-    )
+    return tuple(Metric(**row) for row in _load("metrics"))
 
 
 @cache
-def stages() -> tuple[Stage, ...]:
-    return tuple(
-        Stage(
-            id=r["id"],
-            label=r["label"],
-            table8_label=r["table8_label"],
-            order=r["order"],
-            void_tasks=tuple(r["void_tasks"]),
-            saturated_tasks=tuple(r["saturated_tasks"]),
-            degenerate_tasks=tuple(r["degenerate_tasks"]),
-            degenerate_metrics=tuple(r["degenerate_metrics"]),
-        )
-        for r in _load("stages")
-    )
+def _metric_index() -> dict[str, Metric]:
+    return {m.id: m for m in metrics()}
+
+
+def metric(metric_id: str) -> Metric:
+    """Look up one metric. Raises KeyError on an unknown id, deliberately: a
+    silent default here would let a typo rank in the wrong direction."""
+    try:
+        return _metric_index()[metric_id]
+    except KeyError:
+        raise KeyError(f"unknown metric {metric_id!r}") from None
 
 
 @cache
 def pdks() -> tuple[Pdk, ...]:
     return tuple(
-        Pdk(
-            id=r["id"],
-            label=r["label"],
-            long_label=r["long_label"],
-            table8_label=r["table8_label"],
-            metal_layers=r["metal_layers"],
-            utilization=r["utilization"],
-            utilization_sweep=tuple(r["utilization_sweep"]),
-        )
-        for r in _load("pdks")
+        Pdk(**{**row, "utilization_sweep": tuple(row["utilization_sweep"])})
+        for row in _load("pdks")
     )
 
 
 @cache
-def circuits() -> tuple[Circuit, ...]:
-    return tuple(
-        Circuit(
-            id=r["id"],
-            inputs=r["inputs"],
-            outputs=r["outputs"],
-            registers=r["registers"],
+def stages() -> tuple[Stage, ...]:
+    """Always returned in `order`. Callers render the stage strip straight from
+    this, so the sequence is part of the contract."""
+    rows = [
+        Stage(
+            **{
+                **row,
+                "void_tasks": tuple(row["void_tasks"]),
+                "saturated_tasks": tuple(row["saturated_tasks"]),
+                "degenerate_tasks": tuple(row["degenerate_tasks"]),
+                "degenerate_metrics": tuple(row["degenerate_metrics"]),
+            }
         )
-        for r in _load("circuits")
-    )
-
-
-# -- by-id lookups ---------------------------------------------------------
-
-
-@cache
-def task(task_id: str) -> Task:
-    for entry in tasks():
-        if entry.id == task_id:
-            return entry
-    raise KeyError(f"unknown task: {task_id!r}")
+        for row in _load("stages")
+    ]
+    return tuple(sorted(rows, key=lambda s: s.order))
 
 
 @cache
-def metric(metric_id: str) -> Metric:
-    for entry in metrics():
-        if entry.id == metric_id:
-            return entry
-    raise KeyError(f"unknown metric: {metric_id!r}")
+def _pdk_index() -> dict[str, Pdk]:
+    return {p.id: p for p in pdks()}
 
 
 @cache
-def stage(stage_id: str) -> Stage:
-    for entry in stages():
-        if entry.id == stage_id:
-            return entry
-    raise KeyError(f"unknown stage: {stage_id!r}")
+def _stage_index() -> dict[str, Stage]:
+    return {s.id: s for s in stages()}
 
 
-@cache
 def pdk(pdk_id: str) -> Pdk:
-    for entry in pdks():
-        if entry.id == pdk_id:
-            return entry
-    raise KeyError(f"unknown pdk: {pdk_id!r}")
+    """Look up one PDK. Raises KeyError on an unknown id: results-tree directory
+    names are uppercase and must be normalized before they reach here."""
+    try:
+        return _pdk_index()[pdk_id]
+    except KeyError:
+        raise KeyError(f"unknown pdk {pdk_id!r}") from None
 
 
-# -- the three exception rules ---------------------------------------------
+def stage(stage_id: str) -> Stage:
+    """Look up one stage. Raises KeyError on an unknown id: three stage ids
+    contain underscores, so a split-based path parse lands here with junk."""
+    try:
+        return _stage_index()[stage_id]
+    except KeyError:
+        raise KeyError(f"unknown stage {stage_id!r}") from None
+
+
+@cache
+def tasks() -> tuple[Task, ...]:
+    """Returned in Table 8 row order. `metrics` is ordered the same way, so a
+    renderer can walk a task's rows straight down the published table."""
+    return tuple(
+        Task(
+            **{
+                **row,
+                "metrics": tuple(row["metrics"]),
+                "precision_overrides": dict(row["precision_overrides"]),
+            }
+        )
+        for row in _load("tasks")
+    )
+
+
+@cache
+def _task_index() -> dict[str, Task]:
+    return {t.id: t for t in tasks()}
+
+
+def task(task_id: str) -> Task:
+    """Look up one task. Raises KeyError on an unknown id: task ids keep the
+    lab's `_prediction` suffix, and a stripped one must not silently resolve."""
+    try:
+        return _task_index()[task_id]
+    except KeyError:
+        raise KeyError(f"unknown task {task_id!r}") from None
 
 
 def is_void(task_id: str, stage_id: str) -> bool:
-    """True when the cell does not exist: no baseline estimate is possible.
+    """The cell does not exist. Void cells are excluded from the live count.
 
-    Only `total_wirelength` and `interconnect_length` at `floorplan`. Half-
-    perimeter wirelength is the baseline estimator for both, and the paper's
-    footnote says it is unavailable before placement.
-
-    Void is the only rule that subtracts from the live count.
+    Half-perimeter wirelength is the baseline estimator for both wirelength
+    tasks, and at floorplan there are no placed coordinates to compute it from.
     """
     return task_id in stage(stage_id).void_tasks
 
 
 def is_degenerate(task_id: str, metric_id: str, stage_id: str) -> bool:
-    """True when the cell exists but its baseline is a 0/0.
+    """The cell exists, but its baseline is 0/0 and was never measured.
 
-    `mpe`/`mne` for the three slack tasks at `global_route`, where the baseline is
-    exact so there are no positive and no negative errors to average. The paper
-    prints "No positive or negative error, n_p = n_n = 0".
-
-    These stay live: a submission there has its own MPE and MNE even though the
-    baseline has none. They carry `baseline_value: null`, so nothing can be
-    recorded as beating a baseline that was never measured.
+    Table 8 prints "No positive or negative error, n_p = n_n = 0". These cells
+    stay live and carry baseline_value: null, so nothing can be recorded as
+    beating a baseline that does not exist.
     """
-    st = stage(stage_id)
-    return task_id in st.degenerate_tasks and metric_id in st.degenerate_metrics
+    s = stage(stage_id)
+    return task_id in s.degenerate_tasks and metric_id in s.degenerate_metrics
 
 
 def is_saturated(task_id: str, metric_id: str, stage_id: str) -> bool:
-    """True when the baseline is already at the optimum, so the cell is unwinnable.
+    """The baseline is already at the optimum, so the cell is never ranked.
 
-    Expressed as a stage-and-task rule, never as a test on values. A predicate
-    like `mae == 0 and mape == 0 and r2 == 1` identifies only five of the ten
-    saturated tasks, because the other five publish no MAPE row, no R² row, or
-    neither; and eight of these cells are `tpr`/`tnr` sitting at 100%, where
-    "error is approximately zero" is simply false.
+    Checked AFTER degeneracy, deliberately. A degenerate cell is unmeasured, not
+    perfect, and conflating them mistypes the whole degenerate set while every
+    headline count stays correct.
 
-    Saturation is enumerated **positively** in `stages.json` rather than as
-    "everything except the two wirelength tasks". The negative form is shorter and
-    matches the paper's prose, which is exactly why it is dangerous: a thirteenth
-    task added later would inherit saturation silently and be permanently
-    unrankable, with nothing raising an error. Saturation is an empirical fact
-    about the tool flow, not a default.
-
-    **Degeneracy wins.** The precedence matters more than it looks: reversing it
-    yields 144 saturated and 0 degenerate while still producing 880 live cells and
-    232 live combos, so the phase gate passes green with 24 cells mis-typed. That
-    is why `tests/test_registry.py` asserts 40/24/120 independently of 880.
+    This is a stage-and-task rule, never a predicate over values. A test for
+    zero error with a perfect coefficient of determination marks only 5 of the
+    10 saturated tasks, because the other five publish no percentage-error row,
+    no R^2 row, or neither. And the saturated set includes true/false positive
+    rates sitting at 100 %, where an "error is approximately zero" test returns
+    false.
     """
     if is_degenerate(task_id, metric_id, stage_id):
         return False
@@ -288,25 +232,38 @@ def is_saturated(task_id: str, metric_id: str, stage_id: str) -> bool:
 
 
 def precision(task_id: str, metric_id: str) -> int:
-    """Decimal places for display, task-specific where the paper differs.
+    """Display decimal places, per (task, metric).
 
-    `mae` is published at 4dp for the arc and path tasks and 2dp elsewhere, so
-    precision cannot live on the metric alone.
+    Ground truth for the plausibility guard: a submission claiming MAE 0.00001
+    on a cell whose ground truth is published to four decimals is claiming
+    precision the dataset cannot express.
     """
-    override = task(task_id).precision_overrides.get(metric_id)
-    return override if override is not None else metric(metric_id).precision
+    return task(task_id).precision_overrides.get(metric_id, metric(metric_id).precision)
 
 
-# -- derived grid ----------------------------------------------------------
+@cache
+def metric_rows_expanded() -> tuple[tuple[Task, str], ...]:
+    """Every (Task, metric_id) pair, with the task object rather than its id.
+
+    Callers that need the task's unit or precision alongside the row use this;
+    metric_rows() is the id-only view over the same sequence.
+    """
+    return tuple((t, metric_id) for t in tasks() for metric_id in t.metrics)
 
 
+@cache
 def metric_rows() -> tuple[tuple[str, str], ...]:
-    """Every `(task, metric)` pair. Derived; the contract says this is 46."""
-    return tuple((t.id, metric_id) for t in tasks() for metric_id in t.metrics)
+    """Every (task_id, metric_id) pair, in Table 8 row order.
+
+    This is the published table's row count, derived from the ragged per-task
+    metric sets rather than stated.
+    """
+    return tuple((t.id, metric_id) for t, metric_id in metric_rows_expanded())
 
 
+@cache
 def live_combos() -> tuple[tuple[str, str, str], ...]:
-    """Every live `(task, pdk, stage)`."""
+    """(task, pdk, stage) triples that are not void. One shard file each."""
     return tuple(
         (t.id, p.id, s.id)
         for t in tasks()
@@ -316,16 +273,17 @@ def live_combos() -> tuple[tuple[str, str, str], ...]:
     )
 
 
+@cache
 def live_cells() -> tuple[tuple[str, str, str, str], ...]:
-    """Every live `(task, metric, pdk, stage)`.
+    """(task, metric, pdk, stage) quads that are not void.
 
-    Excludes void only. Degenerate cells are live, because the cell exists even
-    though its baseline does not.
+    Degenerate cells stay in: their baseline is unmeasured, not absent, so they
+    are rendered without a comparison rather than dropped from the grid.
     """
     return tuple(
-        (t, m, p.id, s.id)
-        for t, m in metric_rows()
+        (task_id, metric_id, p.id, s.id)
+        for task_id, metric_id in metric_rows()
         for p in pdks()
         for s in stages()
-        if not is_void(t, s.id)
+        if not is_void(task_id, s.id)
     )
