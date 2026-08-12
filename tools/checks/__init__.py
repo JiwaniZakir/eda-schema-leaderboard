@@ -25,4 +25,5 @@ def register(name: str) -> Callable[[Callable[[], list[str]]], Callable[[], list
     return decorate
 
 
+from tools.checks import baseline as _baseline  # noqa: E402,F401
 from tools.checks import registry_csv as _registry_csv  # noqa: E402,F401
