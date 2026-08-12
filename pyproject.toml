@@ -62,7 +62,7 @@ python_version = "3.11"
 strict = true
 warn_unreachable = true
 # Grows as the phases land: tools/ and tests/ in Phase 1, build.py in Phase 3.
-files = ["tools", "tests"]
+files = ["tools", "tests", "build.py"]
 
 [[tool.mypy.overrides]]
 module = ["torch.*"]

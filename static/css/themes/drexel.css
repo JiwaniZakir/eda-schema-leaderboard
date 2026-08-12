@@ -1,0 +1,67 @@
+/*
+ * Drexel. Navy #07294D, gold #FFC600, serif headings.
+ *
+ * Light ground on purpose. The matrix is a grid of numeric cells and the brand
+ * navy is chrome, not canvas: header band, table header, pill ink, focus ring.
+ * The gold has exactly one job, the active stage pill, where navy on gold is
+ * 9.30:1.
+ *
+ * The --state-*-key values are the shared four-state palette and are byte
+ * identical in every theme.
+ */
+
+:root {
+  --drexel-navy: #07294d;
+  --drexel-gold: #ffc600;
+
+  --font-body: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  --ground: #ffffff;
+  --surface: #f5f7fa;
+  --surface-raised: #ffffff;
+  --border: #c8d2de;          /* hairline, decorative */
+  --border-strong: #78859a;   /* 3.48:1 on --surface, carries meaning */
+
+  --text: #0b1f33;            /* 16.69:1 on --ground */
+  --text-muted: #4a5a6b;      /* 6.60:1 on --surface */
+  --link: #0a4c8c;            /* 8.66:1 on --ground */
+  --link-visited: #5b3a8c;    /* 8.65:1 on --ground */
+
+  --accent: var(--drexel-navy);
+  --accent-ink: #ffffff;      /* 14.65:1 on --accent */
+  --focus: var(--drexel-navy);
+
+  --pill-bg: #e7ebf0;
+  --pill-ink: var(--drexel-navy);         /* 12.24:1 on --pill-bg */
+  --pill-active-bg: var(--drexel-gold);
+  --pill-active-ink: var(--drexel-navy);  /* 9.30:1 on --pill-active-bg */
+
+  --table-header-bg: var(--drexel-navy);
+  --table-header-ink: #ffffff;            /* 14.65:1 */
+  --table-header-pad: 0.55rem 0.7rem;
+  --table-row-alt: #f0f3f7;
+  --table-cell-pad: 0.45rem 0.6rem;
+
+  --void-ink: #7f8d9e;        /* 3.38:1 on --ground */
+
+  /* Shared four-state data palette. Okabe-Ito hues darkened until each clears
+     3:1 on its own surface. IDENTICAL in every theme. */
+  --state-beats-key: #007a5e;
+  --state-matches-key: #0072b2;
+  --state-leads-key: #c04a00;
+  --state-none-key: #6b6b6b;
+  --state-saturated-key: #5b6770;
+
+  --state-beats-bg: #e3f3ec;
+  --state-beats-ink: #10513c;      /* 8.08:1 ink, 4.64:1 key */
+  --state-matches-bg: #e4eef7;
+  --state-matches-ink: #0b4a75;    /* 7.94:1 ink, 4.41:1 key */
+  --state-leads-bg: #fbe9de;
+  --state-leads-ink: #8a3b00;      /* 6.58:1 ink, 4.22:1 key */
+  --state-none-bg: #f2f4f6;
+  --state-none-ink: #40505f;       /* 7.53:1 ink, 4.83:1 key */
+  --state-saturated-bg: #e8eaed;
+  --state-saturated-ink: #3f4a55;  /* 7.50:1 ink, 4.81:1 key */
+}
