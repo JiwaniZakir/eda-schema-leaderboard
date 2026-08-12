@@ -15,10 +15,14 @@ Two conversions happen on read, here and nowhere else:
 
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
+from functools import cache
 from pathlib import Path
+
+from tools import registry as reg
 
 ROOT = Path(__file__).resolve().parent.parent
 CSV_PATH = ROOT / "docs" / "sources" / "table8_baseline.csv"
@@ -112,3 +116,124 @@ def parse_bound(raw: str, *, percent: bool) -> Bound:
     if percent:
         number /= _PERCENT_SCALE
     return Bound(kind=kind, value=float(number))
+
+
+CellKey = tuple[str, str, str, str]
+
+
+@dataclass(frozen=True, slots=True)
+class Baseline:
+    """One live cell's published baseline."""
+
+    task: str
+    metric: str
+    pdk: str
+    stage: str
+    baseline_state: str
+    bound: Bound
+    source: str
+    src_line: int
+
+    @property
+    def key(self) -> CellKey:
+        return (self.task, self.metric, self.pdk, self.stage)
+
+
+LabelKey = tuple[str, str, str, str]
+
+
+@cache
+def _csv_index() -> dict[LabelKey, dict[str, str]]:
+    """The CSV, indexed on (task, metric, stage, pdk) table8 labels."""
+    with CSV_PATH.open(encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    index: dict[LabelKey, dict[str, str]] = {}
+    for row in rows:
+        key = (row["task"], row["metric"], row["stage_transition"], row["pdk"])
+        if key in index:
+            raise ValueError(f"duplicate Table 8 row for {key}")
+        index[key] = row
+    return index
+
+
+@cache
+def _label_key_index() -> dict[CellKey, LabelKey]:
+    """Cell ids to the labels that join them onto the CSV."""
+    task_label = {t.id: t.table8_label for t in reg.tasks()}
+    metric_label = {m.id: m.table8_label for m in reg.metrics()}
+    stage_label = {s.id: s.table8_label for s in reg.stages()}
+    pdk_label = {p.id: p.table8_label for p in reg.pdks()}
+    return {
+        (task_id, metric_id, pdk_id, stage_id): (
+            task_label[task_id],
+            metric_label[metric_id],
+            stage_label[stage_id],
+            pdk_label[pdk_id],
+        )
+        for task_id, metric_id, pdk_id, stage_id in reg.live_cells()
+    }
+
+
+@cache
+def published_sentinel_keys() -> frozenset[CellKey]:
+    """Cells the paper published as a threshold rather than a number.
+
+    Derived by scanning the raw value strings, deliberately by a different route
+    than parse_bound takes. A sentinel silently demoted to an exact value is then
+    caught by disagreement rather than confirmed by a shared reading.
+    """
+    rows = _csv_index()
+    return frozenset(
+        cell_key
+        for cell_key, label_key in _label_key_index().items()
+        if rows[label_key]["value"].strip().startswith((">", "<"))
+    )
+
+
+def build() -> tuple[Baseline, ...]:
+    """One Baseline per live cell, in registry order.
+
+    Driven from reg.live_cells() rather than from the CSV, so the emitted key set
+    is the live set by construction and a published cell the table does not carry
+    raises instead of quietly vanishing.
+    """
+    rows = _csv_index()
+    entries: list[Baseline] = []
+
+    for cell_key, label_key in _label_key_index().items():
+        task_id, metric_id, pdk_id, stage_id = cell_key
+        try:
+            row = rows[label_key]
+        except KeyError:
+            raise KeyError(f"no Table 8 row for {label_key}") from None
+
+        if row["kind"] == "VOID":
+            raise ValueError(
+                f"the registry says this cell is live, Table 8 says VOID: {cell_key}"
+            )
+
+        degenerate = reg.is_degenerate(task_id, metric_id, stage_id)
+        if degenerate != (row["kind"] == "DEGENERATE"):
+            raise ValueError(
+                f"degeneracy disagrees between the registry and Table 8: {cell_key}"
+            )
+
+        bound = (
+            Bound(kind=BoundKind.ABSENT, value=None)
+            if degenerate
+            else parse_bound(row["value"], percent=reg.metric(metric_id).percent)
+        )
+        entries.append(
+            Baseline(
+                task=task_id,
+                metric=metric_id,
+                pdk=pdk_id,
+                stage=stage_id,
+                baseline_state=DEGENERATE if degenerate else PUBLISHED,
+                bound=bound,
+                source=PAPER,
+                src_line=int(row["src_line"]),
+            )
+        )
+    return tuple(entries)
