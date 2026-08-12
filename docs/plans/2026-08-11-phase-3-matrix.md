@@ -49,19 +49,21 @@ reg.live_cells() -> tuple[tuple[str, str, str, str], ...]  # 880, (task, metric,
 
 ```python
 @dataclass(frozen=True) class Bound: kind: BoundKind; value: float | None
-# kind in {"exact", "greater_than", "less_than", "absent"}; value is None iff "absent"
-bl.baseline(task_id, metric_id, pdk_id, stage_id) -> Baseline   # KeyError on a void cell
+# BoundKind is a StrEnum: EXACT | GREATER_THAN | LESS_THAN | ABSENT
+# value is None if and only if kind is ABSENT. Compare with `is`, not `==`.
+bl.lookup(task_id, metric_id, pdk_id, stage_id) -> Baseline   # KeyError on a void cell
 bl.baselines() -> dict[CellKey, Baseline]
 Baseline.bound: Bound ; Baseline.baseline_state: str ; Baseline.source: str
 ```
 
-A sentinel is a one-sided bound **in storage units**: `> 10000 %` is `Bound("greater_than", 100.0)` and `< -1` is `Bound("less_than", -1.0)`.
+A sentinel is a one-sided bound **in storage units**: `> 10000 %` is `Bound(BoundKind.GREATER_THAN, 100.0)` and `< -1` is `Bound(BoundKind.LESS_THAN, -1.0)`.
 A sentinel always points **away** from the good direction, so `greater_than` only ever sits on a lower-is-better metric.
-A degenerate cell is `Bound("absent", None)`.
-A void cell has no entry at all, and `bl.baseline` raises for it.
+A degenerate cell is `Bound(BoundKind.ABSENT, None)`.
+A void cell has no entry at all, and `bl.lookup` raises `KeyError` for it.
 
-The Phase 5 plan lists this function as `baseline.bound_for(...)`.
-That is the same lookup under a different name; Phase 2 is authoritative and this phase calls `bl.baseline(...).bound`.
+There is exactly ONE accessor across every phase, `baseline.lookup(...) -> Baseline`.
+Callers that want only the published bound write `bl.lookup(...).bound`.
+Earlier drafts of Phases 3, 5, 7 and 8 each invented a different name for it, which is why this is stated here rather than assumed.
 
 ## What this phase de-risks
 
@@ -81,7 +83,7 @@ A grid that renders 856 real baselines correctly with zero entries is a working 
 
 **A `<td>` per void cell is not "structurally absent".** Void is a `(task, stage)` fact, so at `floorplan` the two wirelength tasks contribute no rows at all: the floorplan panel has 36 metric rows, not 46. An empty cell in a 46-row table is a data gap, which is a different claim from "this measurement does not exist". The floorplan panel carries a short generated note naming the absent tasks, so the reader is told rather than left to notice.
 
-**Percent inversion raises nothing.** If the `x100` lands twice, or lands at ingest instead of display, every MAPE cell reads `baseline_leads` and every TPR/TNR cell reads `beats_baseline`. Both are believable for models documented as undertrained. The defence is that exactly one function multiplies, it is called from exactly one place, and a test pins `Bound("exact", 0.1243)` rendering as `12.43 %` against the CSV's own printed string.
+**Percent inversion raises nothing.** If the `x100` lands twice, or lands at ingest instead of display, every MAPE cell reads `baseline_leads` and every TPR/TNR cell reads `beats_baseline`. Both are believable for models documented as undertrained. The defence is that exactly one function multiplies, it is called from exactly one place, and a test pins `Bound(BoundKind.EXACT, 0.1243)` rendering as `12.43 %` against the CSV's own printed string.
 
 **"Degenerate cells never print a number" cannot be tested by counting digits.** The paper's own text for those cells is `No positive or negative error, n_p = n_n = 0`, which contains a digit, and the marker this phase renders is `0/0`, which contains two. The test asserts the structured fact instead: the bound kind is `absent`, the cell carries `data-baseline="degenerate"`, and its rendered text equals the one declared marker constant rather than any formatted number.
 
@@ -660,11 +662,15 @@ def test_a_plain_value_formats_at_the_registry_precision() -> None:
     """MAE on a design-level task is 2dp; on cell_arc_delay it is 4dp, which is
     the ground truth Phase 6's plausibility layer keys on."""
     assert (
-        matrix.format_bound("total_area_prediction", "mae", bl.Bound("exact", 1781.97))
+        matrix.format_bound(
+            "total_area_prediction", "mae", bl.Bound(bl.BoundKind.EXACT, 1781.97)
+        )
         == "1,781.97"
     )
     assert (
-        matrix.format_bound("cell_arc_delay_prediction", "mae", bl.Bound("exact", 0.0))
+        matrix.format_bound(
+            "cell_arc_delay_prediction", "mae", bl.Bound(bl.BoundKind.EXACT, 0.0)
+        )
         == "0.0000"
     )
 
@@ -674,14 +680,18 @@ def test_a_percent_metric_is_multiplied_by_one_hundred_here_and_only_here() -> N
     data/baseline.json holds 0.1243. This is the single conversion point in the
     project."""
     assert (
-        matrix.format_bound("total_area_prediction", "mape", bl.Bound("exact", 0.1243))
+        matrix.format_bound(
+            "total_area_prediction", "mape", bl.Bound(bl.BoundKind.EXACT, 0.1243)
+        )
         == "12.43 %"
     )
 
 
 def test_a_rate_at_its_ceiling_renders_as_one_hundred_percent() -> None:
     assert (
-        matrix.format_bound("worst_slack_prediction", "tpr", bl.Bound("exact", 1.0))
+        matrix.format_bound(
+            "worst_slack_prediction", "tpr", bl.Bound(bl.BoundKind.EXACT, 1.0)
+        )
         == "100.00 %"
     )
 
@@ -690,7 +700,7 @@ def test_an_upper_sentinel_renders_its_comparator() -> None:
     """The paper thresholded the number away, so the cell shows a bound. A bare
     10,000.00 % would assert a measurement nobody made."""
     text = matrix.format_bound(
-        "net_arc_delay_prediction", "mape", bl.Bound("greater_than", 100.0)
+        "net_arc_delay_prediction", "mape", bl.Bound(bl.BoundKind.GREATER_THAN, 100.0)
     )
     assert text.startswith(">")
     assert text == "> 10,000.00 %"
@@ -698,7 +708,7 @@ def test_an_upper_sentinel_renders_its_comparator() -> None:
 
 def test_a_lower_sentinel_renders_its_comparator() -> None:
     text = matrix.format_bound(
-        "net_arc_delay_prediction", "r2", bl.Bound("less_than", -1.0)
+        "net_arc_delay_prediction", "r2", bl.Bound(bl.BoundKind.LESS_THAN, -1.0)
     )
     assert text == "< -1.000"
 
@@ -707,7 +717,9 @@ def test_a_degenerate_bound_renders_the_marker_and_never_a_number() -> None:
     """0/0 is not 0. Formatting an absent bound as 0.00 would publish a baseline
     the paper explicitly says was never measured."""
     assert (
-        matrix.format_bound("worst_slack_prediction", "mpe", bl.Bound("absent", None))
+        matrix.format_bound(
+            "worst_slack_prediction", "mpe", bl.Bound(bl.BoundKind.ABSENT, None)
+        )
         == matrix.DEGENERATE_MARKER
     )
 
@@ -885,7 +897,7 @@ def _state(task_id: str, metric_id: str, stage_id: str) -> str:
 
 def cell(task_id: str, metric_id: str, pdk_id: str, stage_id: str) -> Cell:
     """One live cell. Raises KeyError on a void cell, via the baseline loader."""
-    bound = bl.baseline(task_id, metric_id, pdk_id, stage_id).bound
+    bound = bl.lookup(task_id, metric_id, pdk_id, stage_id).bound
     state = _state(task_id, metric_id, stage_id)
     return Cell(
         task=task_id,

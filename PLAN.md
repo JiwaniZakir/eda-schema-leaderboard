@@ -84,6 +84,7 @@ with bite-sized TDD steps, real code and exact commands.
 | 7 | [synthetic decision](docs/plans/2026-08-11-phase-7-synthetic-decision.md) | a decision, and possibly no code |
 | 8 | [explore, card, submit, model](docs/plans/2026-08-11-phase-8-explore-card-submit-model.md) | the remaining pages |
 | 9 | [themes, deploy, transfer](docs/plans/2026-08-11-phase-9-themes-deploy-transfer.md) | two themes and the handover |
+| 10 | [publish path](docs/plans/2026-08-11-phase-10-publish-path.md) | **submissions actually reach the grid** |
 
 Read the roadmap for *why* and the phase plan for *how*.
 Where they disagree, the roadmap is authoritative on scope and the phase plan is
@@ -538,6 +539,55 @@ curl -sI https://<domain>/ | head -1     # 200
 du -sh dist/                             # well under 1 GB
 # repository_dispatch from the experiments repo triggers a rebuild
 ```
+
+---
+
+## The 2026-08-11 goal review, and what it changed
+
+After all nine plans were written, an adversarial reviewer was asked one
+question: does this plan deliver the goal? It found that **it did not**, and the
+gap was the same shape as the one the reset was meant to fix, one level up.
+
+**The plan built a baseline browser, not a leaderboard.** `data/cells/**` is the
+only entry source the site reads, and across nine phases it was written by
+exactly two things: `tools/ingest.py`, reading the lab's own results tree, and
+`tools/synth.py`, which is conditional. Phase 6 builds a five-layer guard over
+`submissions/`, emits advisory findings, and stops. Nothing turned a merged,
+guard-passing submission into a shard. A third party could clear every layer and
+appear nowhere on the site, so "showing how **submitted models** compare against
+the paper's published baseline" was delivered by no phase.
+
+That is now **Phase 10**, and two rulings shape it:
+
+- **Trust is hybrid.** Declared metrics publish immediately behind a visible
+  `self-reported` marker and are promoted to `verified` only when our own runner
+  reproduces them within tolerance. A self-reported number must never be
+  presentable as a verified one, and a reproduction that disagrees is itself a
+  published state rather than a silent correction.
+- **It ships after the site is live**, for the same reason Phase 3 comes before
+  Phase 4: the live page is what de-risks everything built on it.
+
+Four further findings were confirmed and fixed immediately, because each was a
+gate that passes while the thing it checks is wrong:
+
+| Finding | Consequence if unfixed | Fix |
+|---|---|---|
+| `SITE_BASE` asserted by Phase 3, set nowhere | every stylesheet and script 404s on the deployed site while `index.html` still returns 200, so a curl smoke check passes on a visibly broken page | `deploy.yml` runs `configure-pages` **before** the build and passes `base_path` |
+| CI's `build` job runs `build.py`, a Phase 3 deliverable | the required check is unsatisfiable on the Phase 1 and Phase 2 PRs, so branch protection blocks the two phases everything else is built on | the job runs `make build`, which skips loudly until the file exists |
+| Phase 3 called `bl.baseline(...)` and built `Bound("exact", ...)` from raw strings | `AttributeError` on the first cell rendered, plus `mypy --strict` failures, three phases after Phase 2 shipped | reconciled to `baseline.lookup(...)` and `BoundKind.EXACT` |
+| Phase 1's gate claimed a cross-check against `docs/sources/` that only held `table8_baseline.csv` | 51 transcribed circuit values and the metal-layer counts were checked against literals in the test file, which is the exact gap the audit named, while the gate declared it fixed | `docs/sources/table2_circuits.csv` and `pdk_physical.csv` extracted from the paper, so the check is real and works in CI |
+
+The reviewer also confirmed what the plan gets right, which is worth recording:
+no gate asserts a total where a partition is required, Phase 3 depends on nothing
+scheduled after it, `tools/ckpt.py` has a real in-phase consumer, ranking ships
+with its caller, and Phase 7's 1,150 conditional lines are a labelled contingency
+rather than dead weight.
+
+**One number to keep in view.** With synthetic ruled out, the site launches with
+48 of 736 rankable cells populated, from one task of twelve. The plan is honest
+about that rather than evasive, but no phase raises the number, and Phase 10 is
+the only mechanism that ever could without waiting on a lab training run that
+open decision 6 says has not happened.
 
 ---
 

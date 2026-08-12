@@ -17,6 +17,8 @@ Verbatim source material is preserved under `docs/sources/`:
 | File | Committed | What it is |
 |---|---|---|
 | `sources/table8_baseline.csv` | **yes** | Table 8 parsed to 920 tidy rows, one per `(task, metric, stage, pdk)` |
+| `sources/table2_circuits.csv` | **yes** | Table 2's 18 circuits: `circuit,inputs,outputs,registers` |
+| `sources/pdk_physical.csv` | **yes** | Metal routing layers per PDK, from Section 4.1 |
 | `sources/verbatim/table8_baseline_source.tex` | no | Table 8 as LaTeX, from the arXiv e-print tarball |
 | `sources/verbatim/table8_pdf_layout.txt` | no | Table 8 region via `pdftotext -layout`, for cross-checking. **Truncated** - see PROVENANCE.md |
 | `sources/verbatim/table8_recovered.md` | no | Human-readable transcription of all 5 stage groups |
@@ -36,13 +38,15 @@ single column, `VOID` and `DEGENERATE` to a `\multicolumn` span, with zero
 violations - which confirms the classification came from table structure rather
 than from inference over values.
 
-### A correction to the build plan
+### Why the whole table is recoverable
 
-PLAN.md Phase 2 states that only 14 of 20 stage-PDK column groups are recoverable,
-that CTS carries NG45 and SKY130 only, that `global_route` is missing entirely,
-and that the source CSV must be requested from Pratik.
+A pre-reset draft of the build plan held that only 14 of the 20 stage-PDK column
+groups could be recovered, that CTS carried NG45 and SKY130 only, that
+`global_route` was missing entirely, and that the source CSV would have to be
+requested from Pratik.
 
-That is not correct.
+All four claims were wrong, and the correction is kept here because it is the
+reason this project has no external data dependency.
 Table 8 sits entirely on **page 28**, inside a `\begin{landscape}` block and a
 `\resizebox`.
 The rotation and rescaling are what shred naive text extraction, not a page break.
@@ -50,6 +54,8 @@ The LaTeX source and `pdftotext -layout` both read all 20 groups cleanly.
 
 **No external data request is needed.**
 Every baseline entry is `"source": "paper"`.
+The post-reset `PLAN.md` no longer makes the original claim; this section now
+records why it was dropped rather than rebutting live text.
 
 ## The grid
 
@@ -221,7 +227,7 @@ A model that always predicts wildly pessimistic slack never overestimates, score
 `mpe = 0`, and takes first place in the `mpe` cell while being useless.
 This is accepted rather than patched, because `mae` is a separate cell in the same
 grid and such a model places last there.
-Phase 5's plausibility layer should flag a submission that leads an `mpe` cell
+Phase 6's plausibility layer should flag a submission that leads an `mpe` cell
 while sitting in the tail of the corresponding `mae` cell.
 
 ### TPR and TNR are classification metrics
@@ -482,7 +488,9 @@ The rule above is simply the reliable way to express it.
 > The stage rule above does not cover them, so they render as rankable and
 > permanently `baseline_leads`.
 > Whether to extend saturation to any baseline-optimal cell, or accept the
-> stage rule and let these twelve sit, is a decision Phase 6 needs.
+> stage rule and let these twelve sit, is a decision Phase 3 surfaces and the
+> maintainer rules. It has no observable effect until entries exist, so it is
+> pinned by a test in Phase 3 and decided before Phase 4 lights the states.
 
 ## Void and degenerate cells
 
@@ -527,7 +535,7 @@ to 232.
 > `interconnect_length` being void.
 > So the two tasks are not symmetric, and only `total_wirelength` is in dispute.
 > So Table 8's footnote and Table 1 disagree for one of the two tasks.
-> This matters because Phase 5 guard layer 1 keys on Table 1's stage availability,
+> This matters because Phase 6 guard layer 1 keys on Table 1's stage availability,
 > so a rule derived from the footnote will contradict the registry generated from
 > Table 1.
 > Resolve before generating `attributes.json`.
@@ -578,7 +586,7 @@ as a value with a display override. Only submissions carry an exact number on th
 > That leaves win/loss undefined: against `R² < -1`, a submission at −0.5 clearly
 > wins and one at −3 is undecidable; against `MAPE > 10000 %`, a submission at
 > 15000 % is undecidable.
-> 32 cells need a rule before Phase 6 colours them.
+> 32 cells need a rule before Phase 4 colours them.
 > Recommendation is to treat a sentinel baseline as beatable only by a submission
 > on the defined side of the threshold, and to render anything else as
 > `no_comparison` rather than guessing.
@@ -670,7 +678,7 @@ The reference implementation rounds a specific set of `(task, metric)` pairs to
 | `cell_arc_delay_prediction` | mae |
 | `cell_arc_slew_prediction` | mae |
 
-This is the ground truth for Phase 5's plausibility layer, which flags an error
+This is the ground truth for Phase 6's plausibility layer, which flags an error
 below the dataset's own reported precision.
 It is the source for PLAN.md's assertion that `cell_arc_delay` has 4-decimal
 ground truth, so a submission claiming `MAE = 0.00001` there is claiming precision
@@ -695,7 +703,8 @@ No baseline is synthetic.
 Carried forward rather than resolved, and none block Phase 1.
 
 1. **Baseline is pooled, our models are macro-mean.** The one gap that affects
-   correctness rather than presentation. See the section above; it gates Phase 3.
+   correctness rather than presentation. See the section above; it gates Phase 4,
+   which is where ingest lands under the vertical-slice ordering.
 2. The "three prediction tasks" line on p.21 contradicts the abstract and Table 8.
 3. `place_resize` appears in Section 6.2 prose but not in Table 8.
 4. **Confirmed 2026-08-11.** Table 1's caption defines eight stage codes, but its
@@ -717,7 +726,7 @@ Carried forward rather than resolved, and none block Phase 1.
 5. Table 8 reports rounded values. Sub-precision baselines at `global_route` are
    published as `0.00` and may be small but nonzero. Only the lab's source data
    could distinguish these, and nothing in the leaderboard depends on it.
-6. The upstream results tree carries no `submission.yaml`, though PLAN.md Phase 3
+6. The upstream results tree carries no `submission.yaml`, though PLAN.md Phase 4
    expects one. The lab's own seed entry needs a provenance record authored by us.
 
 ## Licensing
