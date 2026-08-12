@@ -1,0 +1,41 @@
+"""Typed access to data/registry/.
+
+This module is the ONLY import path for vocabulary. Nothing else in the project
+may hardcode a task, metric, stage, PDK or circuit name.
+
+Counts are derived here and asserted in tests. No count literal belongs in this
+file.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from functools import cache
+from pathlib import Path
+from typing import Any
+
+REGISTRY_DIR = Path(__file__).resolve().parent.parent / "data" / "registry"
+
+
+@dataclass(frozen=True, slots=True)
+class Circuit:
+    id: str
+    inputs: int
+    outputs: int
+    registers: int
+
+
+@cache
+def _load(name: str) -> tuple[dict[str, Any], ...]:
+    """Read one registry file. Cached, so the JSON is parsed once per process."""
+    path = REGISTRY_DIR / f"{name}.json"
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(rows, list) or not rows:
+        raise ValueError(f"{path} must be a non-empty JSON array")
+    return tuple(rows)
+
+
+@cache
+def circuits() -> tuple[Circuit, ...]:
+    return tuple(Circuit(**row) for row in _load("circuits"))
