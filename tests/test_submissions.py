@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 from tools.submissions import check_submissions, discover
 from tools.validate import main
@@ -125,6 +126,36 @@ def test_discover_is_recursive_and_sorted(tmp_path: Path) -> None:
     _write(tmp_path, "notes.txt", "ignored")
     found = discover(tmp_path)
     assert [p.name for p in found] == ["first.json", "second.json"]
+
+
+def test_yaml_submissions_are_validated(tmp_path: Path) -> None:
+    """The experiments repo documents `submission.yaml`, not `.json`.
+
+    Scanning only one extension is how this guard becomes vacuous a second time:
+    a clean pass because it was looking for the wrong filename.
+    """
+    _write(tmp_path, "submission.yaml", yaml.safe_dump(_record()))
+    assert check_submissions(tmp_path) == []
+
+    _write(tmp_path, "bad.yml", yaml.safe_dump(_record(division="sideways")))
+    assert any("bad.yml" in str(f) for f in check_submissions(tmp_path))
+
+
+def test_yaml_python_tags_are_refused(tmp_path: Path) -> None:
+    """A `!!python/object:` tag in a submission is a code-execution attempt.
+
+    safe_load raising here is the correct outcome, not an inconvenience. This is
+    the opposite call from hparams.yaml, which legitimately carries such tags and
+    is never a submission record.
+    """
+    _write(
+        tmp_path,
+        "evil.yaml",
+        "!!python/object/apply:os.system ['echo pwned']\n",
+    )
+    failures = check_submissions(tmp_path)
+    assert failures, "a python-tagged YAML submission must be rejected"
+    assert any("not safe-loadable YAML" in str(f) for f in failures)
 
 
 def test_one_bad_file_does_not_hide_the_others(tmp_path: Path) -> None:

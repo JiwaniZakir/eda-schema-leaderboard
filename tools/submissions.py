@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 import jsonschema
+import yaml
 from referencing import Registry, Resource
 
 from tools.validate import Failure
@@ -61,6 +62,14 @@ def _validator() -> jsonschema.Draft202012Validator:
     return jsonschema.Draft202012Validator(submission, registry=registry)
 
 
+# The experiments repo documents its submission record as `submission.yaml`,
+# while the schema and everything downstream are JSON. Scanning only one of the
+# two would put us straight back in the vacuous case this module exists to fix:
+# a guard that reports a clean pass because it was looking for the wrong
+# extension.
+SUFFIXES = (".json", ".yaml", ".yml")
+
+
 def discover(root: Path) -> list[Path]:
     """Every submission record under `root`, sorted for deterministic output.
 
@@ -69,7 +78,25 @@ def discover(root: Path) -> list[Path]:
     """
     if not root.is_dir():
         return []
-    return sorted(p for p in root.rglob("*.json") if p.is_file())
+    return sorted(p for p in root.rglob("*") if p.is_file() and p.suffix in SUFFIXES)
+
+
+def _parse(path: Path) -> Any:
+    """Read one record. YAML goes through safe_load, never full_load.
+
+    A submission record is written by someone outside the lab. `yaml.safe_load`
+    refuses `!!python/object:` tags with a ConstructorError, and that refusal is
+    the correct outcome here rather than an inconvenience to work around: tags in
+    a submission record are a code-execution attempt, not a formatting choice.
+
+    Note this is the opposite call from `hparams.yaml`, which legitimately
+    carries those tags and needs the tag-stripping loader. hparams.yaml is not a
+    submission record and never reaches this path.
+    """
+    text = path.read_text(encoding="utf-8")
+    if path.suffix == ".json":
+        return json.loads(text)
+    return yaml.safe_load(text)
 
 
 def check_submissions(root: Path, *, require_nonempty: bool = False) -> list[Failure]:
@@ -106,10 +133,16 @@ def check_submissions(root: Path, *, require_nonempty: bool = False) -> list[Fai
     for path in found:
         rel = path.relative_to(root)
         try:
-            with path.open(encoding="utf-8") as handle:
-                record = json.load(handle)
+            record = _parse(path)
         except json.JSONDecodeError as exc:
             failures.append(Failure("submissions", f"{rel}: not valid JSON: {exc}"))
+            continue
+        except yaml.YAMLError as exc:
+            # Includes ConstructorError from a !!python/object: tag, which is the
+            # case worth being loud about.
+            failures.append(
+                Failure("submissions", f"{rel}: not safe-loadable YAML: {exc}")
+            )
             continue
         except OSError as exc:
             failures.append(Failure("submissions", f"{rel}: unreadable: {exc}"))
