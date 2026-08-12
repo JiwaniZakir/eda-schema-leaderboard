@@ -303,6 +303,54 @@ pa11y-ci                       # both themes, WCAG AA
 **Exit criteria: the page is live on GitHub Pages and a human has clicked through
 all five stages.** Not "the build succeeded".
 
+### Measured, 2026-08-12
+
+Recorded from the built artifact rather than estimated.
+
+| Measurement | Value | Cap |
+|---|---|---|
+| `dist/index.html` | 80,820 bytes | 90,112 (88 KB) |
+| the same page built with the Pages base path | 80,889 bytes | 90,112 |
+| `dist/` total | 96 KB | ~20 MB |
+| `build.build()` | 0.02 s | 60 s |
+| cells rendered | 880, as 144 / 184 / 184 / 184 / 184 | - |
+
+The page uses **89.8 % of its budget**, so the headroom is about 9.2 KB.
+That confirms this plan's own warning rather than relieving it: the same grid
+with every cell reading `matches_baseline` measures 88.0 KiB of grid alone, so
+the first phase that populates the grid crosses the cap.
+The documented lever is one page per stage at `/stage/<id>/`, which cuts
+`index.html` to 184 cells, and it is taken in Phase 4 when it is measured again.
+
+The a11y and link gates ran for the first time in this repository's history and
+both did real work rather than passing vacuously: pa11y-ci reported `0 errors`
+on `1/1 URLs` for each theme, and lychee checked 32 links with 0 errors once it
+was given `--root-dir`, which it needs to resolve this page's root-relative
+asset links at all.
+
+### What the real grid settled, and what it did not
+
+Open decision 3, the twelve cells already optimal at CTS, **stays open.**
+A real grid cannot yet show the problem, because with no submissions every live
+cell renders `no_entry` or `saturated`, so the twelve are currently
+indistinguishable from any other empty cell.
+They become permanently `baseline_leads` on the first day an entry exists, which
+is Phase 4 and not this phase.
+
+What the grid did settle is that the treatment a ruling would reach for already
+works.
+At `global_route` the saturated cells read clearly through the glyph channel and
+the fill, including the 16 `tpr`/`tnr` cells sitting at `100.00 %`, which the
+stage rule types correctly and a numeric near-zero test would have missed.
+So extending saturation to the twelve is a one-line registry change with a
+rendering path that is already proven, not new work.
+
+Note for whoever rules: this document's decision table says decision 3 gates
+Phase 3, and `docs/DATA_CONTRACT.md` says Phase 6 needs it.
+Both were written before the grid existed and neither is obviously right, since
+the cells only misrender once entries land.
+That disagreement is left as-is rather than quietly resolved here.
+
 ### Review prompt
 
 ```
