@@ -100,6 +100,7 @@ def _render_matrix(env: Environment, out: Path) -> None:
             panels=matrix.panels(),
             pdks=reg.pdks(),
             columns=matrix.column_count(),
+            legend=matrix.legend(),
         ),
         encoding="utf-8",
     )

@@ -222,3 +222,85 @@ def test_no_cell_renders_a_python_repr_or_a_non_number(index_html: str) -> None:
     for token in ("None", "nan", "NaN", "undefined", "null", "Undefined"):
         assert token not in index_html
     assert '<td class="state-no_entry"></td>' not in index_html
+
+
+CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "base.css"
+GLYPH_RE = re.compile(r"\.state-([a-z_]+)::before\s*\{[^}]*content:\s*\"([^\"]*)\"")
+
+
+def test_every_state_has_a_glyph_and_no_two_states_share_one() -> None:
+    """Four states distinguishable WITHOUT colour. If two states share a glyph,
+    the second channel is decorative and a colourblind reader is back to one."""
+    glyphs = dict(GLYPH_RE.findall(CSS.read_text(encoding="utf-8")))
+    assert len(glyphs) == 5, glyphs
+    assert len(set(glyphs.values())) == 5, glyphs
+    assert set(glyphs) == {
+        "beats_baseline",
+        "matches_baseline",
+        "baseline_leads",
+        matrix.NO_ENTRY,
+        matrix.SATURATED,
+    }
+
+
+def test_the_glyph_colour_comes_from_the_state_key_variable() -> None:
+    """The --state-*-key values are the shared palette. A glyph painted with the
+    ink colour instead would drift from the legend."""
+    css = CSS.read_text(encoding="utf-8")
+    for key in ("beats", "matches", "leads", "none", "saturated"):
+        assert f"var(--state-{key}-key)" in css
+
+
+def test_saturated_degenerate_and_sentinel_are_three_distinct_treatments(
+    index_html: str,
+) -> None:
+    """The three cases are easy to conflate into one grey cell, and conflating
+    them tells a reader that an unmeasurable baseline and a perfect one are the
+    same thing."""
+    assert 'data-baseline="degenerate"' in index_html
+    assert 'data-baseline="sentinel"' in index_html
+    assert index_html.count('data-baseline="degenerate"') == 24
+    assert index_html.count('data-baseline="sentinel"') == 32
+    css = CSS.read_text(encoding="utf-8")
+    assert '[data-baseline="degenerate"]' in css
+    assert '[data-baseline="sentinel"]' in css
+
+
+def test_the_baseline_case_rules_outrank_the_base_cell_border() -> None:
+    """A selector that is present but loses the cascade renders nothing.
+
+    `.panel tbody td` sets `border: 1px solid var(--border)` at specificity
+    0-1-2, so a bare `td[data-baseline="sentinel"]` rule at 0-1-1 is overridden
+    and the sentinel's left marker never appears. Verified in Chrome against the
+    built page: computed border-left was `1px rgb(200, 210, 222)`, byte for byte
+    what a plain cell gets. Asserting the selector string alone cannot see that,
+    so this pins the qualified form.
+    """
+    css = CSS.read_text(encoding="utf-8")
+    for case in (matrix.DEGENERATE, matrix.SENTINEL):
+        assert f'.panel tbody td[data-baseline="{case}"]' in css
+
+
+def test_no_sentinel_cell_prints_a_bare_number(index_html: str) -> None:
+    """Every sentinel keeps its comparator all the way to the page."""
+    sentinels = re.findall(
+        r'<td class="state-\w+" data-baseline="sentinel">([^<]*)<', index_html
+    )
+    assert len(sentinels) == 32
+    assert all(text.startswith((">", "&gt;", "<", "&lt;")) for text in sentinels)
+
+
+def test_every_degenerate_cell_prints_the_marker(index_html: str) -> None:
+    degenerate = re.findall(
+        r'<td class="state-\w+" data-baseline="degenerate">([^<]*)<', index_html
+    )
+    assert len(degenerate) == 24
+    assert set(degenerate) == {matrix.DEGENERATE_MARKER}
+
+
+def test_the_legend_names_every_state_and_both_baseline_cases() -> None:
+    ids = [item.id for item in matrix.legend()]
+    assert len(ids) == len(set(ids))
+    assert matrix.SATURATED in ids
+    assert matrix.DEGENERATE in ids
+    assert matrix.SENTINEL in ids

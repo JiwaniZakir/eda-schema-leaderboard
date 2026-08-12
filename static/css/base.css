@@ -47,3 +47,108 @@ a:visited { color: var(--link-visited); }
   white-space: nowrap;
   border: 0;
 }
+
+/* ---- the grid ---- */
+
+.panel { overflow-x: auto; padding: 0 1rem 1.5rem; }
+.panel table { border-collapse: collapse; width: 100%; }
+.panel caption { text-align: left; padding: 0.6rem 0; font-size: 1.1rem; }
+
+.panel thead th {
+  position: sticky;
+  top: 0;
+  background: var(--table-header-bg);
+  color: var(--table-header-ink);
+  padding: var(--table-header-pad);
+  text-align: right;
+}
+.panel thead th:first-child, .panel thead th:nth-child(2) { text-align: left; }
+
+.panel tbody th {
+  text-align: left;
+  padding: var(--table-cell-pad);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  border-block-end: 1px solid var(--border);
+  vertical-align: top;
+}
+.panel tbody th[scope="rowgroup"] { background: var(--table-row-alt); }
+
+.panel tbody td {
+  padding: var(--table-cell-pad);
+  text-align: right;
+  border: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.void-note td {
+  padding: var(--table-cell-pad);
+  color: var(--text-muted);
+  border-inline-start: 4px solid var(--void-ink);
+  text-align: left;
+  white-space: normal;
+}
+
+/* ---- the four data states, plus saturated ----
+ *
+ * Two channels, always. The background carries the colour and the ::before
+ * glyph carries the shape, because a colourblind reader loses the first and a
+ * high contrast mode strips it entirely. The glyph is generated rather than
+ * written into the markup: 880 inline spans would cost 8 KiB of an 88 KB page.
+ */
+
+/* The legend swatch carries the same class as the cells it explains, so it
+   inherits the same glyph. It has to inherit the same spacing too, or the
+   swatch reads as one word: "-No entry". */
+.panel tbody td::before, .legend dt::before {
+  margin-inline-end: 0.4em;
+  font-weight: 700;
+  speak: never;
+}
+
+.state-beats_baseline { background: var(--state-beats-bg); color: var(--state-beats-ink); }
+.state-beats_baseline::before { content: "\25B2"; color: var(--state-beats-key); }
+
+.state-matches_baseline { background: var(--state-matches-bg); color: var(--state-matches-ink); }
+.state-matches_baseline::before { content: "\003D"; color: var(--state-matches-key); }
+
+.state-baseline_leads { background: var(--state-leads-bg); color: var(--state-leads-ink); }
+.state-baseline_leads::before { content: "\25BC"; color: var(--state-leads-key); }
+
+.state-no_entry { background: var(--state-none-bg); color: var(--state-none-ink); }
+.state-no_entry::before { content: "\00B7"; color: var(--state-none-key); }
+
+.state-saturated { background: var(--state-saturated-bg); color: var(--state-saturated-ink); }
+.state-saturated::before { content: "\25C6"; color: var(--state-saturated-key); }
+
+/* ---- the two baseline cases that are NOT states ----
+ *
+ * Orthogonal to the state above, and rendered through a different channel on
+ * purpose. A degenerate cell has no baseline to compare against; a sentinel has
+ * a threshold instead of a value. Neither is a verdict about a submission.
+ *
+ * Both are qualified with `.panel tbody` to outrank the `border` shorthand on
+ * `.panel tbody td` above. Unqualified, the sentinel's marker is a rule that
+ * exists and never paints, which is the failure that looks exactly like a rule
+ * nobody wrote.
+ */
+
+.panel tbody td[data-baseline="degenerate"] {
+  outline: 2px dotted var(--void-ink);
+  outline-offset: -3px;
+  font-style: italic;
+}
+
+.panel tbody td[data-baseline="sentinel"] {
+  font-family: var(--font-mono);
+  border-inline-start: 3px solid var(--border-strong);
+}
+
+/* ---- legend ---- */
+
+.legend { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0 1rem 1rem; margin: 0; }
+.legend div { display: flex; gap: 0.4rem; align-items: baseline; }
+.legend dt { padding: 0.1rem 0.5rem; border: 1px solid var(--border); }
+.legend dd { margin: 0; color: var(--text-muted); }

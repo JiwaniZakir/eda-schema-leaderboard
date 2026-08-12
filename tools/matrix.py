@@ -211,3 +211,42 @@ def panels() -> tuple[Panel, ...]:
             )
         )
     return tuple(built)
+
+
+@dataclass(frozen=True, slots=True)
+class LegendItem:
+    """One legend row. `id` doubles as the class the swatch carries, so the
+    swatch is painted by the same rule as the cells it explains and the two
+    cannot drift."""
+
+    id: str
+    label: str
+    explanation: str
+
+
+@cache
+def legend() -> tuple[LegendItem, ...]:
+    return (
+        LegendItem(
+            NO_ENTRY, STATE_LABELS[NO_ENTRY], "No submission for this cell yet."
+        ),
+        LegendItem(
+            SATURATED,
+            STATE_LABELS[SATURATED],
+            "The tool estimate already matches the detailed route value, so this"
+            " cell can be tied but not beaten and is never ranked.",
+        ),
+        LegendItem(
+            DEGENERATE,
+            DEGENERATE_MARKER,
+            "The paper reports no positive or negative error, n_p = n_n = 0."
+            " That is a 0/0 rather than a value of zero, so there is no baseline"
+            " to compare against.",
+        ),
+        LegendItem(
+            SENTINEL,
+            "> or <",
+            "The paper published a threshold rather than a value, so the true"
+            " number is not recoverable from any source we have.",
+        ),
+    )
