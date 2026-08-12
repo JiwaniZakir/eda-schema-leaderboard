@@ -6,13 +6,37 @@ Where the baseline numbers come from, and what may be published.
 
 `table8_baseline.csv` is Table 8 of arXiv:2605.06952 parsed into 920 tidy rows,
 one per `(task, metric, stage_transition, pdk)`.
-`kind` is `VAL` for a published value or `VOID` for a cell the paper leaves
-deliberately empty.
+
+`kind` takes **three** values, and the distinction is load-bearing rather than
+cosmetic:
+
+| `kind` | Count | Meaning |
+|---|---|---|
+| `VAL` | 856 | a published value, or one of the 32 one-sided sentinel bounds |
+| `VOID` | 40 | the cell does not exist; no placement, so no wirelength estimate |
+| `DEGENERATE` | 24 | the cell exists but the baseline is a 0/0, never measured |
+
+`VOID` subtracts from the live cell count and `DEGENERATE` does not, which is why
+920 - 40 = 880 live and only 856 of those carry a number. Collapsing the two into
+one kind yields 856 live cells and fails Phase 1's gate.
+
 `src_line` is the line in the source LaTeX table the value came from, so any cell
 can be traced back.
 
-This file holds measurements, which are facts rather than authored expression, and
-it is the only thing under `docs/` the build reads.
+`table2_circuits.csv` is Table 2's circuit attributes, 18 rows of
+`circuit,inputs,outputs,registers`.
+`pdk_physical.csv` is the metal routing layer count per PDK, from Section 4.1.
+
+Both were added on 2026-08-11 to close a real gap. `PLAN.md` promised that
+circuits and metal layers were "cross-checked against `docs/sources/`", but the
+only file here was `table8_baseline.csv`, which contains neither. The tests were
+therefore asserting against literals copied into the test file, so a transposed
+digit would propagate into the registry and the test together and stay green
+permanently. These two files make that cross-check real, and unlike `verbatim/`
+they survive into CI and a fresh clone.
+
+All three files hold measurements, which are facts rather than authored
+expression, and they are the only things under `docs/` the build reads.
 
 ## What is deliberately not here
 
