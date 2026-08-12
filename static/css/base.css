@@ -162,9 +162,29 @@ a:visited { color: var(--link-visited); }
 
 /* ---- legend ---- */
 
-.legend { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0 1rem 1rem; margin: 0; }
-.legend div { display: flex; gap: 0.4rem; align-items: baseline; }
-.legend dt { padding: 0.1rem 0.5rem; border: 1px solid var(--border); }
+/* Two columns, one row per term, rather than a wrapping flex row.
+   The legend is the key to reading all 880 cells, so it has to be scannable.
+   Flowing it inline packed two terms onto the first line and one onto each of
+   the next two, purely by where the long descriptions happened to wrap, which
+   left the markers unaligned and the whole block reading as prose.
+   `display: contents` on the wrapper lets each dt and dd join the parent grid
+   directly, so the markers line up in their own column while the dl > div > dt
+   + dd structure a screen reader walks is untouched. */
+.legend {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.5rem 0.75rem;
+  padding: 0 1rem 1rem;
+  margin: 0;
+  align-items: baseline;
+}
+.legend div { display: contents; }
+.legend dt {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border);
+  justify-self: start;
+  white-space: nowrap;
+}
 .legend dd { margin: 0; color: var(--text-muted); }
 
 /* ---- the stage strip ---- */
