@@ -1,0 +1,70 @@
+[
+  {
+    "id": "floorplan",
+    "label": "Floorplan",
+    "table8_label": "floorplan to detailed route",
+    "order": 1,
+    "void_tasks": [
+      "total_wirelength_prediction",
+      "interconnect_length_prediction"
+    ],
+    "saturated_tasks": [],
+    "degenerate_tasks": [],
+    "degenerate_metrics": []
+  },
+  {
+    "id": "global_place",
+    "label": "Global Place",
+    "table8_label": "global place to detailed route",
+    "order": 2,
+    "void_tasks": [],
+    "saturated_tasks": [],
+    "degenerate_tasks": [],
+    "degenerate_metrics": []
+  },
+  {
+    "id": "detailed_place",
+    "label": "Detailed Place",
+    "table8_label": "detailed place to detailed route",
+    "order": 3,
+    "void_tasks": [],
+    "saturated_tasks": [],
+    "degenerate_tasks": [],
+    "degenerate_metrics": []
+  },
+  {
+    "id": "cts",
+    "label": "CTS",
+    "table8_label": "CTS to detailed route",
+    "order": 4,
+    "void_tasks": [],
+    "saturated_tasks": [],
+    "degenerate_tasks": [],
+    "degenerate_metrics": []
+  },
+  {
+    "id": "global_route",
+    "label": "Global Route",
+    "table8_label": "global route to detailed route",
+    "order": 5,
+    "void_tasks": [],
+    "saturated_tasks": [
+      "total_area_prediction",
+      "total_power_prediction",
+      "worst_arrival_time_prediction",
+      "worst_slack_prediction",
+      "total_negative_slack_prediction",
+      "timing_path_arrival_time_prediction",
+      "timing_path_slack_prediction",
+      "net_arc_delay_prediction",
+      "cell_arc_delay_prediction",
+      "cell_arc_slew_prediction"
+    ],
+    "degenerate_tasks": [
+      "worst_slack_prediction",
+      "total_negative_slack_prediction",
+      "timing_path_slack_prediction"
+    ],
+    "degenerate_metrics": ["mpe", "mne"]
+  }
+]

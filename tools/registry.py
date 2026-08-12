@@ -38,6 +38,29 @@ class Metric:
     precision: int
 
 
+@dataclass(frozen=True, slots=True)
+class Pdk:
+    id: str
+    label: str
+    long_label: str
+    table8_label: str
+    metal_layers: int
+    utilization: float
+    utilization_sweep: tuple[float, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class Stage:
+    id: str
+    label: str
+    table8_label: str
+    order: int
+    void_tasks: tuple[str, ...]
+    saturated_tasks: tuple[str, ...]
+    degenerate_tasks: tuple[str, ...]
+    degenerate_metrics: tuple[str, ...]
+
+
 @cache
 def _load(name: str) -> tuple[dict[str, Any], ...]:
     """Read one registry file. Cached, so the JSON is parsed once per process."""
@@ -70,3 +93,58 @@ def metric(metric_id: str) -> Metric:
         return _metric_index()[metric_id]
     except KeyError:
         raise KeyError(f"unknown metric {metric_id!r}") from None
+
+
+@cache
+def pdks() -> tuple[Pdk, ...]:
+    return tuple(
+        Pdk(**{**row, "utilization_sweep": tuple(row["utilization_sweep"])})
+        for row in _load("pdks")
+    )
+
+
+@cache
+def stages() -> tuple[Stage, ...]:
+    """Always returned in `order`. Callers render the stage strip straight from
+    this, so the sequence is part of the contract."""
+    rows = [
+        Stage(
+            **{
+                **row,
+                "void_tasks": tuple(row["void_tasks"]),
+                "saturated_tasks": tuple(row["saturated_tasks"]),
+                "degenerate_tasks": tuple(row["degenerate_tasks"]),
+                "degenerate_metrics": tuple(row["degenerate_metrics"]),
+            }
+        )
+        for row in _load("stages")
+    ]
+    return tuple(sorted(rows, key=lambda s: s.order))
+
+
+@cache
+def _pdk_index() -> dict[str, Pdk]:
+    return {p.id: p for p in pdks()}
+
+
+@cache
+def _stage_index() -> dict[str, Stage]:
+    return {s.id: s for s in stages()}
+
+
+def pdk(pdk_id: str) -> Pdk:
+    """Look up one PDK. Raises KeyError on an unknown id: results-tree directory
+    names are uppercase and must be normalized before they reach here."""
+    try:
+        return _pdk_index()[pdk_id]
+    except KeyError:
+        raise KeyError(f"unknown pdk {pdk_id!r}") from None
+
+
+def stage(stage_id: str) -> Stage:
+    """Look up one stage. Raises KeyError on an unknown id: three stage ids
+    contain underscores, so a split-based path parse lands here with junk."""
+    try:
+        return _stage_index()[stage_id]
+    except KeyError:
+        raise KeyError(f"unknown stage {stage_id!r}") from None
