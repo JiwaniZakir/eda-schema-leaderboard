@@ -16,7 +16,7 @@ the question.
 
 For each hit:
 
-```
+```text
 path/to/file.py:123
     the two or three lines that actually answer the question
 ```

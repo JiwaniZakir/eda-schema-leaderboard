@@ -103,14 +103,25 @@ jobs:
             mcp__github_inline_comment__create_inline_comment for specific lines.
             Post findings as GitHub comments; do not return them as chat text.
 
-          # The tool allowlist is what actually makes this review-only, and it is
-          # load-bearing for a reason that is easy to miss: the job's
-          # `permissions:` block scopes GITHUB_TOKEN, but by default the action
-          # does not use GITHUB_TOKEN. It mints a Claude GitHub App installation
-          # token whose scope is set server-side and includes contents:write.
-          # So `contents: read` above does NOT by itself stop Claude from
-          # committing. Restricting the tools does. No Edit, no Write, no
-          # Bash(git:*), no `gh pr create`.
+          # Tool restriction is what actually makes this review-only, because the
+          # job's `permissions:` block does not constrain Claude: by default the
+          # action does not use GITHUB_TOKEN at all. It mints a Claude GitHub App
+          # installation token whose scope is set server-side and includes
+          # contents:write. `contents: read` above does NOT stop Claude
+          # committing.
+          #
+          # Both flags, not just the allowlist. --allowedTools only PRE-APPROVES;
+          # tools left off it are still available and fall through to the
+          # permission mode. In headless mode that fallthrough currently denies,
+          # so an allowlist alone happens to work - but it is an implicit
+          # behaviour of the runner, not a stated guarantee, and it is one
+          # default change away from silently granting Edit and Write on a
+          # workflow that reviews pull requests.
+          #
+          # --disallowedTools takes precedence and cannot be overridden by any
+          # other permission rule, so the denial is explicit and order-independent.
           claude_args: >-
             --allowedTools
-            "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Read,Grep,Glob"
+            --disallowedTools
+            "Edit,Write,NotebookEdit,Bash(git:*),Bash(gh pr create:*),Bash(gh pr merge:*),Bash(gh pr close:*),Bash(gh workflow:*),Bash(gh secret:*),Bash(gh api:*)"

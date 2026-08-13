@@ -90,11 +90,18 @@ jobs:
             pull request - print the PR creation link and stop. A human decides
             whether this reaches main.
 
-          # Editing and committing are allowed; opening a PR is not, which is the
-          # human-in-the-loop step PLAN.md asks for. Note that `contents: write`
-          # above does not by itself constrain the action - by default it mints a
-          # GitHub App token whose scope is set server-side - so as with
-          # claude-review, this allowlist is the real control.
+          # Editing and committing are allowed here, deliberately - that is the
+          # job. Opening a pull request is not, which is the human-in-the-loop
+          # step PLAN.md asks for.
+          #
+          # That prohibition is stated with --disallowedTools rather than left to
+          # the allowlist's omission. --allowedTools only pre-approves; anything
+          # absent from it still falls through to the permission mode, so "not
+          # listed" is not the same as "denied". --disallowedTools takes
+          # precedence and cannot be overridden. On a job holding contents:write,
+          # the difference between those two is the whole human-in-the-loop step.
           claude_args: >-
             --allowedTools
-            "Read,Grep,Glob,Edit,Write,Bash(make check),Bash(uv run:*),Bash(git add:*),Bash(git commit:*),Bash(git checkout -b:*),Bash(git push origin:*)"
+            "Read,Grep,Glob,Edit,Write,Bash(make check),Bash(uv run:*),Bash(git add:*),Bash(git commit:*),Bash(git checkout -b:*),Bash(git push origin:*),Bash(git status),Bash(git diff:*)"
+            --disallowedTools
+            "Bash(gh pr create:*),Bash(gh pr merge:*),Bash(gh api:*),Bash(gh workflow:*),Bash(gh secret:*),Bash(gh release:*),Bash(git push --force:*),Bash(git push origin main:*),Bash(curl:*),Bash(wget:*)"

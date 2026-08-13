@@ -39,11 +39,14 @@ Exactly these, and each exactly once:
   `baseline_state: "degenerate"`. A degenerate cell rendered as a baseline of
   0.0 means a model can "beat" a baseline that was never measured. Check this
   specifically.
-- **Saturation is a stage/task rule, never a numeric test.** `global_route`,
-  minus the two wirelength tasks, minus the degenerate cells, is exactly 120
-  cells. A predicate like `mae==0 and mape==0 and r2==1` catches only 5 of the
-  10 saturated tasks, because the other five publish no MAPE row, no R2 row, or
+- **Saturation means the baseline is at the optimum, and is a stage/task rule,
+  never a numeric test.** Do not restate it as "error is approximately zero":
+  eight of these cells are `tpr`/`tnr` at 100%, where that test is false. A
+  predicate like `mae==0 and mape==0 and r2==1` identifies only 5 of the 10
+  saturated tasks, because the other five publish no MAPE row, no R2 row, or
   neither. If you find saturation inferred numerically, that is a finding.
+  Degeneracy takes precedence over saturation; reversing the two still yields
+  880 live cells and 232 live combos, so the totals will not catch it for you.
 
 ## Sources that must never be read
 

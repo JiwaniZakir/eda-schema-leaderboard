@@ -36,12 +36,27 @@ cells, so `matches_baseline` is a real state. Code that collapses it into
 
 - **Void** means the combination cannot exist. 8 combos, from HPWL needing a
   placement that does not exist at floorplan.
-- **Saturated** means the baseline error is approximately zero, so ranking is
-  meaningless. This is a **stage/task rule, never a numeric test**:
-  `global_route`, minus the two wirelength tasks, minus the degenerate cells,
-  is exactly 120. A predicate like `mae==0 and mape==0 and r2==1` catches only 5
-  of the 10 saturated tasks, because the other five publish no MAPE row, no R2
-  row, or neither. If saturation is inferred numerically anywhere, report it.
+- **Saturated** means the baseline is already **at the optimum**, so the cell is
+  unwinnable. Note this is not the same as "error is approximately zero": eight
+  of these cells are `tpr`/`tnr` sitting at 100%, where an error-zero test is
+  simply false. Use the registry's wording, in `is_saturated`.
+
+  It is a **stage/task rule, never a numeric test**. A predicate like
+  `mae==0 and mape==0 and r2==1` identifies only 5 of the 10 saturated tasks,
+  because the other five publish no MAPE row, no R2 row, or neither. If
+  saturation is inferred numerically anywhere, report it.
+
+  Saturation is enumerated **positively** in `stages.json`, not as "everything
+  except the two wirelength tasks". The negative form matches the paper's prose,
+  which is exactly why it is a trap: a thirteenth task added later would inherit
+  saturation silently and be permanently unrankable with nothing raising an
+  error. If you see the negative form anywhere, that is a finding.
+
+  **Degeneracy wins over saturation**, and the precedence carries real
+  consequence. Reversed, it yields 144 saturated and 0 degenerate while still
+  producing 880 live cells and 232 live combos - so the phase gate passes green
+  with 24 cells mis-typed. Check the ordering explicitly rather than trusting the
+  totals.
 - **Degenerate** means the baseline was never measured. `baseline_value: null`,
   `baseline_state: "degenerate"`. Nothing can win against it.
 

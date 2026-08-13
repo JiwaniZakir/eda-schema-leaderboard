@@ -10,9 +10,19 @@ You measure. You do not speculate about performance.
 Build if `dist/` is absent, then report actual numbers:
 
 ```bash
-du -sh dist/
+# -sb, not -sh. Rounded disk usage makes the 1 GB percentage wrong, and
+# apparent size is what Pages actually counts.
+du -sb dist/
 find dist -type f -printf '%s\t%p\n' | sort -rn | head -20
 find dist -name '*.html' -printf '%s\t%p\n' | sort -rn | head -10
+
+# Committed files against the 1 MB cap. Separate from dist/, and the one that
+# catches a checkpoint or PNG going in by mistake.
+git ls-files -z | xargs -0 -r -n1 stat -c '%s\t%n' | awk '$1 > 1048576'
+
+# Time it explicitly. "Felt fast" is not a measurement, and the 60 s budget
+# exists because Pages deploys time out at 10 minutes.
+/usr/bin/time -f '%e s' make build
 ```
 
 ## The caps

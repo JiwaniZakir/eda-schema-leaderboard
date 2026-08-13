@@ -20,8 +20,14 @@ Every cell state must clear 4.5:1 against its own background in both themes.
 Compute the ratio, do not estimate it from the hex values looking different.
 Report the measured number.
 
-The four-state data palette is colorblind-safe and shared across themes. Verify
-it is actually shared rather than redefined per theme.
+The data palette is colorblind-safe and shared across themes. Verify it is
+actually shared rather than redefined per theme.
+
+It must cover all five states. `saturated` is the one most likely to have been
+left out, because it is never ranked and never colored win or loss - but "not
+colored win or loss" still means it needs a distinguishable, contrast-passing
+treatment of its own. A palette described as four-state has either forgotten
+`saturated` or forgotten `matches_baseline`; establish which, and report it.
 
 ## State must survive the loss of color
 
