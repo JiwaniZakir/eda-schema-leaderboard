@@ -8,6 +8,10 @@ license = { text = "MIT" }
 dependencies = [
     "jinja2>=3.1.6",
     "jsonschema>=4.23",
+    # Imported directly by tools/submissions.py to resolve the submission ->
+    # cell $ref from disk. It arrives transitively with jsonschema anyway, but a
+    # direct import on an undeclared dependency breaks the day that changes.
+    "referencing>=0.35",
     "pyyaml>=6.0.2",
 ]
 

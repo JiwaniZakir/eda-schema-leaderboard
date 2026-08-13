@@ -60,7 +60,11 @@ def test_validate_passes_on_current_data() -> None:
 def test_validate_main_fails_loudly_on_empty_registry(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     """An empty registry is a failure, not a pass."""
     monkeypatch.setattr(validate_mod, "CHECKS", {})
-    assert validate_mod.main() == 1
+    # Pass an explicit empty argv. main() now parses arguments, and with no
+    # argument it reads sys.argv - which under pytest is pytest's own flags, so
+    # a bare main() here dies on "unrecognized arguments: -q" rather than
+    # testing what it means to test.
+    assert validate_mod.main([]) == 1
 
 
 def test_docs_referenced_by_readme_exist() -> None:

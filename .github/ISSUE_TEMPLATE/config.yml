@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Submit a model to the leaderboard
+    url: https://github.com/JiwaniZakir/eda-schema-experiments
+    about: Submissions are pull requests against the experiments repo, not issues here.
+
+  - name: Report a security vulnerability
+    url: https://github.com/JiwaniZakir/eda-schema-leaderboard/security/advisories/new
+    about: Please report privately rather than in a public issue.
+
+  - name: Ask a question about the dataset or the paper
+    url: https://arxiv.org/abs/2605.06952
+    about: Questions about EDA-Schema-V2 itself belong with the dataset authors.

@@ -11,8 +11,72 @@ env:
   MAX_DIST_MB: 200
   MAX_FILE_MB: 1
 
+# Two jobs, because they answer different questions and must be able to fail
+# independently.
+#
+# `size` asks what the PR adds to git. `dist-size` asks what the build emits.
+# They were one job, in which the build ran first. That ordering meant a broken
+# build failed the job before the file-size check ever executed, while still
+# reporting exactly what a working guard reports: a red X on `size`. It happened
+# on phase-1/registries and phase-2/baseline, where build.py was absent and the
+# guard reported failure having measured nothing.
+#
+# So: `size` does no dependency install and no build. It cannot be masked by
+# anything upstream of the assertion it exists to make. A guard whose red can be
+# caused by something other than the condition it checks is not a guard.
+#
+# The job name `size` is load-bearing - it is a required status check on main.
+# Renaming it silently voids that branch protection rule.
 jobs:
   size:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check committed file sizes
+        run: |
+          # Checks what the PR actually adds to git, not what the build emits.
+          #
+          # -z is load-bearing. Plain `git ls-files` quotes any path containing
+          # non-ASCII, newlines, quotes or backslashes (core.quotePath is on by
+          # default), and the quoted string then fails `[ -f ]` and gets skipped
+          # silently. An over-cap file named `café.ckpt` sailed past this guard.
+          # With -z git emits raw paths, NUL-separated.
+          # Listed into a file first, rather than piped straight from a process
+          # substitution. Process substitution does not propagate its exit status,
+          # so a failing `git ls-files` would just yield an empty loop and read as
+          # a clean scan. Here `set -e` catches the failure at the redirect.
+          git ls-files -z > /tmp/tracked.z
+
+          fail=0
+          limit=$((MAX_FILE_MB * 1024 * 1024))
+          seen=0
+          while IFS= read -r -d '' f; do
+            seen=$((seen + 1))
+            [ -f "$f" ] || continue
+            bytes=$(wc -c < "$f")
+            if [ "$bytes" -gt "$limit" ]; then
+              echo "::error file=$f::$f is $((bytes / 1048576)) MB, over the ${MAX_FILE_MB} MB cap"
+              fail=1
+            fi
+          done < /tmp/tracked.z
+          echo "checked $seen tracked files against the ${MAX_FILE_MB} MB cap"
+
+          # A scan that walked zero files is a broken scan, not a clean repo.
+          # Without this, a checkout failure or a bad working directory reads as
+          # a pass. Same reasoning as tools/validate.py refusing an empty check
+          # registry: never report success for work that did not happen.
+          if [ "$seen" -eq 0 ]; then
+            echo "::error::no tracked files were scanned; the guard did not run"
+            exit 1
+          fi
+          exit $fail
+
+  dist-size:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,32 +94,12 @@ jobs:
       - name: Build
         run: uv run python build.py
 
-      - name: Check committed file sizes
-        run: |
-          # Checks what the PR actually adds to git, not what the build emits.
-          #
-          # -z is load-bearing. Plain `git ls-files` quotes any path containing
-          # non-ASCII, newlines, quotes or backslashes (core.quotePath is on by
-          # default), and the quoted string then fails `[ -f ]` and gets skipped
-          # silently. An over-cap file named `café.ckpt` sailed past this guard.
-          # With -z git emits raw paths, NUL-separated.
-          fail=0
-          limit=$((MAX_FILE_MB * 1024 * 1024))
-          seen=0
-          while IFS= read -r -d '' f; do
-            seen=$((seen + 1))
-            [ -f "$f" ] || continue
-            bytes=$(wc -c < "$f")
-            if [ "$bytes" -gt "$limit" ]; then
-              echo "::error file=$f::$f is $((bytes / 1048576)) MB, over the ${MAX_FILE_MB} MB cap"
-              fail=1
-            fi
-          done < <(git ls-files -z)
-          echo "checked $seen tracked files against the ${MAX_FILE_MB} MB cap"
-          exit $fail
-
       - name: Check dist size
         run: |
+          if [ ! -d dist ]; then
+            echo "::error::build produced no dist/ directory"
+            exit 1
+          fi
           mb=$(du -sm dist | cut -f1)
           echo "dist/ is ${mb} MB (cap ${MAX_DIST_MB} MB)"
           if [ "$mb" -gt "$MAX_DIST_MB" ]; then

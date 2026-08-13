@@ -9,6 +9,12 @@ on:
 
 permissions: {}
 
+# The `analyze` job holds `security-events: write`, so its actions are pinned to
+# commit SHAs rather than floating tags, on the same reasoning deploy.yml gives:
+# a retagged upstream reaches a job that can write to this repo's security
+# surface. `detect` is contents:read and could float, but pinning the whole file
+# keeps the rule "any workflow with a write scope is pinned" checkable by eye.
+# Dependabot updates SHA pins, so this costs nothing to maintain.
 jobs:
   # CodeQL hard-errors with "could not process any code" when a language has no
   # source, and there is no JavaScript until Phase 6 adds static/js/. Detecting
@@ -21,7 +27,7 @@ jobs:
     outputs:
       languages: ${{ steps.pick.outputs.languages }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 
@@ -45,15 +51,15 @@ jobs:
       matrix:
         language: ${{ fromJSON(needs.detect.outputs.languages) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
 
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
         with:
           category: /language:${{ matrix.language }}

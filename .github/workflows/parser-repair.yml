@@ -1,0 +1,107 @@
+name: parser-repair
+
+# Maintainer-triggered only. Never on an event an outsider can cause.
+on:
+  workflow_dispatch:
+    inputs:
+      failure:
+        description: "Link to the failing validate-submission run, or the submission path"
+        required: true
+        type: string
+      notes:
+        description: "What the parser got wrong, if you already know"
+        required: false
+        type: string
+
+permissions: {}
+
+# TWO DELIBERATE DEVIATIONS FROM PLAN.md. Both are security-driven.
+#
+# 1. PLAN.md lists this under "Experiments repo workflows". It lives here instead,
+#    because the parser it repairs - tools/ingest.py - is in THIS repository. Put
+#    in the experiments repo it would need a cross-repo token with contents:write
+#    on the site repo, which is a second long-lived credential with write access
+#    to the published leaderboard. Running it where the code already is means the
+#    job's own GITHUB_TOKEN suffices and no new credential exists.
+#
+# 2. PLAN.md triggers it "on validate-submission failure", which would be a
+#    workflow_run trigger. That cannot work for the case it exists to serve.
+#    claude-code-action performs actor permission checks on workflow_run events,
+#    checking both the run actor and the actor that started the upstream run. A
+#    fork submitter has no write access, so the action refuses - and a fork
+#    submission is precisely when a parser bug surfaces. The documented
+#    workaround, allowed_non_write_users, is labelled by the action's own docs as
+#    a significant security risk that bypasses its primary control, and it would
+#    hand prompt control over a contents:write job to anyone who can open a PR.
+#
+#    So this is workflow_dispatch: a maintainer reads the failure, decides it is
+#    a parser bug rather than a bad submission, and triggers the repair. That is
+#    the same human-in-the-loop step PLAN.md asks for two paragraphs later, moved
+#    one step earlier. Triggering requires write access, which is the control.
+#
+# The inputs below are maintainer-authored and reach Claude as prompt text. They
+# are never interpolated into a run: block. A maintainer who can dispatch this
+# can already push to a branch, so the trust boundary does not move.
+
+jobs:
+  repair:
+    if: >-
+      vars.ANTHROPIC_FEDERATION_RULE_ID != ''
+      && vars.ANTHROPIC_ORGANIZATION_ID != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@239e3a730883eeb5c53db12b0fc9573b3024b126 # v1
+        with:
+          anthropic_federation_rule_id: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+          anthropic_organization_id: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+          anthropic_service_account_id: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+          prompt: |
+            A submission failed to ingest and a maintainer has judged it a parser
+            bug rather than a bad submission.
+
+            Failing run or path: ${{ inputs.failure }}
+            Maintainer notes: ${{ inputs.notes }}
+
+            Fix the parser so the submission ingests. Constraints that are not
+            negotiable:
+
+            - Nothing is asked of submitters. Do NOT introduce a per-submission
+              metadata file, and do not propose one. If a field seems to need it,
+              derive it or emit null with a badge.
+            - Never add a call to torch.load, yaml.full_load, yaml.UnsafeLoader,
+              or torch.serialization.add_safe_globals. weights_only=True is NOT
+              sufficient here - it rejects all 360 of the lab's own checkpoints.
+              Read tensor shapes through the restricted reader instead.
+            - Stage names contain underscores and PDK directory names are
+              uppercase. Parse against the registry vocabulary, never by
+              splitting on "_".
+            - Add a failing test first, then make it pass.
+
+            Run `make check` and confirm it is green before committing.
+
+            Commit to a new branch named fix/parser-<short-slug>. Do NOT open a
+            pull request - print the PR creation link and stop. A human decides
+            whether this reaches main.
+
+          # Editing and committing are allowed here, deliberately - that is the
+          # job. Opening a pull request is not, which is the human-in-the-loop
+          # step PLAN.md asks for.
+          #
+          # That prohibition is stated with --disallowedTools rather than left to
+          # the allowlist's omission. --allowedTools only pre-approves; anything
+          # absent from it still falls through to the permission mode, so "not
+          # listed" is not the same as "denied". --disallowedTools takes
+          # precedence and cannot be overridden. On a job holding contents:write,
+          # the difference between those two is the whole human-in-the-loop step.
+          claude_args: >-
+            --allowedTools
+            "Read,Grep,Glob,Edit,Write,Bash(make check),Bash(uv run:*),Bash(git add:*),Bash(git commit:*),Bash(git checkout -b:*),Bash(git push origin:*),Bash(git status),Bash(git diff:*)"
+            --disallowedTools
+            "Bash(gh pr create:*),Bash(gh pr merge:*),Bash(gh api:*),Bash(gh workflow:*),Bash(gh secret:*),Bash(gh release:*),Bash(git push --force:*),Bash(git push origin main:*),Bash(curl:*),Bash(wget:*)"

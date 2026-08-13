@@ -173,6 +173,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "jsonschema" },
     { name = "pyyaml" },
+    { name = "referencing" },
 ]
 
 [package.optional-dependencies]
@@ -194,6 +195,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jsonschema", specifier = ">=4.23" },
     { name = "pyyaml", specifier = ">=6.0.2" },
+    { name = "referencing", specifier = ">=0.35" },
     { name = "torch", marker = "extra == 'ingest'", specifier = ">=2.6" },
 ]
 provides-extras = ["ingest"]
