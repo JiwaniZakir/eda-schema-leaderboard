@@ -71,7 +71,7 @@ cleanup() {
     return 0
   fi
   say "Tearing down"
-  local b num left
+  local b num left_branches left_prs
   for slug in "${SLUGS[@]}"; do
     b="${PREFIX}-${slug}"
     num=$(gh pr list -R "$REPO" --head "$b" --state open --json number -q '.[0].number' 2>/dev/null)
@@ -84,11 +84,27 @@ cleanup() {
 
   # Verify, do not assume. The script's own thesis applied to itself: state what
   # is actually left, so a silent no-op cannot pass for work done.
-  left=$(gh api "repos/$REPO/branches" --jq "[.[].name | select(startswith(\"$PREFIX\"))] | length" 2>/dev/null)
-  if [ "${left:-unknown}" = "0" ]; then
-    echo "  verified: no ${PREFIX}-* branches remain"
+  #
+  # Both branches AND pull requests, because checking only branches verifies the
+  # wrong thing. If `gh pr close` fails, the `git push --delete` fallback above
+  # still removes the branch - so a branches-only check counts zero and prints
+  # "verified" while a negative-test pull request is still open. It happens to
+  # work today because deleting a head branch makes GitHub auto-close its PR, but
+  # that is an implicit side effect, and leaning on it is how the last two bugs
+  # in this teardown got written.
+  left_branches=$(gh api "repos/$REPO/branches" \
+    --jq "[.[].name | select(startswith(\"$PREFIX\"))] | length" 2>/dev/null)
+  left_prs=$(gh pr list -R "$REPO" --state open --json headRefName \
+    --jq "[.[] | select(.headRefName | startswith(\"$PREFIX\"))] | length" 2>/dev/null)
+
+  if [ "${left_branches:-unknown}" = "0" ] && [ "${left_prs:-unknown}" = "0" ]; then
+    echo "  verified: no ${PREFIX}-* branches or open pull requests remain"
   else
-    echo "  WARNING: ${left:-unknown} ${PREFIX}-* branch(es) still present; delete them by hand"
+    echo "  WARNING: ${left_branches:-unknown} branch(es) and ${left_prs:-unknown} open pull request(s) still present; remove them by hand"
+    # A teardown that did not finish must not exit 0. Printing a warning and
+    # returning success is the decorative-guard failure this script exists to
+    # catch, and it would be absurd for the script to commit it.
+    exit 1
   fi
   # The 2 MB blob is now unreferenced and will be garbage collected. It is
   # deliberately never merged, so it does not enter main's history.
