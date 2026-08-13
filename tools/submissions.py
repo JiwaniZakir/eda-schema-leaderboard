@@ -14,6 +14,7 @@ that cannot state what it examined is not evidence.
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -81,6 +82,33 @@ def discover(root: Path) -> list[Path]:
     return sorted(p for p in root.rglob("*") if p.is_file() and p.suffix in SUFFIXES)
 
 
+class NonFiniteNumberError(ValueError):
+    """A record carried NaN or an infinity where a rankable number belongs."""
+
+
+def _reject_non_finite(node: Any, path: str = "(root)") -> None:
+    """Refuse NaN and infinities anywhere in a record.
+
+    Both parsers accept them by default and both are wrong for us. `json.loads`
+    reads the bare literals `NaN`, `Infinity` and `-Infinity` even though none is
+    valid JSON, and YAML 1.1 reads `.nan` and `.inf`. Either produces a float
+    that survives schema validation - JSON Schema's `number` accepts it - and
+    then poisons everything downstream: NaN compares false against every bound,
+    so a cell carrying one sorts unpredictably and can be ranked as a win.
+
+    On a leaderboard other groups cite, a silently unrankable number is worse
+    than a rejected submission.
+    """
+    if isinstance(node, float) and not math.isfinite(node):
+        raise NonFiniteNumberError(f"{path} is {node}, which is not a rankable number")
+    if isinstance(node, dict):
+        for key, value in node.items():
+            _reject_non_finite(value, f"{path}/{key}")
+    elif isinstance(node, list):
+        for i, value in enumerate(node):
+            _reject_non_finite(value, f"{path}/{i}")
+
+
 def _parse(path: Path) -> Any:
     """Read one record. YAML goes through safe_load, never full_load.
 
@@ -94,9 +122,9 @@ def _parse(path: Path) -> Any:
     submission record and never reaches this path.
     """
     text = path.read_text(encoding="utf-8")
-    if path.suffix == ".json":
-        return json.loads(text)
-    return yaml.safe_load(text)
+    record = json.loads(text) if path.suffix == ".json" else yaml.safe_load(text)
+    _reject_non_finite(record)
+    return record
 
 
 def check_submissions(root: Path, *, require_nonempty: bool = False) -> list[Failure]:
@@ -143,6 +171,17 @@ def check_submissions(root: Path, *, require_nonempty: bool = False) -> list[Fai
             failures.append(
                 Failure("submissions", f"{rel}: not safe-loadable YAML: {exc}")
             )
+            continue
+        except NonFiniteNumberError as exc:
+            failures.append(Failure("submissions", f"{rel}: {exc}"))
+            continue
+        except UnicodeDecodeError as exc:
+            # Caught explicitly because it is neither an OSError nor a
+            # JSONDecodeError - it subclasses ValueError - so it would otherwise
+            # escape both handlers below and abort the whole run. One submission
+            # with a stray byte would take every other submission's result with
+            # it, on the code path that exists to handle files we did not write.
+            failures.append(Failure("submissions", f"{rel}: not valid UTF-8: {exc}"))
             continue
         except OSError as exc:
             failures.append(Failure("submissions", f"{rel}: unreadable: {exc}"))

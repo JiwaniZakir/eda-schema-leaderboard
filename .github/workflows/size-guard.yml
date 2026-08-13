@@ -46,6 +46,12 @@ jobs:
           # default), and the quoted string then fails `[ -f ]` and gets skipped
           # silently. An over-cap file named `café.ckpt` sailed past this guard.
           # With -z git emits raw paths, NUL-separated.
+          # Listed into a file first, rather than piped straight from a process
+          # substitution. Process substitution does not propagate its exit status,
+          # so a failing `git ls-files` would just yield an empty loop and read as
+          # a clean scan. Here `set -e` catches the failure at the redirect.
+          git ls-files -z > /tmp/tracked.z
+
           fail=0
           limit=$((MAX_FILE_MB * 1024 * 1024))
           seen=0
@@ -57,7 +63,7 @@ jobs:
               echo "::error file=$f::$f is $((bytes / 1048576)) MB, over the ${MAX_FILE_MB} MB cap"
               fail=1
             fi
-          done < <(git ls-files -z)
+          done < /tmp/tracked.z
           echo "checked $seen tracked files against the ${MAX_FILE_MB} MB cap"
 
           # A scan that walked zero files is a broken scan, not a clean repo.

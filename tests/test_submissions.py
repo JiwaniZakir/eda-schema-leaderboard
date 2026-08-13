@@ -158,6 +158,44 @@ def test_yaml_python_tags_are_refused(tmp_path: Path) -> None:
     assert any("not safe-loadable YAML" in str(f) for f in failures)
 
 
+def test_nan_is_rejected(tmp_path: Path) -> None:
+    """`NaN` is not valid JSON, but json.loads reads it anyway.
+
+    It then survives schema validation, because JSON Schema's `number` accepts
+    it, and poisons ranking: NaN compares false against every bound, so the cell
+    sorts unpredictably and can be recorded as a win. On a leaderboard other
+    groups cite, that is worse than a rejected submission.
+    """
+    _write(tmp_path, "nan.json", '{"schema_version": 1, "value": NaN}')
+    failures = check_submissions(tmp_path)
+    assert failures, "a NaN literal must be rejected"
+    assert any("not a rankable number" in str(f) for f in failures)
+
+
+def test_yaml_infinity_is_rejected(tmp_path: Path) -> None:
+    """YAML 1.1 reads `.inf`, so the same hole exists on the YAML path."""
+    _write(tmp_path, "inf.yaml", "schema_version: 1\nvalue: .inf\n")
+    failures = check_submissions(tmp_path)
+    assert any("not a rankable number" in str(f) for f in failures)
+
+
+def test_invalid_utf8_is_reported_not_raised(tmp_path: Path) -> None:
+    """One bad byte must not abort every other submission's result.
+
+    UnicodeDecodeError subclasses ValueError, not OSError and not
+    JSONDecodeError, so without an explicit handler it escapes both and takes
+    down the whole run - on the code path that exists to handle files we did not
+    write.
+    """
+    (tmp_path / "bad.json").write_bytes(b'{"a": "\xff\xfe"}')
+    _write(tmp_path, "good.json", _record())
+
+    failures = check_submissions(tmp_path)  # must not raise
+    assert any("not valid UTF-8" in str(f) for f in failures)
+    # The valid record was still reached and still passed.
+    assert not any("good.json" in str(f) for f in failures)
+
+
 def test_one_bad_file_does_not_hide_the_others(tmp_path: Path) -> None:
     """Report everything wrong in one run, matching tools.validate's contract."""
     _write(tmp_path, "a.json", _record(division="sideways"))
