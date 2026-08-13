@@ -44,7 +44,18 @@ declare -A EVIDENCE=(
   [validate]="an unpopulated cell must never look rankable"
 )
 
-BRANCHES=()
+# The four cases, named once, so teardown can derive branch names instead of
+# tracking them in a variable.
+#
+# It used to track them in an array appended to inside `open_pr`, which is called
+# as `B=$(open_pr ...)`. Command substitution runs in a subshell, so every append
+# landed in a copy and the parent's array stayed empty. Teardown then looped over
+# nothing, printed its header, and left four pull requests open - reporting a
+# step it had not performed, which is precisely the failure mode this script
+# exists to detect. It was caught by verifying the teardown rather than trusting
+# the header, which is now done below.
+SLUGS=(lint validate size all)
+PREFIX="test/ci-negative"
 FAILURES=0
 
 say()  { printf '\n\033[1m== %s\033[0m\n' "$*"; }
@@ -52,15 +63,33 @@ pass() { printf '  \033[32mPASS\033[0m %s\n' "$*"; }
 fail() { printf '  \033[31mFAIL\033[0m %s\n' "$*"; FAILURES=$((FAILURES + 1)); }
 
 cleanup() {
-  [ "$KEEP" = "1" ] && { say "KEEP=1, leaving branches"; return; }
+  # A half-finished teardown is worse than a reported one, so nothing in here is
+  # allowed to abort on a non-zero status.
+  set +e
+  if [ "$KEEP" = "1" ]; then
+    say "KEEP=1, leaving branches"
+    return 0
+  fi
   say "Tearing down"
-  for b in "${BRANCHES[@]:-}"; do
-    [ -n "$b" ] || continue
-    num=$(gh pr list -R "$REPO" --head "$b" --state open --json number -q '.[0].number' 2>/dev/null || true)
-    [ -n "${num:-}" ] && gh pr close -R "$REPO" "$num" --delete-branch >/dev/null 2>&1 \
-      && echo "  closed #$num and deleted $b" && continue
-    git push -q origin --delete "$b" >/dev/null 2>&1 && echo "  deleted $b" || true
+  local b num left
+  for slug in "${SLUGS[@]}"; do
+    b="${PREFIX}-${slug}"
+    num=$(gh pr list -R "$REPO" --head "$b" --state open --json number -q '.[0].number' 2>/dev/null)
+    if [ -n "$num" ] && gh pr close -R "$REPO" "$num" --delete-branch >/dev/null 2>&1; then
+      echo "  closed #$num and deleted $b"
+      continue
+    fi
+    git push -q origin --delete "$b" >/dev/null 2>&1 && echo "  deleted $b"
   done
+
+  # Verify, do not assume. The script's own thesis applied to itself: state what
+  # is actually left, so a silent no-op cannot pass for work done.
+  left=$(gh api "repos/$REPO/branches" --jq "[.[].name | select(startswith(\"$PREFIX\"))] | length" 2>/dev/null)
+  if [ "${left:-unknown}" = "0" ]; then
+    echo "  verified: no ${PREFIX}-* branches remain"
+  else
+    echo "  WARNING: ${left:-unknown} ${PREFIX}-* branch(es) still present; delete them by hand"
+  fi
   # The 2 MB blob is now unreferenced and will be garbage collected. It is
   # deliberately never merged, so it does not enter main's history.
 }
@@ -113,8 +142,7 @@ defect_size() {
 
 open_pr() {
   local slug="$1" title="$2"; shift 2
-  local branch="test/ci-negative-${slug}"
-  BRANCHES+=("$branch")
+  local branch="${PREFIX}-${slug}"
 
   git checkout -q -B "$branch" "origin/${BASE}"
   for d in "$@"; do "$d"; done
@@ -188,11 +216,14 @@ git fetch -q origin "$BASE"
 START_REF=$(git rev-parse --abbrev-ref HEAD)
 trap 'git checkout -q "$START_REF" 2>/dev/null || true; cleanup' EXIT
 
-B_LINT=$(open_pr lint     "ruff error only"        defect_lint)
-B_VALD=$(open_pr validate "schema violation only"  defect_validate)
-B_SIZE=$(open_pr size     "2 MB binary only"       defect_size)
-B_ALL=$(open_pr  all      "all three defects"      defect_lint defect_validate defect_size)
+open_pr lint     "ruff error only"       defect_lint     >/dev/null
+open_pr validate "schema violation only" defect_validate >/dev/null
+open_pr size     "2 MB binary only"      defect_size     >/dev/null
+open_pr all      "all three defects"     defect_lint defect_validate defect_size >/dev/null
 git checkout -q "$START_REF"
+
+B_LINT="${PREFIX}-lint"; B_VALD="${PREFIX}-validate"
+B_SIZE="${PREFIX}-size"; B_ALL="${PREFIX}-all"
 
 for b in "$B_LINT" "$B_VALD" "$B_SIZE" "$B_ALL"; do
   say "Waiting on $b"
