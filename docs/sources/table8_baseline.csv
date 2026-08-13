@@ -119,9 +119,9 @@ Total Power (u W),R^2,global route to detailed route,NG45,1.000,VAL,19
 Total Power (u W),R^2,global route to detailed route,SKY130,1.000,VAL,19
 Total Power (u W),R^2,global route to detailed route,IHP130,1.000,VAL,19
 Total Power (u W),R^2,global route to detailed route,ASAP7,1.000,VAL,19
-Total wirelength (u m),MAE,floorplan to detailed route,NG45,,VOID,20
-Total wirelength (u m),MAE,floorplan to detailed route,SKY130,,VOID,20
-Total wirelength (u m),MAE,floorplan to detailed route,IHP130,,VOID,20
+Total wirelength (u m),MAE,floorplan to detailed route,NG45,0.42,VOID,20
+Total wirelength (u m),MAE,floorplan to detailed route,SKY130,0.42,VOID,20
+Total wirelength (u m),MAE,floorplan to detailed route,IHP130,0.42,VOID,20
 Total wirelength (u m),MAE,floorplan to detailed route,ASAP7,,VOID,20
 Total wirelength (u m),MAE,global place to detailed route,NG45,"30,529.92",VAL,20
 Total wirelength (u m),MAE,global place to detailed route,SKY130,"83,777.43",VAL,20
